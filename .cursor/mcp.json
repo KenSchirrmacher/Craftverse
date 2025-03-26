@@ -1,0 +1,25 @@
+{
+  "version": "1.0",
+  "servers": {
+    "sequential_thinking": {
+      "enabled": true,
+      "command": "npx @modelcontextprotocol/sdk run sequential-thinking",
+      "type": "stdio"
+    },
+    "github": {
+      "enabled": true,
+      "command": "npx @modelcontextprotocol/sdk run github",
+      "env": {
+        "GITHUB_TOKEN": "${GITHUB_TOKEN}"
+      },
+      "type": "stdio"
+    }
+  },
+  "rules": {
+    "default": {
+      "context_window": 8192,
+      "max_tokens": 4096,
+      "temperature": 0.7
+    }
+  }
+} 
