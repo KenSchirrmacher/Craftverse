@@ -3,6 +3,7 @@ const { createServer } = require('http');
 const { Server } = require('socket.io');
 const { v4: uuidv4 } = require('uuid');
 const path = require('path');
+const saveSystem = require('./saveSystem');
 
 const app = express();
 const httpServer = createServer(app);
@@ -25,6 +26,7 @@ app.get('/', (req, res) => {
 // Game state
 const players = {};
 const blocks = {};
+let currentWorld = 'default';
 
 // Block types and their properties
 const blockTypes = {
@@ -37,7 +39,26 @@ const blockTypes = {
   water: { name: 'Water', hardness: 0 },
   lava: { name: 'Lava', hardness: 0 },
   glass: { name: 'Glass', hardness: 1 },
-  brick: { name: 'Brick', hardness: 2 }
+  brick: { name: 'Brick', hardness: 2 },
+  cobblestone: { name: 'Cobblestone', hardness: 2 },
+  iron_ore: { name: 'Iron Ore', hardness: 3 },
+  diamond_ore: { name: 'Diamond Ore', hardness: 4 }
+};
+
+// Tool types and their properties
+const toolTypes = {
+  wooden_pickaxe: { name: 'Wooden Pickaxe', durability: 60, efficiency: 1.2 },
+  wooden_axe: { name: 'Wooden Axe', durability: 60, efficiency: 1.2 },
+  wooden_sword: { name: 'Wooden Sword', durability: 60, damage: 4 },
+  stone_pickaxe: { name: 'Stone Pickaxe', durability: 132, efficiency: 1.5 },
+  stone_axe: { name: 'Stone Axe', durability: 132, efficiency: 1.5 },
+  stone_sword: { name: 'Stone Sword', durability: 132, damage: 5 },
+  iron_pickaxe: { name: 'Iron Pickaxe', durability: 251, efficiency: 2 },
+  iron_axe: { name: 'Iron Axe', durability: 251, efficiency: 2 },
+  iron_sword: { name: 'Iron Sword', durability: 251, damage: 6 },
+  diamond_pickaxe: { name: 'Diamond Pickaxe', durability: 1562, efficiency: 3 },
+  diamond_axe: { name: 'Diamond Axe', durability: 1562, efficiency: 3 },
+  diamond_sword: { name: 'Diamond Sword', durability: 1562, damage: 7 }
 };
 
 // Generate initial world
@@ -72,6 +93,15 @@ function generateWorld() {
     const z = Math.floor(Math.random() * 21) - 10;
     blocks[`${x},0,${z}`] = { type: 'sand' };
   }
+
+  // Add some random ore deposits
+  for (let i = 0; i < 15; i++) {
+    const x = Math.floor(Math.random() * 21) - 10;
+    const z = Math.floor(Math.random() * 21) - 10;
+    const y = Math.floor(Math.random() * 5) + 1;
+    const type = Math.random() > 0.5 ? 'iron_ore' : 'diamond_ore';
+    blocks[`${x},${y},${z}`] = { type };
+  }
 }
 
 // Initialize world
@@ -95,7 +125,14 @@ io.on('connection', (socket) => {
       leaves: 64,
       sand: 64,
       glass: 64,
-      brick: 64
+      brick: 64,
+      cobblestone: 0,
+      iron_ore: 0,
+      diamond_ore: 0,
+      iron_ingot: 0,
+      diamond: 0,
+      wooden_planks: 0,
+      stick: 0
     }
   };
   players[socket.id] = player;
@@ -106,12 +143,26 @@ io.on('connection', (socket) => {
   // Broadcast new player to others
   socket.broadcast.emit('playerJoin', player);
 
-  // Handle player movement
-  socket.on('playerMove', (data) => {
-    if (players[data.id]) {
-      players[data.id].position = data.position;
-      players[data.id].movementMode = data.movementMode || 'walk';
-      io.emit('playerUpdate', players[data.id]);
+  // Handle save game request
+  socket.on('saveGame', (worldName) => {
+    if (saveSystem.saveGame(worldName, players, blocks)) {
+      socket.emit('saveComplete', { success: true, worldName });
+    } else {
+      socket.emit('saveComplete', { success: false, error: 'Failed to save game' });
+    }
+  });
+
+  // Handle load game request
+  socket.on('loadGame', (worldName) => {
+    const saveData = saveSystem.loadGame(worldName);
+    if (saveData) {
+      Object.assign(players, saveData.players);
+      Object.assign(blocks, saveData.blocks);
+      currentWorld = worldName;
+      io.emit('gameState', { players, blocks });
+      socket.emit('loadComplete', { success: true, worldName });
+    } else {
+      socket.emit('loadComplete', { success: false, error: 'Failed to load game' });
     }
   });
 
@@ -155,6 +206,38 @@ io.on('connection', (socket) => {
   // Handle chat messages
   socket.on('chatMessage', (data) => {
     io.emit('chatMessage', data);
+  });
+
+  // Handle player hit
+  socket.on('playerHit', (data) => {
+    const attacker = players[data.attackerId];
+    const target = players[data.targetId];
+    
+    if (!attacker || !target) return;
+
+    // Apply damage
+    target.health -= data.damage;
+    
+    // Check for death
+    if (target.health <= 0) {
+        target.health = 0;
+        io.emit('playerDeath', { playerId: target.id });
+    }
+
+    // Update target's health
+    io.emit('playerUpdate', target);
+  });
+
+  // Handle player respawn
+  socket.on('playerRespawn', () => {
+    const player = players[socket.id];
+    if (!player) return;
+
+    player.health = 100;
+    player.position = { x: 0, y: 1, z: 0 };
+    player.rotation = { y: 0 };
+    
+    io.emit('playerUpdate', player);
   });
 
   // Handle disconnection

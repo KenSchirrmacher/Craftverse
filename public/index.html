@@ -3,9 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Craftverse Server</title>
-    <script src="/socket.io/socket.io.js"></script>
+    <title>Craftverse</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/simplex-noise/2.4.0/simplex-noise.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.4/socket.io.min.js"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -14,18 +15,29 @@
             overflow: hidden;
         }
         #game-container {
-            display: flex;
+            position: absolute;
+            top: 0;
+            left: 0;
             height: 100vh;
+            width: 100vw;
+            z-index: 0;
         }
         #game-canvas {
-            flex: 2;
-            background: #87CEEB;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
         }
         #ui-container {
-            flex: 1;
-            padding: 20px;
-            background: #f8f9fa;
-            overflow-y: auto;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 100;
         }
         h1 {
             color: #2c3e50;
@@ -285,52 +297,396 @@
             border-radius: 10px;
             transition: width 0.1s linear;
         }
+
+        /* Enhanced inventory system */
+        .hotbar-slot {
+            width: 50px;
+            height: 50px;
+            border: 2px solid #666;
+        }
+        .hotbar-slot.selected {
+            border-color: #fff;
+        }
+        .item-count {
+            position: absolute;
+            bottom: 2px;
+            right: 2px;
+            background: rgba(0, 0, 0, 0.5);
+            color: white;
+            padding: 2px 4px;
+            border-radius: 3px;
+            font-size: 12px;
+        }
+        .inventory-slot {
+            position: relative;
+            width: 50px;
+            height: 50px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid #666;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .inventory-slot img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        /* Durability bar styles */
+        .durability-bar {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 2px;
+            background: #00ff00;
+            transition: width 0.2s;
+        }
+        .durability-bar[style*="width: 0%"] {
+            background: #ff0000;
+        }
+
+        .chat-message {
+            margin: 5px 0;
+            padding: 5px;
+            border-radius: 5px;
+        }
+
+        .player-message {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .system-message {
+            background-color: rgba(255, 255, 0, 0.1);
+            color: #ffd700;
+        }
+
+        #playerList {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background-color: rgba(0, 0, 0, 0.7);
+            padding: 10px;
+            border-radius: 5px;
+            color: white;
+        }
+
+        .player {
+            margin: 5px 0;
+            padding: 5px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+        }
+
+        .player h3 {
+            margin: 0;
+            font-size: 14px;
+        }
+
+        .player p {
+            margin: 2px 0;
+            font-size: 12px;
+            color: #ccc;
+        }
+
+        #status {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            padding: 5px 10px;
+            border-radius: 3px;
+            font-size: 14px;
+        }
+
+        .connected {
+            background-color: rgba(0, 255, 0, 0.3);
+            color: #00ff00;
+        }
+
+        .disconnected {
+            background-color: rgba(255, 0, 0, 0.3);
+            color: #ff0000;
+        }
+
+        .recipe {
+            margin: 10px 0;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 5px;
+        }
+        
+        .recipe h3 {
+            margin: 0 0 10px 0;
+            color: #ffd700;
+        }
+        
+        .recipe p {
+            margin: 5px 0;
+        }
+        
+        .craft-btn {
+            padding: 5px 10px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+            color: white;
+            cursor: pointer;
+        }
+        
+        .craft-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        #recipes-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        /* Game Settings Panel */
+        #game-settings {
+            position: fixed;
+            top: 70px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 15px;
+            border-radius: 8px;
+            color: white;
+            z-index: 1000;
+            display: none;
+            max-height: 80vh;
+            overflow-y: auto;
+            transition: opacity 0.3s ease;
+        }
+
+        #game-settings.visible {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .settings-group {
+            margin-bottom: 15px;
+        }
+
+        .settings-group h3 {
+            margin: 0 0 10px 0;
+            color: #4CAF50;
+        }
+
+        .settings-option {
+            display: flex;
+            align-items: center;
+            margin: 5px 0;
+        }
+
+        .settings-option label {
+            margin-right: 10px;
+        }
+
+        .settings-option input[type="range"] {
+            width: 150px;
+        }
+
+        .settings-option input[type="checkbox"] {
+            margin-right: 5px;
+        }
+
+        /* Improved UI Styling */
+        #ui-container > * {
+            pointer-events: auto;
+        }
+
+        #status {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 10px 20px;
+            border-radius: 4px;
+            color: white;
+            font-weight: bold;
+        }
+
+        #players {
+            position: fixed;
+            top: 80px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 15px;
+            border-radius: 8px;
+            color: white;
+            max-width: 200px;
+        }
+
+        #chat {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 15px;
+            border-radius: 8px;
+            color: white;
+            width: 300px;
+        }
+
+        #chat-messages {
+            height: 200px;
+            overflow-y: auto;
+            margin-bottom: 10px;
+            padding: 5px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 4px;
+        }
+
+        #chat-input {
+            display: flex;
+            gap: 5px;
+        }
+
+        #message-input {
+            flex: 1;
+            padding: 5px;
+            border: none;
+            border-radius: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+
+        #send-message {
+            padding: 5px 10px;
+            border: none;
+            border-radius: 4px;
+            background: #4CAF50;
+            color: white;
+            cursor: pointer;
+        }
+
+        #send-message:hover {
+            background: #45a049;
+        }
+
+        .chat-message {
+            margin: 5px 0;
+            padding: 5px;
+            border-radius: 4px;
+        }
+
+        .chat-message.system-message {
+            color: #4CAF50;
+            font-style: italic;
+        }
+
+        .chat-message.player-message {
+            color: #fff;
+        }
+
+        .chat-message .player-name {
+            color: #4CAF50;
+            font-weight: bold;
+        }
+
+        /* Settings Button */
+        #settings-button {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            color: #4CAF50;
+            border: none;
+            padding: 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            z-index: 1001;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        #settings-button:hover {
+            background: rgba(0, 0, 0, 0.9);
+        }
+
+        #settings-button svg {
+            width: 20px;
+            height: 20px;
+            fill: currentColor;
+        }
     </style>
 </head>
 <body>
-    <div id="game-container">
-        <canvas id="game-canvas"></canvas>
-        <div id="ui-container">
-            <h1>Welcome to Craftverse Server</h1>
-            <div id="status" class="disconnected">
-                Status: Disconnected
-            </div>
+    <canvas id="game-canvas"></canvas>
+    <div id="ui-container">
+        <div id="status">Status: Connecting...</div>
 
-            <div id="players">
-                <h2>Connected Players</h2>
-                <div id="playerList"></div>
-            </div>
+        <button id="settings-button">
+            <svg viewBox="0 0 24 24">
+                <path d="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.07-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.74,8.87 C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58C4.84,11.36,4.8,11.69,4.8,12s0.02,0.64,0.07,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54 c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.44-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96 c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.47-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"/>
+            </svg>
+            Settings
+        </button>
 
-            <div id="chat">
-                <h2>Chat</h2>
-                <div id="chat-messages"></div>
-                <div id="chat-input">
-                    <input type="text" id="message-input" placeholder="Type a message...">
-                    <button id="send-message">Send</button>
+        <div id="game-settings">
+            <div class="settings-group">
+                <h3>Graphics</h3>
+                <div class="settings-option">
+                    <label>Render Distance:</label>
+                    <input type="range" id="render-distance" min="1" max="10" value="5">
+                </div>
+                <div class="settings-option">
+                    <label>Particles:</label>
+                    <input type="checkbox" id="particles-enabled" checked>
                 </div>
             </div>
-
-            <div id="controls">
-                <h2>Movement Controls</h2>
-                <div class="movement-mode">
-                    <button id="walk-mode" class="active">Walk</button>
-                    <button id="run-mode">Run</button>
-                    <button id="crouch-mode">Crouch</button>
+            <div class="settings-group">
+                <h3>Gameplay</h3>
+                <div class="settings-option">
+                    <label>Mouse Sensitivity:</label>
+                    <input type="range" id="mouse-sensitivity" min="0.1" max="2" step="0.1" value="1">
                 </div>
-                <button class="control-btn" id="move-forward">Forward</button>
-                <button class="control-btn" id="move-backward">Backward</button>
-                <button class="control-btn" id="move-left">Left</button>
-                <button class="control-btn" id="move-right">Right</button>
-                <button class="control-btn" id="jump">Jump</button>
+                <div class="settings-option">
+                    <label>Auto-Save:</label>
+                    <input type="checkbox" id="auto-save" checked>
+                </div>
             </div>
-
-            <div id="inventory">
-                <h2>Inventory</h2>
-                <div class="inventory-grid" id="inventory-grid"></div>
-                <div id="block-info">
-                    <p>Selected Block: <span id="selected-block">None</span></p>
-                    <p>Block Count: <span id="block-count">0</span></p>
+            <div class="settings-group">
+                <h3>Audio</h3>
+                <div class="settings-option">
+                    <label>Master Volume:</label>
+                    <input type="range" id="master-volume" min="0" max="1" step="0.1" value="0.5">
                 </div>
+                <div class="settings-option">
+                    <label>Sound Effects:</label>
+                    <input type="checkbox" id="sound-effects" checked>
+                </div>
+            </div>
+            <div class="settings-group">
+                <h3>Performance</h3>
+                <div class="settings-option">
+                    <label>FPS Limit:</label>
+                    <input type="range" id="fps-limit" min="30" max="144" step="1" value="60">
+                </div>
+                <div class="settings-option">
+                    <label>VSync:</label>
+                    <input type="checkbox" id="vsync-enabled">
+                </div>
+            </div>
+        </div>
+
+        <div id="players">
+            <h2>Connected Players</h2>
+            <div id="playerList"></div>
+        </div>
+
+        <div id="chat">
+            <h2>Chat</h2>
+            <div id="chat-messages"></div>
+            <div id="chat-input">
+                <input type="text" id="message-input" placeholder="Type a message...">
+                <button id="send-message">Send</button>
             </div>
         </div>
     </div>
@@ -339,627 +695,1047 @@
     <div class="breaking-progress" id="breaking-progress">
         <div class="breaking-progress-bar"></div>
     </div>
-
+    
     <script>
-        // Three.js setup
-        const scene = new THREE.Scene();
-        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-        const renderer = new THREE.WebGLRenderer({
-            canvas: document.getElementById('game-canvas'),
-            antialias: true
-        });
-        renderer.setSize(window.innerWidth * 0.66, window.innerHeight);
-        renderer.shadowMap.enabled = true;
+        // Wait for DOM to be fully loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            // Performance monitoring without using unload events
+            // This avoids the deprecated "Unload event listeners" warning
+            if (window.performance) {
+                console.log('Performance API available');
+                
+                // Use visibilitychange instead of unload/beforeunload
+                document.addEventListener('visibilitychange', function() {
+                    if (document.visibilityState === 'hidden') {
+                        console.log('Page is being hidden, saving state...');
+                        // Save game state or perform cleanup here
+                    }
+                });
+            }
 
-        // Add skybox
-        const skyboxGeometry = new THREE.BoxGeometry(1000, 1000, 1000);
-        const skyboxMaterial = new THREE.MeshBasicMaterial({
-            color: 0x87CEEB,
-            side: THREE.BackSide
-        });
-        const skybox = new THREE.Mesh(skyboxGeometry, skyboxMaterial);
-        scene.add(skybox);
+            // At the top of your script section, add:
+            const simplex = new SimplexNoise();
+            
+            // Mock socket for offline mode
+            const socket = {
+                emit: () => {},
+                on: () => {},
+                connected: false
+            };
 
-        // Add sun
-        const sunGeometry = new THREE.SphereGeometry(5, 32, 32);
-        const sunMaterial = new THREE.MeshBasicMaterial({
-            color: 0xffff00
-        });
-        const sun = new THREE.Mesh(sunGeometry, sunMaterial);
-        sun.position.set(50, 50, 50);
-        scene.add(sun);
+            // Create temporary status UI for offline mode
+            const status = document.createElement('div');
+            status.id = 'status';
+            status.style.position = 'fixed';
+            status.style.top = '10px';
+            status.style.left = '10px';
+            status.style.padding = '5px 10px';
+            status.style.background = 'rgba(0, 0, 0, 0.5)';
+            status.style.color = 'white';
+            status.style.borderRadius = '5px';
+            document.body.appendChild(status);
 
-        // Lighting
-        const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
-        scene.add(ambientLight);
-        const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
-        directionalLight.position.set(50, 50, 50);
-        directionalLight.castShadow = true;
-        directionalLight.shadow.mapSize.width = 2048;
-        directionalLight.shadow.mapSize.height = 2048;
-        scene.add(directionalLight);
+            // Initialize in offline mode
+            status.textContent = 'Status: Offline Mode';
 
-        // Add ground plane
-        const groundGeometry = new THREE.PlaneGeometry(100, 100);
-        const groundMaterial = new THREE.MeshStandardMaterial({ 
-            color: 0x3a9d23,
-            roughness: 0.8,
-            metalness: 0.2
-        });
-        const ground = new THREE.Mesh(groundGeometry, groundMaterial);
-        ground.rotation.x = -Math.PI / 2;
-        ground.position.y = -0.5;
-        ground.receiveShadow = true;
-        scene.add(ground);
-
-        // Block materials
-        const blockMaterials = {
-            grass: new THREE.MeshStandardMaterial({ color: 0x3a9d23 }),
-            dirt: new THREE.MeshStandardMaterial({ color: 0x8b4513 }),
-            stone: new THREE.MeshStandardMaterial({ color: 0x808080 }),
-            wood: new THREE.MeshStandardMaterial({ color: 0x8b4513 }),
-            leaves: new THREE.MeshStandardMaterial({ color: 0x2d5a27 }),
-            sand: new THREE.MeshStandardMaterial({ color: 0xc2b280 }),
-            water: new THREE.MeshStandardMaterial({ 
-                color: 0x0077be,
-                transparent: true,
-                opacity: 0.6
-            }),
-            lava: new THREE.MeshStandardMaterial({ color: 0xff4500 }),
-            glass: new THREE.MeshStandardMaterial({ 
-                color: 0xffffff,
-                transparent: true,
-                opacity: 0.3
-            }),
-            brick: new THREE.MeshStandardMaterial({ color: 0xb22222 })
-        };
-
-        // Block geometries
-        const blockGeometry = new THREE.BoxGeometry(1, 1, 1);
-        let blockMeshes = {};
-
-        // Camera position
-        camera.position.set(0, 5, 10);
-        camera.lookAt(0, 0, 0);
-
-        // Mouse controls
-        let isPointerLocked = false;
-        const moveSpeed = 0.1;
-        const keys = {};
-
-        // Add raycaster for block interaction
-        const raycaster = new THREE.Raycaster();
-        const mouse = new THREE.Vector2();
-
-        document.addEventListener('click', (event) => {
-            if (!isPointerLocked) {
-                renderer.domElement.requestPointerLock();
-            } else {
-                // Calculate mouse position in normalized device coordinates
-                const rect = renderer.domElement.getBoundingClientRect();
-                mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
-                mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
-
-                // Update raycaster
-                raycaster.setFromCamera(mouse, camera);
-
-                // Find intersected blocks
-                const intersects = raycaster.intersectObjects(scene.children);
-                if (intersects.length > 0) {
-                    const intersect = intersects[0];
-                    const position = intersect.object.position;
-                    const positionKey = `${Math.round(position.x)},${Math.round(position.y)},${Math.round(position.z)}`;
+            // Function to add chat messages - defined early to be used anywhere
+            function addChatMessage(message, type = 'player-message') {
+                console.log(`${type}: ${message}`);
+                
+                // If chat UI exists, use it
+                const chatMessages = document.getElementById('chat-messages');
+                if (chatMessages) {
+                    const messageElement = document.createElement('div');
+                    messageElement.className = `chat-message ${type}`;
+                    messageElement.textContent = message;
+                    messageElement.style.marginBottom = '5px';
+                    messageElement.style.padding = '5px';
+                    messageElement.style.borderRadius = '3px';
                     
-                    if (selectedBlock) {
-                        // Place block
-                        const newBlocks = { ...initialBlocks };
-                        newBlocks[positionKey] = { type: selectedBlock };
-                        updateWorld(newBlocks);
+                    if (type === 'system-message') {
+                        messageElement.style.color = '#ffcc00';
                     } else {
-                        // Remove block
-                        const newBlocks = { ...initialBlocks };
-                        delete newBlocks[positionKey];
-                        updateWorld(newBlocks);
+                        messageElement.style.color = 'white';
+                    }
+                    
+                    chatMessages.appendChild(messageElement);
+                    chatMessages.scrollTop = chatMessages.scrollHeight;
+                }
+            }
+
+            // Initialize Three.js
+            const scene = new THREE.Scene();
+            const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            
+            // Create renderer with canvas
+            const canvas = document.getElementById('game-canvas');
+            console.log('Game canvas element:', canvas);
+            const renderer = new THREE.WebGLRenderer({ 
+                canvas: canvas, 
+                antialias: true,
+                alpha: false 
+            });
+            
+            renderer.setPixelRatio(window.devicePixelRatio);
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            renderer.setClearColor(0x87CEEB, 1);  // Sky blue background
+            
+            // Force the renderer to be visible
+            canvas.style.display = 'block';
+            canvas.style.width = '100%';
+            canvas.style.height = '100%';
+            canvas.style.zIndex = '10';
+            
+            console.log('Renderer initialized', renderer);
+            
+            // Check for WebGL support
+            if (!renderer.capabilities.isWebGL2) {
+                console.warn('WebGL 2 not supported, using WebGL 1');
+            }
+            
+            if (!renderer.context) {
+                console.error('No WebGL context - rendering will fail!');
+                // Show an error message to the user
+                addChatMessage('ERROR: WebGL not supported by your browser. The game will not render properly.', 'system-message');
+            } else {
+                console.log('WebGL context found:', renderer.context);
+            }
+
+            // Add window resize handler
+            window.addEventListener('resize', function() {
+                const width = window.innerWidth;
+                const height = window.innerHeight;
+                
+                // Update renderer and camera
+                renderer.setSize(width, height);
+                camera.aspect = width / height;
+                camera.updateProjectionMatrix();
+                
+                console.log('Window resized', width, height);
+            });
+            
+            // Add more visible debug objects
+            // Create a grid helper for perspective
+            const gridHelper = new THREE.GridHelper(100, 100, 0x444444, 0x888888);
+            scene.add(gridHelper);
+            
+            // Create some colorful boxes at different positions
+            const createColorfulBox = (x, y, z, color) => {
+                const geometry = new THREE.BoxGeometry(2, 2, 2);
+                const material = new THREE.MeshStandardMaterial({ color: color });
+                const box = new THREE.Mesh(geometry, material);
+                box.position.set(x, y, z);
+                box.castShadow = true;
+                box.receiveShadow = true;
+                scene.add(box);
+                return box;
+            };
+            
+            // Create multiple boxes in different colors
+            createColorfulBox(-10, 1, -10, 0xff0000); // Red
+            createColorfulBox(10, 1, -10, 0x00ff00);  // Green
+            createColorfulBox(-10, 1, 10, 0x0000ff);  // Blue
+            createColorfulBox(10, 1, 10, 0xffff00);   // Yellow
+
+            // Game constants
+            const CHUNK_SIZE = 16;
+            const BLOCK_SIZE = 1;
+            const CHUNK_HEIGHT = 256;
+            let currentWeather = 'clear';
+            let frameCount = 0;  // Add frame counter variable
+
+            // Sound manager
+            const soundManager = {
+                volume: 0.5,
+                weatherVolume: 0.3,
+                effectsVolume: 0.8,
+                musicVolume: 0.6,
+                muted: false
+            };
+            
+            // Sound system - create dummy audio objects to prevent 404 errors
+            const createDummyAudio = () => {
+                const audio = new Audio();
+                // Don't set src to prevent 404 errors
+                audio.play = function() { 
+                    // Don't return a promise
+                    return undefined; 
+                };
+                audio.pause = function() {
+                    // Empty function
+                };
+                // Add paused property
+                audio.paused = true;
+                return audio;
+            };
+
+            const sounds = {
+                blockBreak: createDummyAudio(),
+                blockPlace: createDummyAudio(),
+                playerWalk: createDummyAudio(),
+                playerJump: createDummyAudio(),
+                playerLand: createDummyAudio(),
+                inventoryOpen: createDummyAudio(),
+                inventoryClose: createDummyAudio(),
+                crafting: createDummyAudio(),
+                weatherRain: createDummyAudio(),
+                weatherSnow: createDummyAudio(),
+                swordSwing: createDummyAudio()
+            };
+            
+            // Function to get biome based on position
+            function getBiome(x, z) {
+                // Sample noise at lower frequency for biome detection
+                const biomeNoise = simplex.noise2D(x * 0.01, z * 0.01);
+                
+                if (biomeNoise < -0.6) {
+                    return 'Snowy Mountains';
+                } else if (biomeNoise < -0.3) {
+                    return 'Mountains';
+                } else if (biomeNoise < -0.1) {
+                    return 'Forest';
+                } else if (biomeNoise < 0.2) {
+                    return 'Plains';
+                } else if (biomeNoise < 0.5) {
+                    return 'Desert';
+                } else {
+                    return 'Beach';
+                }
+            }
+
+            // Function to update the block preview
+            function updateBlockPreview(positionKey) {
+                const blockPreview = document.getElementById('block-preview');
+                if (blockPreview) {
+                    blockPreview.classList.add('visible');
+                    // Parse position from the position key
+                    const [x, y, z] = positionKey.split(',').map(Number);
+                    // You can add more visualization logic here if needed
+                }
+            }
+
+            // Function to hide the block preview
+            function hideBlockPreview() {
+                const blockPreview = document.getElementById('block-preview');
+                if (blockPreview) {
+                    blockPreview.classList.remove('visible');
+                }
+            }
+
+            // Add skybox
+            const skyboxGeometry = new THREE.BoxGeometry(1000, 1000, 1000);
+            const skyboxMaterial = new THREE.MeshBasicMaterial({
+                color: 0x87CEEB,
+                side: THREE.BackSide
+            });
+            const skybox = new THREE.Mesh(skyboxGeometry, skyboxMaterial);
+            scene.add(skybox);
+
+            // Add sun
+            const sunGeometry = new THREE.SphereGeometry(5, 32, 32);
+            const sunMaterial = new THREE.MeshBasicMaterial({
+                color: 0xffff00
+            });
+            const sun = new THREE.Mesh(sunGeometry, sunMaterial);
+            sun.position.set(50, 50, 50);
+            scene.add(sun);
+
+            // Lighting
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+            scene.add(ambientLight);
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+            directionalLight.position.set(50, 50, 50);
+            directionalLight.castShadow = true;
+            directionalLight.shadow.mapSize.width = 2048;
+            directionalLight.shadow.mapSize.height = 2048;
+            scene.add(directionalLight);
+
+            // Add ground plane
+            const groundGeometry = new THREE.PlaneGeometry(100, 100);
+            const groundMaterial = new THREE.MeshStandardMaterial({ 
+                color: 0x3a9d23,
+                roughness: 0.8,
+                metalness: 0.2
+            });
+            const ground = new THREE.Mesh(groundGeometry, groundMaterial);
+            ground.rotation.x = -Math.PI / 2;
+            ground.position.y = -0.5;
+            ground.receiveShadow = true;
+            scene.add(ground);
+
+            // Block materials
+            const blockMaterials = {
+                grass: new THREE.MeshStandardMaterial({ color: 0x3a9d23 }),
+                dirt: new THREE.MeshStandardMaterial({ color: 0x8b4513 }),
+                stone: new THREE.MeshStandardMaterial({ color: 0x808080 }),
+                wood: new THREE.MeshStandardMaterial({ color: 0x8b4513 }),
+                leaves: new THREE.MeshStandardMaterial({ color: 0x2d5a27 }),
+                sand: new THREE.MeshStandardMaterial({ color: 0xc2b280 }),
+                water: new THREE.MeshStandardMaterial({ 
+                    color: 0x0077be,
+                    transparent: true,
+                    opacity: 0.6
+                }),
+                lava: new THREE.MeshStandardMaterial({ color: 0xff4500 }),
+                glass: new THREE.MeshStandardMaterial({ 
+                    color: 0xffffff,
+                    transparent: true,
+                    opacity: 0.3
+                }),
+                brick: new THREE.MeshStandardMaterial({ color: 0xb22222 }),
+                snow: new THREE.MeshStandardMaterial({ 
+                    color: 0xffffff,
+                    roughness: 0.3
+                })
+            };
+
+            // Block geometries
+            const blockGeometry = new THREE.BoxGeometry(1, 1, 1);
+            let blockMeshes = {};
+            let selectedBlock = null;
+
+            // Camera position - move it higher and further back
+            camera.position.set(0, 5, 30);  // Move further back to see more
+            camera.lookAt(0, 0, 0);
+            
+            console.log('Camera positioned at:', camera.position);
+
+            // Add a debug box to make sure something is visible
+            const debugBoxGeometry = new THREE.BoxGeometry(5, 5, 5);
+            const debugBoxMaterial = new THREE.MeshStandardMaterial({ color: 0xff0000 });
+            const debugBox = new THREE.Mesh(debugBoxGeometry, debugBoxMaterial);
+            debugBox.position.set(0, 0, 0);
+            scene.add(debugBox);
+
+            // Mouse controls
+            let isPointerLocked = false;
+            const moveSpeed = 0.1;
+            const keys = {};
+
+            // Add raycaster for block interaction
+            const raycaster = new THREE.Raycaster();
+            const mouse = new THREE.Vector2();
+
+            document.addEventListener('click', (event) => {
+                if (!isPointerLocked) {
+                    renderer.domElement.requestPointerLock();
+                } else {
+                    // Calculate mouse position in normalized device coordinates
+                    mouse.x = 0; // Center of screen
+                    mouse.y = 0; // Center of screen
+
+                    // Update raycaster
+                    raycaster.setFromCamera(mouse, camera);
+
+                    // Find intersected blocks
+                    const intersects = raycaster.intersectObjects(Object.values(blockMeshes));
+                    
+                    if (intersects.length > 0) {
+                        const intersect = intersects[0];
+                        const mesh = intersect.object;
+                        const position = mesh.position.clone();
+                        const positionKey = `${Math.round(position.x)},${Math.round(position.y)},${Math.round(position.z)}`;
+                        
+                        // Left click - Break block
+                        if (event.button === 0) {
+                            // Remove block
+                            sounds.blockBreak.play();
+                            scene.remove(mesh);
+                            delete blockMeshes[positionKey];
+                            delete initialBlocks[positionKey];
+                        }
+                        // Right click - Place block
+                        else if (event.button === 2 && selectedBlock) {
+                            // Calculate position for new block
+                            const normal = intersect.face.normal;
+                            const newPosition = position.clone().add(normal);
+                            const newPositionKey = `${Math.round(newPosition.x)},${Math.round(newPosition.y)},${Math.round(newPosition.z)}`;
+                            
+                            // Check if position is already occupied
+                            if (!blockMeshes[newPositionKey]) {
+                                // Create new block
+                                sounds.blockPlace.play();
+                                const mesh = new THREE.Mesh(blockGeometry, blockMaterials[selectedBlock]);
+                                mesh.position.copy(newPosition);
+                                mesh.castShadow = true;
+                                mesh.receiveShadow = true;
+                                scene.add(mesh);
+                                blockMeshes[newPositionKey] = mesh;
+                                initialBlocks[newPositionKey] = { type: selectedBlock };
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // Prevent context menu
+            document.addEventListener('contextmenu', (e) => {
+                e.preventDefault();
+            });
+
+            document.addEventListener('pointerlockchange', () => {
+                isPointerLocked = document.pointerLockElement === renderer.domElement;
+            });
+
+            document.addEventListener('keydown', (e) => {
+                keys[e.code] = true;
+            });
+
+            document.addEventListener('keyup', (e) => {
+                keys[e.code] = false;
+            });
+
+            // Add crosshair to center of screen
+            const crosshair = document.createElement('div');
+            crosshair.id = 'crosshair';
+            crosshair.style.position = 'fixed';
+            crosshair.style.top = '50%';
+            crosshair.style.left = '50%';
+            crosshair.style.transform = 'translate(-50%, -50%)';
+            crosshair.style.width = '10px';
+            crosshair.style.height = '10px';
+            crosshair.style.borderRadius = '50%';
+            crosshair.style.border = '2px solid white';
+            crosshair.style.pointerEvents = 'none';
+            document.body.appendChild(crosshair);
+
+            document.addEventListener('mousemove', (e) => {
+                if (isPointerLocked) {
+                    camera.rotation.y -= e.movementX * 0.002;
+                    camera.rotation.x -= e.movementY * 0.002;
+                    camera.rotation.x = Math.max(-Math.PI/2, Math.min(Math.PI/2, camera.rotation.x));
+                    
+                    // Update raycaster for block preview
+                    raycaster.setFromCamera(new THREE.Vector2(0, 0), camera);
+                    const intersects = raycaster.intersectObjects(Object.values(blockMeshes));
+                    
+                    if (intersects.length > 0) {
+                        const intersect = intersects[0];
+                        const normal = intersect.face.normal;
+                        const position = intersect.object.position.clone();
+                        const newPosition = position.clone().add(normal);
+                        
+                        // Update crosshair color based on interaction
+                        if (selectedBlock) {
+                            crosshair.style.borderColor = 'lime'; // Place mode
+                        } else {
+                            crosshair.style.borderColor = 'red';  // Break mode
+                        }
+                    } else {
+                        // Reset crosshair if not pointing at a block
+                        crosshair.style.borderColor = 'white';
+                    }
+                }
+            });
+
+            // Update world
+            function updateWorld(world) {
+                // Remove old blocks
+                Object.values(blockMeshes).forEach(mesh => {
+                    scene.remove(mesh);
+                });
+                blockMeshes = {};
+
+                // Add new blocks - handle both formats
+                const blocksToProcess = world.blocks || world;
+                
+                Object.entries(blocksToProcess).forEach(([position, block]) => {
+                    const [x, y, z] = position.split(',').map(Number);
+                    const mesh = new THREE.Mesh(blockGeometry, blockMaterials[block.type]);
+                    mesh.position.set(x, y, z);
+                    mesh.castShadow = true;
+                    mesh.receiveShadow = true;
+                    scene.add(mesh);
+                    blockMeshes[position] = mesh;
+                });
+            }
+
+            // Set initial player state
+            let currentPlayer = {
+                id: 'local-player',
+                position: { x: 0, y: 2, z: 5 },
+                health: 100,
+                inventory: {
+                    grass: 64,
+                    dirt: 64,
+                    stone: 64,
+                    wood: 64,
+                    leaves: 64,
+                    sand: 64
+                }
+            };
+
+            // Player idle animation
+            let idleTime = 0;
+            const idleAnimation = () => {
+                idleTime += 0.02;
+                if (!keys['KeyW'] && !keys['KeyS'] && !keys['KeyA'] && !keys['KeyD']) {
+                    const playerElement = document.getElementById(`player-${currentPlayer.id}`);
+                    if (playerElement) {
+                        playerElement.style.transform = `translateY(${Math.sin(idleTime) * 2}px)`;
+                    }
+                }
+            };
+
+            // Day/night cycle
+            const dayNight = {
+                timeOfDay: 0, // 0 to 1, where 0 is dawn
+                dayLength: 1200000, // 20 minutes in milliseconds
+                lastTime: Date.now(),
+                sun: new THREE.DirectionalLight(0xffffff, 1),
+                moon: new THREE.DirectionalLight(0x404040, 0.5),
+                skyColor: new THREE.Color(0x87CEEB), // Sky blue
+                nightColor: new THREE.Color(0x000033), // Dark blue
+                fog: new THREE.Fog(0x87CEEB, 20, 100)
+            };
+
+            // Initialize day/night cycle
+            function initDayNight() {
+                // Add sun and moon
+                dayNight.sun.position.set(50, 50, 50);
+                dayNight.sun.castShadow = true;
+                dayNight.sun.shadow.mapSize.width = 2048;
+                dayNight.sun.shadow.mapSize.height = 2048;
+                scene.add(dayNight.sun);
+
+                dayNight.moon.position.set(-50, 50, -50);
+                dayNight.moon.castShadow = true;
+                dayNight.moon.shadow.mapSize.width = 2048;
+                dayNight.moon.shadow.mapSize.height = 2048;
+                scene.add(dayNight.moon);
+
+                // Add sky color
+                scene.background = dayNight.skyColor;
+                scene.fog = dayNight.fog;
+            }
+
+            // Update day/night cycle
+            function updateDayNight() {
+                const currentTime = Date.now();
+                const deltaTime = currentTime - dayNight.lastTime;
+                dayNight.timeOfDay = (dayNight.timeOfDay + deltaTime / dayNight.dayLength) % 1;
+                dayNight.lastTime = currentTime;
+
+                // Calculate sun and moon positions
+                const sunAngle = dayNight.timeOfDay * Math.PI * 2;
+                dayNight.sun.position.x = Math.cos(sunAngle) * 50;
+                dayNight.sun.position.z = Math.sin(sunAngle) * 50;
+                dayNight.moon.position.x = -Math.cos(sunAngle) * 50;
+                dayNight.moon.position.z = -Math.sin(sunAngle) * 50;
+
+                // Update lighting intensity
+                const isNight = dayNight.timeOfDay > 0.5;
+                dayNight.sun.intensity = isNight ? 0.1 : 1;
+                dayNight.moon.intensity = isNight ? 0.5 : 0.1;
+
+                // Update sky color
+                const skyColor = new THREE.Color();
+                if (isNight) {
+                    skyColor.lerpColors(dayNight.skyColor, dayNight.nightColor, (dayNight.timeOfDay - 0.5) * 2);
+                } else {
+                    skyColor.lerpColors(dayNight.nightColor, dayNight.skyColor, dayNight.timeOfDay * 2);
+                }
+                scene.background = skyColor;
+                scene.fog.color = skyColor;
+
+                // Update fog density based on time of day
+                scene.fog.density = isNight ? 0.05 : 0.02;
+            }
+
+            // Update night objects visibility
+            function updateNightObjects() {
+                const isNight = dayNight.timeOfDay > 0.5;
+                
+                // Check both moons (direct moon object and dayNight.moon)
+                if (typeof moon !== 'undefined') {
+                    moon.visible = isNight;
+                }
+                
+                if (typeof dayNight !== 'undefined' && dayNight.moon) {
+                    dayNight.moon.visible = isNight;
+                }
+                
+                // Only try to update stars if they exist
+                if (typeof stars !== 'undefined' && stars.length > 0) {
+                    stars.forEach(star => {
+                        star.visible = isNight;
+                    });
+                }
+            }
+
+            // Update lighting intensity
+            function updateLighting() {
+                let intensity;
+                if (dayNight.timeOfDay < 0.25) {
+                    // Dawn to noon
+                    intensity = 0.6 + (dayNight.timeOfDay * 4) * 0.4;
+                } else if (dayNight.timeOfDay < 0.5) {
+                    // Noon to dusk
+                    intensity = 1 - ((dayNight.timeOfDay - 0.25) * 4) * 0.4;
+                } else if (dayNight.timeOfDay < 0.75) {
+                    // Dusk to night
+                    intensity = 0.6 - ((dayNight.timeOfDay - 0.5) * 4) * 0.6;
+                } else {
+                    // Night to dawn
+                    intensity = 0 + ((dayNight.timeOfDay - 0.75) * 4) * 0.6;
+                }
+                ambientLight.intensity = intensity * 0.6;
+                directionalLight.intensity = intensity;
+            }
+
+            // Function to update biome indicator
+            function updateBiomeIndicator() {
+                // Get current biome based on player position
+                const biomeIndicator = document.getElementById('biome-indicator');
+                if (biomeIndicator) {
+                    const x = Math.floor(camera.position.x);
+                    const z = Math.floor(camera.position.z);
+                    const biome = getBiome(x, z);
+                    biomeIndicator.textContent = `Biome: ${biome}`;
+                }
+            }
+
+            // Update weather sounds
+            function updateWeatherSounds() {
+                if (currentWeather === 'rain') {
+                    if (sounds.weatherRain.paused) {
+                        sounds.weatherRain.volume = soundManager.volume * soundManager.weatherVolume;
+                        sounds.weatherRain.loop = true;
+                        sounds.weatherRain.play();
+                    }
+                } else {
+                    sounds.weatherRain.pause();
+                }
+
+                if (currentWeather === 'snow') {
+                    if (sounds.weatherSnow.paused) {
+                        sounds.weatherSnow.volume = soundManager.volume * soundManager.weatherVolume;
+                        sounds.weatherSnow.loop = true;
+                        sounds.weatherSnow.play();
+                    }
+                } else {
+                    sounds.weatherSnow.pause();
+                }
+            }
+
+            // Initialize inventory
+            function initializeInventory() {
+                // Create inventory UI if it doesn't exist
+                if (!document.getElementById('inventory-container')) {
+                    const inventoryContainer = document.createElement('div');
+                    inventoryContainer.id = 'inventory-container';
+                    inventoryContainer.style.display = 'none';
+                    inventoryContainer.style.position = 'fixed';
+                    inventoryContainer.style.top = '50%';
+                    inventoryContainer.style.left = '50%';
+                    inventoryContainer.style.transform = 'translate(-50%, -50%)';
+                    inventoryContainer.style.background = 'rgba(0, 0, 0, 0.8)';
+                    inventoryContainer.style.padding = '20px';
+                    inventoryContainer.style.borderRadius = '10px';
+                    inventoryContainer.style.zIndex = '1000';
+                    
+                    inventoryContainer.innerHTML = `
+                        <h2>Inventory</h2>
+                        <div id="inventory-grid" class="inventory-grid"></div>
+                        <div id="hotbar" class="hotbar"></div>
+                        <button id="close-inventory">Close</button>
+                    `;
+                    document.body.appendChild(inventoryContainer);
+                    
+                    // Add hotbar to UI
+                    const hotbarContainer = document.createElement('div');
+                    hotbarContainer.id = 'hotbar-container';
+                    hotbarContainer.style.position = 'fixed';
+                    hotbarContainer.style.bottom = '20px';
+                    hotbarContainer.style.left = '50%';
+                    hotbarContainer.style.transform = 'translateX(-50%)';
+                    hotbarContainer.style.display = 'flex';
+                    hotbarContainer.style.gap = '5px';
+                    hotbarContainer.style.padding = '10px';
+                    hotbarContainer.style.background = 'rgba(0, 0, 0, 0.5)';
+                    hotbarContainer.style.borderRadius = '5px';
+                    
+                    const hotbar = document.createElement('div');
+                    hotbar.id = 'hotbar';
+                    hotbar.style.display = 'flex';
+                    hotbar.style.gap = '5px';
+                    hotbarContainer.appendChild(hotbar);
+                    document.body.appendChild(hotbarContainer);
+                    
+                    // Update inventory with some default items
+                    updateInventoryUI();
+                    
+                    // Close inventory button
+                    document.getElementById('close-inventory').addEventListener('click', () => {
+                        document.getElementById('inventory-container').style.display = 'none';
+                    });
+                }
+            }
+
+            // Update inventory UI
+            function updateInventoryUI() {
+                // Create inventory slots
+                const inventoryGrid = document.getElementById('inventory-grid');
+                if (inventoryGrid) {
+                    inventoryGrid.innerHTML = '';
+                    for (let i = 0; i < 36; i++) {
+                        const slot = document.createElement('div');
+                        slot.className = 'inventory-slot';
+                        slot.dataset.slot = i;
+                        inventoryGrid.appendChild(slot);
+                    }
+                }
+                
+                // Create hotbar slots with default blocks
+                const hotbar = document.getElementById('hotbar');
+                if (hotbar) {
+                    hotbar.innerHTML = '';
+                    
+                    // Default block types for hotbar
+                    const hotbarBlocks = ['grass', 'dirt', 'stone', 'wood', 'leaves', 'sand', 'water', 'brick', 'snow'];
+                    
+                    for (let i = 0; i < 9; i++) {
+                        const slot = document.createElement('div');
+                        slot.className = 'hotbar-slot';
+                        if (i === 0) {
+                            slot.classList.add('selected');
+                            selectedBlock = hotbarBlocks[i];
+                        }
+                        slot.dataset.slot = i;
+                        slot.dataset.block = hotbarBlocks[i];
+                        
+                        // Add block icon
+                        const blockIcon = document.createElement('div');
+                        blockIcon.style.width = '80%';
+                        blockIcon.style.height = '80%';
+                        blockIcon.style.margin = '10%';
+                        blockIcon.style.backgroundColor = blockMaterials[hotbarBlocks[i]].color.toString(16);
+                        slot.appendChild(blockIcon);
+                        
+                        // Add click event to select block
+                        slot.addEventListener('click', (e) => {
+                            e.stopPropagation();
+                            document.querySelectorAll('.hotbar-slot').forEach(s => s.classList.remove('selected'));
+                            slot.classList.add('selected');
+                            selectedBlock = slot.dataset.block;
+                            console.log('Selected block:', selectedBlock);
+                        });
+                        
+                        hotbar.appendChild(slot);
                     }
                 }
             }
-        });
 
-        document.addEventListener('pointerlockchange', () => {
-            isPointerLocked = document.pointerLockElement === renderer.domElement;
-        });
-
-        document.addEventListener('keydown', (e) => {
-            keys[e.code] = true;
-        });
-
-        document.addEventListener('keyup', (e) => {
-            keys[e.code] = false;
-        });
-
-        document.addEventListener('mousemove', (e) => {
-            if (isPointerLocked) {
-                camera.rotation.y -= e.movementX * 0.002;
-                camera.rotation.x -= e.movementY * 0.002;
-                camera.rotation.x = Math.max(-Math.PI/2, Math.min(Math.PI/2, camera.rotation.x));
-            } else {
-                // Update block preview
-                const rect = renderer.domElement.getBoundingClientRect();
-                mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
-                mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
-                raycaster.setFromCamera(mouse, camera);
-                const intersects = raycaster.intersectObjects(scene.children);
-                
-                if (intersects.length > 0 && selectedBlock) {
-                    const intersect = intersects[0];
-                    const position = intersect.object.position;
-                    const positionKey = `${Math.round(position.x)},${Math.round(position.y)},${Math.round(position.z)}`;
-                    updateBlockPreview(positionKey);
-                } else {
-                    hideBlockPreview();
+            // Add number key controls for hotbar selection
+            document.addEventListener('keydown', (e) => {
+                const keyNum = parseInt(e.key);
+                if (!isNaN(keyNum) && keyNum >= 1 && keyNum <= 9) {
+                    const index = keyNum - 1;
+                    const slots = document.querySelectorAll('.hotbar-slot');
+                    if (slots[index]) {
+                        slots.forEach(s => s.classList.remove('selected'));
+                        slots[index].classList.add('selected');
+                        selectedBlock = slots[index].dataset.block;
+                        console.log('Selected block:', selectedBlock);
+                    }
                 }
-            }
-        });
-
-        // Update world
-        function updateWorld(blocks) {
-            // Remove old blocks
-            Object.values(blockMeshes).forEach(mesh => {
-                scene.remove(mesh);
             });
-            blockMeshes = {};
 
-            // Add new blocks
-            Object.entries(blocks).forEach(([position, block]) => {
-                const [x, y, z] = position.split(',').map(Number);
-                const mesh = new THREE.Mesh(blockGeometry, blockMaterials[block.type]);
-                mesh.position.set(x, y, z);
-                mesh.castShadow = true;
-                mesh.receiveShadow = true;
-                scene.add(mesh);
-                blockMeshes[position] = mesh;
-            });
-        }
+            // Add biome indicator to UI
+            const biomeIndicator = document.createElement('div');
+            biomeIndicator.id = 'biome-indicator';
+            biomeIndicator.style.position = 'fixed';
+            biomeIndicator.style.top = '40px';
+            biomeIndicator.style.left = '10px';
+            biomeIndicator.style.padding = '5px 10px';
+            biomeIndicator.style.background = 'rgba(0, 0, 0, 0.5)';
+            biomeIndicator.style.color = 'white';
+            biomeIndicator.style.borderRadius = '5px';
+            document.body.appendChild(biomeIndicator);
+            biomeIndicator.textContent = 'Biome: Loading...';
 
-        // Set initial player state
-        let currentPlayer = {
-            id: 'local-player',
-            position: { x: 0, y: 2, z: 5 },
-            health: 100,
-            inventory: {
-                grass: 64,
-                dirt: 64,
-                stone: 64,
-                wood: 64,
-                leaves: 64,
-                sand: 64
-            }
-        };
+            // Initialize weather function variable before use in animate
+            let weatherUpdateFunction = () => {}; // Empty function as placeholder
 
-        // Player idle animation
-        let idleTime = 0;
-        const idleAnimation = () => {
-            idleTime += 0.02;
-            if (!keys['KeyW'] && !keys['KeyS'] && !keys['KeyA'] && !keys['KeyD']) {
-                const playerElement = document.getElementById(`player-${currentPlayer.id}`);
-                if (playerElement) {
-                    playerElement.style.transform = `translateY(${Math.sin(idleTime) * 2}px)`;
-                }
-            }
-        };
-
-        // Update animation loop
-        function animate() {
-            requestAnimationFrame(animate);
-
-            if (isPointerLocked) {
-                const moveSpeed = movementMode === 'run' ? 0.2 : movementMode === 'crouch' ? 0.05 : 0.1;
+            // Update animation loop with weather particles
+            function animate() {
+                requestAnimationFrame(animate);
                 
-                if (keys['KeyW']) {
-                    camera.translateZ(-moveSpeed);
+                // Debug frame counter
+                if (frameCount === undefined) {
+                    frameCount = 0;
                 }
-                if (keys['KeyS']) {
-                    camera.translateZ(moveSpeed);
+                if (frameCount % 60 === 0) {
+                    console.log('Frame:', frameCount, 'Camera position:', camera.position);
                 }
-                if (keys['KeyA']) {
-                    camera.translateX(-moveSpeed);
+                frameCount++;
+                
+                // Update physics and controls
+                if (isPointerLocked) {
+                    const moveVector = new THREE.Vector3();
+                    if (keys['KeyW']) moveVector.z -= moveSpeed;
+                    if (keys['KeyS']) moveVector.z += moveSpeed;
+                    if (keys['KeyA']) moveVector.x -= moveSpeed;
+                    if (keys['KeyD']) moveVector.x += moveSpeed;
+                    if (keys['Space']) moveVector.y += moveSpeed;
+                    if (keys['ShiftLeft']) moveVector.y -= moveSpeed;
+                    
+                    // Rotate move vector by camera rotation
+                    moveVector.applyQuaternion(camera.quaternion);
+                    camera.position.add(moveVector);
                 }
-                if (keys['KeyD']) {
-                    camera.translateX(moveSpeed);
+                
+                // Update day/night cycle
+                updateDayNight();
+                
+                // Update night objects visibility
+                updateNightObjects();
+                
+                // Update lighting based on time of day
+                updateLighting();
+                
+                // Update weather particles
+                if (weatherUpdateFunction) {
+                    weatherUpdateFunction();
                 }
-                if (keys['Space']) {
-                    camera.position.y += 0.1;
+                
+                // Update weather sounds
+                updateWeatherSounds();
+                
+                // Update biome indicator
+                updateBiomeIndicator();
+                
+                // Render the scene
+                try {
+                    renderer.render(scene, camera);
+                    if (frameCount % 60 === 0) {
+                        console.log('Render successful', frameCount);
+                    }
+                } catch (error) {
+                    console.error('Render error:', error);
                 }
             }
 
-            // Update sun position
-            sun.position.x = Math.cos(Date.now() * 0.0001) * 50;
-            sun.position.z = Math.sin(Date.now() * 0.0001) * 50;
-            directionalLight.position.copy(sun.position);
-
-            // Update idle animation
-            idleAnimation();
-
-            renderer.render(scene, camera);
-        }
-
-        // Handle window resize
-        window.addEventListener('resize', () => {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth * 0.66, window.innerHeight);
-        });
-
-        // Start animation
-        animate();
-
-        const socket = {
-            emit: () => {},
-            on: () => {}
-        };
-
-        const playerList = document.getElementById('playerList');
-        const status = document.getElementById('status');
-        const chatMessages = document.getElementById('chat-messages');
-        const messageInput = document.getElementById('message-input');
-        const sendMessageBtn = document.getElementById('send-message');
-        const inventoryGrid = document.getElementById('inventory-grid');
-        const selectedBlockSpan = document.getElementById('selected-block');
-        const blockCountSpan = document.getElementById('block-count');
-        let selectedBlock = null;
-        let movementMode = 'walk';
-        let movementSpeed = 1;
-
-        // Extended block types
-        const blockTypes = {
-            grass: { name: 'Grass', image: '🌱', hardness: 1 },
-            dirt: { name: 'Dirt', image: '🟫', hardness: 1 },
-            stone: { name: 'Stone', image: '🪨', hardness: 2 },
-            wood: { name: 'Wood', image: '🪵', hardness: 1.5 },
-            leaves: { name: 'Leaves', image: '🍃', hardness: 0.5 },
-            sand: { name: 'Sand', image: '🏖️', hardness: 1 },
-            water: { name: 'Water', image: '💧', hardness: 0 },
-            lava: { name: 'Lava', image: '🌋', hardness: 0 },
-            glass: { name: 'Glass', image: '🪟', hardness: 1 },
-            brick: { name: 'Brick', image: '🧱', hardness: 2 }
-        };
-
-        // Movement controls
-        const controls = {
-            'move-forward': { x: 0, z: -1 },
-            'move-backward': { x: 0, z: 1 },
-            'move-left': { x: -1, z: 0 },
-            'move-right': { x: 1, z: 0 },
-            'jump': { y: 1 }
-        };
-
-        // Block breaking state
-        let breakingBlock = null;
-        let breakingProgress = 0;
-        let breakingInterval = null;
-
-        // Movement mode buttons
-        document.getElementById('walk-mode').addEventListener('click', () => setMovementMode('walk'));
-        document.getElementById('run-mode').addEventListener('click', () => setMovementMode('run'));
-        document.getElementById('crouch-mode').addEventListener('click', () => setMovementMode('crouch'));
-
-        function setMovementMode(mode) {
-            movementMode = mode;
-            movementSpeed = mode === 'run' ? 2 : mode === 'crouch' ? 0.5 : 1;
+            // Initialize day/night cycle
+            initDayNight();
             
-            // Update button styles
-            document.querySelectorAll('.movement-mode button').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            document.getElementById(`${mode}-mode`).classList.add('active');
-
-            // Update player animation
-            if (currentPlayer) {
-                const playerElement = document.getElementById(`player-${currentPlayer.id}`);
-                if (playerElement) {
-                    playerElement.classList.remove('walking', 'running', 'crouching');
-                    playerElement.classList.add(mode === 'run' ? 'running' : mode === 'crouch' ? 'crouching' : 'walking');
-                }
-            }
-        }
-
-        Object.entries(controls).forEach(([id, movement]) => {
-            document.getElementById(id).addEventListener('click', () => {
-                if (currentPlayer) {
-                    socket.emit('playerMove', {
-                        id: currentPlayer.id,
-                        position: {
-                            x: currentPlayer.position.x + movement.x * movementSpeed,
-                            y: currentPlayer.position.y + (movement.y || 0),
-                            z: currentPlayer.position.z + movement.z * movementSpeed
-                        }
-                    });
-                }
-            });
-        });
-
-        // Initialize inventory
-        function initializeInventory() {
-            inventoryGrid.innerHTML = '';
-            Object.entries(blockTypes).forEach(([type, block]) => {
-                const slot = document.createElement('div');
-                slot.className = 'inventory-slot';
-                slot.dataset.type = type;
-                slot.innerHTML = `
-                    <div>${block.image}</div>
-                    <div class="block-count">0</div>
-                `;
-                slot.addEventListener('click', () => selectBlock(type));
-                inventoryGrid.appendChild(slot);
-            });
-        }
-
-        function selectBlock(type) {
-            selectedBlock = type;
-            selectedBlockSpan.textContent = blockTypes[type].name;
-            document.querySelectorAll('.inventory-slot').forEach(slot => {
-                slot.classList.remove('selected');
-            });
-            event.currentTarget.classList.add('selected');
-        }
-
-        // Chat functionality
-        sendMessageBtn.addEventListener('click', sendMessage);
-        messageInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                sendMessage();
-            }
-        });
-
-        function sendMessage() {
-            const message = messageInput.value.trim();
-            if (message && currentPlayer) {
-                socket.emit('chatMessage', {
-                    playerId: currentPlayer.id,
-                    message: message
-                });
-                messageInput.value = '';
-            }
-        }
-
-        function addChatMessage(message, type = 'player-message') {
-            const messageElement = document.createElement('div');
-            messageElement.className = `chat-message ${type}`;
-            messageElement.textContent = message;
-            chatMessages.appendChild(messageElement);
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-        }
-
-        socket.on('connect', () => {
-            status.textContent = 'Status: Connected';
-            status.className = 'connected';
-            addChatMessage('Connected to server', 'system-message');
+            // Initialize inventory
             initializeInventory();
-        });
+            
+            // Start animation
+            console.log('Starting animation loop');
+            animate();
+            console.log('Animation loop started');
+            
+            // Add a visible message on the canvas to confirm rendering
+            addChatMessage('Game world initialized! If you see a white screen, check console for errors.', 'system-message');
 
-        socket.on('disconnect', () => {
-            status.textContent = 'Status: Disconnected';
-            status.className = 'disconnected';
-            addChatMessage('Disconnected from server', 'system-message');
-        });
-
-        socket.on('gameState', (state) => {
-            updatePlayerList(state.players);
-            if (state.players[socket.id]) {
-                currentPlayer = state.players[socket.id];
-                updateInventory(state.players[socket.id].inventory);
-            }
-            updateWorld(state.blocks);
-        });
-
-        socket.on('playerJoin', (player) => {
-            addPlayer(player);
-            addChatMessage(`Player ${player.id.slice(0, 6)} joined the game`, 'system-message');
-        });
-
-        socket.on('playerLeave', (playerId) => {
-            removePlayer(playerId);
-            addChatMessage(`Player ${playerId.slice(0, 6)} left the game`, 'system-message');
-        });
-
-        socket.on('chatMessage', (data) => {
-            const player = gameState.players[data.playerId];
-            if (player) {
-                addChatMessage(`${player.id.slice(0, 6)}: ${data.message}`);
-            }
-        });
-
-        socket.on('playerUpdate', (player) => {
-            if (player.id === currentPlayer?.id) {
-                currentPlayer = player;
-                updateInventory(player.inventory);
-            }
-            updatePlayer(player);
-        });
-
-        socket.on('blockUpdate', (data) => {
-            if (data.type === null) {
-                if (blockMeshes[data.position]) {
-                    scene.remove(blockMeshes[data.position]);
-                    delete blockMeshes[data.position];
-                }
-            } else {
-                const [x, y, z] = data.position.split(',').map(Number);
-                const mesh = new THREE.Mesh(blockGeometry, blockMaterials[data.type]);
-                mesh.position.set(x, y, z);
-                mesh.castShadow = true;
-                mesh.receiveShadow = true;
-                scene.add(mesh);
-                blockMeshes[data.position] = mesh;
-            }
-        });
-
-        let gameState = { players: {}, blocks: {} };
-
-        function updatePlayerList(players) {
-            gameState.players = players;
-            playerList.innerHTML = '';
-            Object.values(players).forEach(player => {
-                addPlayer(player);
+            // Add event listeners for settings button
+            document.getElementById('settings-button').addEventListener('click', function(e) {
+                e.stopPropagation(); // Prevent event bubbling to the document
+                document.getElementById('game-settings').classList.toggle('visible');
             });
-        }
 
-        function updateInventory(inventory) {
-            if (!inventory) return;
-            Object.entries(inventory).forEach(([type, count]) => {
-                const slot = inventoryGrid.querySelector(`[data-type="${type}"]`);
-                if (slot) {
-                    slot.querySelector('.block-count').textContent = count;
-                }
+            // Prevent pointer lock when clicking on UI elements
+            document.querySelectorAll('#ui-container, #game-settings').forEach(element => {
+                element.addEventListener('click', function(e) {
+                    e.stopPropagation(); // Prevent the click from bubbling to document
+                });
             });
-        }
 
-        function addPlayer(player) {
-            const playerElement = document.createElement('div');
-            playerElement.className = 'player';
-            playerElement.id = `player-${player.id}`;
-            playerElement.innerHTML = `
-                <h3>Player ${player.id.slice(0, 6)}</h3>
-                <p>Position: ${Math.round(player.position.x)}, ${Math.round(player.position.y)}, ${Math.round(player.position.z)}</p>
-                <p>Health: ${player.health}</p>
-                <p>Mode: ${player.movementMode || 'walk'}</p>
-            `;
-            playerList.appendChild(playerElement);
-        }
-
-        function updatePlayer(player) {
-            const playerElement = document.getElementById(`player-${player.id}`);
-            if (playerElement) {
-                playerElement.innerHTML = `
-                    <h3>Player ${player.id.slice(0, 6)}</h3>
-                    <p>Position: ${Math.round(player.position.x)}, ${Math.round(player.position.y)}, ${Math.round(player.position.z)}</p>
-                    <p>Health: ${player.health}</p>
-                    <p>Mode: ${player.movementMode || 'walk'}</p>
-                `;
-
-                // Update animation classes
-                playerElement.classList.remove('walking', 'running', 'crouching', 'jumping');
-                if (player.movementMode === 'run') {
-                    playerElement.classList.add('running');
-                } else if (player.movementMode === 'crouch') {
-                    playerElement.classList.add('crouching');
-                } else {
-                    playerElement.classList.add('walking');
-                }
-            }
-        }
-
-        function removePlayer(playerId) {
-            const playerElement = document.getElementById(`player-${playerId}`);
-            if (playerElement) {
-                playerElement.remove();
-            }
-        }
-
-        // Block interaction
-        document.addEventListener('mousedown', (e) => {
-            if (selectedBlock && currentPlayer) {
-                const target = e.target;
-                if (target.classList.contains('block')) {
-                    startBreakingBlock(target);
-                }
-            }
-        });
-
-        document.addEventListener('mouseup', () => {
-            stopBreakingBlock();
-        });
-
-        document.addEventListener('mousemove', (e) => {
-            if (selectedBlock && currentPlayer) {
-                const target = e.target;
-                if (target.classList.contains('block')) {
-                    updateBlockPreview(target);
-                } else {
-                    hideBlockPreview();
-                }
-            }
-        });
-
-        function startBreakingBlock(block) {
-            if (breakingBlock) return;
-            
-            const position = block.dataset.position;
-            const type = gameState.blocks[position]?.type;
-            if (!type) return;
-
-            breakingBlock = block;
-            breakingProgress = 0;
-            const hardness = blockTypes[type].hardness;
-            
-            // Show breaking progress
-            const progressBar = document.querySelector('.breaking-progress-bar');
-            document.getElementById('breaking-progress').classList.add('visible');
-            
-            // Start breaking animation
-            breakingInterval = setInterval(() => {
-                breakingProgress += 1 / (hardness * 10);
-                progressBar.style.width = `${breakingProgress * 100}%`;
+            // Generate terrain
+            function generateTerrain() {
+                const blocks = {};
+                const chunkSize = CHUNK_SIZE;
+                const heightScale = 10;
+                const noiseScale = 0.05;
                 
-                if (breakingProgress >= 1) {
-                    socket.emit('blockUpdate', {
-                        position: position,
-                        type: null
-                    });
-                    stopBreakingBlock();
+                for (let x = -chunkSize; x < chunkSize; x++) {
+                    for (let z = -chunkSize; z < chunkSize; z++) {
+                        // Get biome
+                        const biome = getBiome(x, z);
+                        
+                        // Generate height based on noise
+                        const noise = simplex.noise2D(x * noiseScale, z * noiseScale);
+                        let height = Math.floor((noise + 1) * heightScale);
+                        
+                        // Adjust height based on biome
+                        if (biome === 'Mountains') {
+                            height += 5;
+                        } else if (biome === 'Snowy Mountains') {
+                            height += 8;
+                        } else if (biome === 'Beach') {
+                            height = 1;
+                        }
+                        
+                        // Add blocks at different heights
+                        for (let y = 0; y <= height; y++) {
+                            const positionKey = `${x},${y},${z}`;
+                            let blockType = 'dirt';
+                            
+                            // Top layer
+                            if (y === height) {
+                                if (biome === 'Desert') {
+                                    blockType = 'sand';
+                                } else if (biome === 'Beach') {
+                                    blockType = 'sand';
+                                } else if (biome === 'Snowy Mountains' && height > 10) {
+                                    blockType = 'snow';
+                                } else {
+                                    blockType = 'grass';
+                                }
+                            } 
+                            // Bottom layer
+                            else if (y < height - 3) {
+                                blockType = 'stone';
+                            }
+                            
+                            // Add water for low areas
+                            if (y <= 1 && blockType !== 'sand') {
+                                blockType = 'water';
+                            }
+                            
+                            blocks[positionKey] = { type: blockType };
+                        }
+                        
+                        // Add trees randomly in forest biomes
+                        if (biome === 'Forest' && Math.random() < 0.1) {
+                            const treeHeight = 4 + Math.floor(Math.random() * 3);
+                            // Tree trunk
+                            for (let y = height + 1; y < height + treeHeight; y++) {
+                                blocks[`${x},${y},${z}`] = { type: 'wood' };
+                            }
+                            // Tree leaves
+                            for (let lx = -2; lx <= 2; lx++) {
+                                for (let ly = 0; ly <= 2; ly++) {
+                                    for (let lz = -2; lz <= 2; lz++) {
+                                        const leafX = x + lx;
+                                        const leafY = height + treeHeight + ly;
+                                        const leafZ = z + lz;
+                                        if (Math.random() < 0.7 && Math.abs(lx) + Math.abs(ly) + Math.abs(lz) < 5) {
+                                            blocks[`${leafX},${leafY},${leafZ}`] = { type: 'leaves' };
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
-            }, 50);
-        }
-
-        function stopBreakingBlock() {
-            if (breakingInterval) {
-                clearInterval(breakingInterval);
-                breakingInterval = null;
+                
+                console.log(`Generated terrain with ${Object.keys(blocks).length} blocks`);
+                return blocks;
             }
-            breakingBlock = null;
-            breakingProgress = 0;
-            document.getElementById('breaking-progress').classList.remove('visible');
-            document.querySelector('.breaking-progress-bar').style.width = '0%';
-        }
-
-        function updateBlockPreview(block) {
-            const preview = document.getElementById('block-preview');
-            const position = block.dataset.position;
-            const type = gameState.blocks[position]?.type;
             
-            if (type) {
-                preview.innerHTML = blockTypes[type].image;
-                preview.classList.add('visible');
-            } else {
-                preview.innerHTML = blockTypes[selectedBlock].image;
-                preview.classList.add('visible');
+            // Initialize the world with terrain
+            let initialBlocks = generateTerrain();
+            updateWorld(initialBlocks);
+
+            // Weather system
+            const weatherTypes = {
+                clear: { type: 'clear', particleCount: 0, color: 0xffffff },
+                rain: { type: 'rain', particleCount: 1000, color: 0x99ccff },
+                snow: { type: 'snow', particleCount: 500, color: 0xffffff }
+            };
+            
+            let weatherParticles = [];
+            
+            function createWeatherParticles(weatherType) {
+                // Remove old particles
+                weatherParticles.forEach(particle => {
+                    scene.remove(particle);
+                });
+                weatherParticles = [];
+                
+                if (weatherType === 'clear') return;
+                
+                const weather = weatherTypes[weatherType];
+                const particleGeometry = new THREE.BufferGeometry();
+                const particlePositions = [];
+                
+                // Create particles in a box above the player
+                for (let i = 0; i < weather.particleCount; i++) {
+                    const x = Math.random() * 100 - 50;
+                    const y = Math.random() * 20 + 20;
+                    const z = Math.random() * 100 - 50;
+                    particlePositions.push(x, y, z);
+                }
+                
+                particleGeometry.setAttribute('position', new THREE.Float32BufferAttribute(particlePositions, 3));
+                
+                // Create material based on weather type
+                const particleMaterial = new THREE.PointsMaterial({
+                    color: weather.color,
+                    size: weatherType === 'rain' ? 0.1 : 0.3,
+                    transparent: true,
+                    opacity: 0.6
+                });
+                
+                const particles = new THREE.Points(particleGeometry, particleMaterial);
+                scene.add(particles);
+                weatherParticles.push(particles);
+                
+                // Add particle animation to animate function
+                const updateWeatherParticles = () => {
+                    const positions = particleGeometry.attributes.position.array;
+                    
+                    for (let i = 0; i < positions.length; i += 3) {
+                        // Move particles down
+                        positions[i + 1] -= weatherType === 'rain' ? 0.2 : 0.05;
+                        
+                        // If snow, add some horizontal movement
+                        if (weatherType === 'snow') {
+                            positions[i] += Math.sin(Date.now() * 0.001 + i) * 0.01;
+                            positions[i + 2] += Math.cos(Date.now() * 0.001 + i) * 0.01;
+                        }
+                        
+                        // Reset particles that go below ground
+                        if (positions[i + 1] < 0) {
+                            positions[i] = Math.random() * 100 - 50 + camera.position.x;
+                            positions[i + 1] = Math.random() * 20 + 20;
+                            positions[i + 2] = Math.random() * 100 - 50 + camera.position.z;
+                        }
+                    }
+                    
+                    particleGeometry.attributes.position.needsUpdate = true;
+                };
+                
+                return updateWeatherParticles;
             }
-        }
-
-        function hideBlockPreview() {
-            document.getElementById('block-preview').classList.remove('visible');
-        }
-
-        // Add some initial blocks
-        const initialBlocks = {
-            '0,0,0': { type: 'grass' },
-            '1,0,0': { type: 'dirt' },
-            '2,0,0': { type: 'stone' },
-            '0,1,0': { type: 'wood' },
-            '1,1,0': { type: 'leaves' },
-            '2,1,0': { type: 'sand' }
-        };
-
-        // Update world with initial blocks
-        updateWorld(initialBlocks);
-
-        // Initialize inventory with initial blocks
-        initializeInventory();
-        updateInventory(currentPlayer.inventory);
-
-        // Update status to show we're in local mode
-        status.textContent = 'Status: Local Mode';
-        status.className = 'connected';
+            
+            // Function to change weather
+            function changeWeather() {
+                // Get the biome at the player's position
+                const biome = getBiome(camera.position.x, camera.position.z);
+                
+                // Set weather based on biome and random chance
+                const chance = Math.random();
+                if (biome === 'Snowy Mountains') {
+                    currentWeather = chance < 0.7 ? 'snow' : 'clear';
+                } else if (biome === 'Mountains' || biome === 'Forest') {
+                    currentWeather = chance < 0.3 ? 'rain' : 'clear';
+                } else if (biome === 'Plains') {
+                    currentWeather = chance < 0.2 ? 'rain' : 'clear';
+                } else if (biome === 'Desert') {
+                    currentWeather = 'clear';
+                } else {
+                    currentWeather = chance < 0.1 ? 'rain' : 'clear';
+                }
+                
+                // Create weather particles
+                weatherUpdateFunction = createWeatherParticles(currentWeather);
+                
+                // Show weather message
+                addChatMessage(`Weather changed to ${currentWeather}!`, 'system-message');
+                
+                // Schedule next weather change
+                setTimeout(changeWeather, 30000 + Math.random() * 60000);
+            }
+            
+            // Initialize weather
+            changeWeather();
+        });
     </script>
 </body>
 </html> 
