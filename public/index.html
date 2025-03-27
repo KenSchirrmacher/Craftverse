@@ -1350,7 +1350,7 @@
         // Set initial camera rotation properties
         camera.rotation.order = 'YXZ'; // Important for proper FPS camera
         camera.lookAt(0, 0, 0);
-        
+
         // Initialize pitch and yaw based on initial camera rotation
         pitch = camera.rotation.x;
         yaw = camera.rotation.y;
@@ -1423,7 +1423,7 @@
             // Prevent context menu
             document.addEventListener('contextmenu', (e) => {
                 e.preventDefault();
-            });
+        });
 
         document.addEventListener('pointerlockchange', () => {
             isPointerLocked = document.pointerLockElement === renderer.domElement;
@@ -1503,7 +1503,7 @@
                     // Update crosshair color based on interaction
                     if (selectedBlock) {
                         crosshair.style.borderColor = 'lime'; // Place mode
-                    } else {
+                } else {
                         crosshair.style.borderColor = 'red';  // Break mode
                     }
                 } else {
@@ -1794,7 +1794,7 @@
             // Update inventory UI
             function updateInventoryUI() {
                 // Create inventory slots
-                const inventoryGrid = document.getElementById('inventory-grid');
+        const inventoryGrid = document.getElementById('inventory-grid');
                 if (inventoryGrid) {
             inventoryGrid.innerHTML = '';
                     for (let i = 0; i < 36; i++) {
