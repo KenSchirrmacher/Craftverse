@@ -1,65 +1,105 @@
 const fs = require('fs');
 const path = require('path');
 
-// Save directory
-const SAVE_DIR = path.join(__dirname, 'saves');
-
-// Ensure save directory exists
-if (!fs.existsSync(SAVE_DIR)) {
-    fs.mkdirSync(SAVE_DIR);
+// Create saves directory if it doesn't exist
+const savesDir = path.join(__dirname, '../saves');
+if (!fs.existsSync(savesDir)) {
+  fs.mkdirSync(savesDir);
 }
 
-// Save game state
-function saveGame(worldName, players, blocks) {
+// Save game state to file
+function saveGame(worldName, players, blocks, mobs) {
+  try {
     const saveData = {
-        players,
-        blocks,
-        timestamp: Date.now()
+      timestamp: Date.now(),
+      players,
+      blocks,
+      mobs
     };
 
-    const savePath = path.join(SAVE_DIR, `${worldName}.json`);
-    fs.writeFileSync(savePath, JSON.stringify(saveData, null, 2));
+    const saveFile = path.join(savesDir, `${worldName}.json`);
+    fs.writeFileSync(saveFile, JSON.stringify(saveData, null, 2));
+    
+    console.log(`Game saved to ${saveFile}`);
     return true;
-}
-
-// Load game state
-function loadGame(worldName) {
-    const savePath = path.join(SAVE_DIR, `${worldName}.json`);
-    
-    if (!fs.existsSync(savePath)) {
-        return null;
-    }
-
-    try {
-        const saveData = JSON.parse(fs.readFileSync(savePath, 'utf8'));
-        return saveData;
-    } catch (error) {
-        console.error('Error loading save:', error);
-        return null;
-    }
-}
-
-// List available saves
-function listSaves() {
-    return fs.readdirSync(SAVE_DIR)
-        .filter(file => file.endsWith('.json'))
-        .map(file => file.replace('.json', ''));
-}
-
-// Delete save
-function deleteSave(worldName) {
-    const savePath = path.join(SAVE_DIR, `${worldName}.json`);
-    
-    if (fs.existsSync(savePath)) {
-        fs.unlinkSync(savePath);
-        return true;
-    }
+  } catch (error) {
+    console.error('Error saving game:', error);
     return false;
+  }
+}
+
+// Load game state from file
+function loadGame(worldName) {
+  try {
+    const saveFile = path.join(savesDir, `${worldName}.json`);
+    
+    if (!fs.existsSync(saveFile)) {
+      console.error(`Save file not found: ${saveFile}`);
+      return null;
+    }
+    
+    const saveData = JSON.parse(fs.readFileSync(saveFile, 'utf8'));
+    console.log(`Game loaded from ${saveFile}`);
+    
+    return saveData;
+  } catch (error) {
+    console.error('Error loading game:', error);
+    return null;
+  }
+}
+
+// List available saved games
+function listSaves() {
+  try {
+    const files = fs.readdirSync(savesDir);
+    const saves = files
+      .filter(file => file.endsWith('.json'))
+      .map(file => {
+        const worldName = file.replace('.json', '');
+        try {
+          const saveData = JSON.parse(fs.readFileSync(path.join(savesDir, file), 'utf8'));
+          return {
+            name: worldName,
+            timestamp: saveData.timestamp
+          };
+        } catch (error) {
+          return {
+            name: worldName,
+            timestamp: null,
+            error: 'Corrupted save file'
+          };
+        }
+      });
+    
+    return saves;
+  } catch (error) {
+    console.error('Error listing saves:', error);
+    return [];
+  }
+}
+
+// Delete a saved game
+function deleteSave(worldName) {
+  try {
+    const saveFile = path.join(savesDir, `${worldName}.json`);
+    
+    if (!fs.existsSync(saveFile)) {
+      console.error(`Save file not found: ${saveFile}`);
+      return false;
+    }
+    
+    fs.unlinkSync(saveFile);
+    console.log(`Save deleted: ${saveFile}`);
+    return true;
+  } catch (error) {
+    console.error('Error deleting save:', error);
+    return false;
+  }
 }
 
 module.exports = {
-    saveGame,
-    loadGame,
-    listSaves,
-    deleteSave
+  saveGame,
+  loadGame,
+  listSaves,
+  deleteSave
 }; 

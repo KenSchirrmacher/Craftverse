@@ -3463,6 +3463,511 @@
                 updateRedstonePower(x, y, z);
             }
         }
+
+        // Global variables for mob tracking
+        let mobs = {};
+        let projectiles = {};
+        let mobModels = {};
+        let projectileModels = {};
+        const MOB_SCALE = 0.5;
+
+        // Set up mob textures
+        const mobTextures = {
+            sheep: createColorTexture('#EEEEEE', 'sheep'),
+            cow: createColorTexture('#8B4513', 'cow'),
+            pig: createColorTexture('#FFC0CB', 'pig'),
+            chicken: createColorTexture('#F5F5DC', 'chicken'),
+            wolf: createColorTexture('#A0522D', 'wolf'),
+            spider: createColorTexture('#222222', 'spider'),
+            enderman: createColorTexture('#000000', 'enderman'),
+            zombie: createColorTexture('#2E8B57', 'zombie'),
+            skeleton: createColorTexture('#E0E0E0', 'skeleton'),
+            creeper: createColorTexture('#00FF00', 'creeper')
+        };
+
+        // Mob geometry definitions
+        const mobGeometries = {
+            sheep: new THREE.BoxGeometry(1, 0.8, 1.2),
+            cow: new THREE.BoxGeometry(1.4, 1.4, 0.9),
+            pig: new THREE.BoxGeometry(1.2, 0.9, 0.9),
+            chicken: new THREE.BoxGeometry(0.6, 0.7, 0.6),
+            wolf: new THREE.BoxGeometry(0.8, 0.8, 1.2),
+            spider: new THREE.BoxGeometry(1.4, 0.5, 1.4),
+            enderman: new THREE.BoxGeometry(0.6, 3, 0.6),
+            zombie: new THREE.BoxGeometry(0.6, 1.8, 0.6),
+            skeleton: new THREE.BoxGeometry(0.6, 1.8, 0.6),
+            creeper: new THREE.BoxGeometry(0.6, 1.8, 0.6)
+        };
+
+        // Handle receiving game state update with mobs
+        socket.on('gameState', function(data) {
+            // Handle existing code for players and blocks
+            // ...
+
+            // Handle mobs
+            if (data.mobs) {
+                mobs = data.mobs;
+                updateMobModels();
+            }
+
+            // Handle projectiles
+            if (data.projectiles) {
+                projectiles = data.projectiles;
+                updateProjectileModels();
+            }
+        });
+
+        // Handle mob updates
+        socket.on('mobUpdate', function(updatedMobs) {
+            // Update mob data
+            for (const mobId in updatedMobs) {
+                // If it's a new mob, add it
+                if (!mobs[mobId]) {
+                    mobs[mobId] = updatedMobs[mobId];
+                    // Create new mob model
+                    createMobModel(mobId, mobs[mobId]);
+                } else {
+                    // Update existing mob
+                    mobs[mobId] = updatedMobs[mobId];
+                    // Update model position/rotation
+                    updateMobModel(mobId, mobs[mobId]);
+                }
+            }
+
+            // Remove mobs that no longer exist
+            for (const mobId in mobs) {
+                if (!updatedMobs[mobId]) {
+                    removeMob(mobId);
+                }
+            }
+        });
+
+        // Handle projectile updates
+        socket.on('projectileUpdate', function(updatedProjectiles) {
+            // Update projectile data
+            for (const projId in updatedProjectiles) {
+                // If it's a new projectile, add it
+                if (!projectiles[projId]) {
+                    projectiles[projId] = updatedProjectiles[projId];
+                    // Create new projectile model
+                    createProjectileModel(projId, projectiles[projId]);
+                } else {
+                    // Update existing projectile
+                    projectiles[projId] = updatedProjectiles[projId];
+                    // Update model position
+                    updateProjectileModel(projId, projectiles[projId]);
+                }
+            }
+
+            // Remove projectiles that no longer exist
+            for (const projId in projectiles) {
+                if (!updatedProjectiles[projId]) {
+                    removeProjectile(projId);
+                }
+            }
+        });
+
+        // Handle attack result
+        socket.on('attackResult', function(result) {
+            if (result.success) {
+                // Show feedback (e.g., floating damage number)
+                if (result.died) {
+                    addChatMessage(`You killed a mob!`, 'system-message');
+                }
+            }
+        });
+
+        // Handle interaction result
+        socket.on('interactResult', function(result) {
+            if (result.success) {
+                if (result.wool) {
+                    addChatMessage(`You sheared a sheep and got wool!`, 'system-message');
+                } else if (result.item) {
+                    addChatMessage(`You got a ${result.item.type}!`, 'system-message');
+                } else if (result.tamed !== undefined) {
+                    if (result.tamed) {
+                        addChatMessage(`You tamed the wolf!`, 'system-message');
+                    } else {
+                        addChatMessage(`The wolf couldn't be tamed. Try again!`, 'system-message');
+                    }
+                } else if (result.sitting !== undefined) {
+                    addChatMessage(`The wolf is now ${result.sitting ? 'sitting' : 'standing'}.`, 'system-message');
+                }
+            } else if (result.error) {
+                addChatMessage(`Interaction failed: ${result.error}`, 'system-message');
+            }
+        });
+
+        // Create mob model
+        function createMobModel(mobId, mobData) {
+            if (!mobGeometries[mobData.type]) {
+                console.error(`No geometry defined for mob type: ${mobData.type}`);
+                return;
+            }
+
+            // Create material based on mob type
+            const material = new THREE.MeshPhongMaterial({ 
+                map: mobTextures[mobData.type],
+                shininess: 0
+            });
+
+            // Create mesh
+            const mesh = new THREE.Mesh(mobGeometries[mobData.type], material);
+            mesh.position.set(mobData.position.x, mobData.position.y, mobData.position.z);
+            mesh.rotation.y = mobData.rotation.y;
+            mesh.castShadow = true;
+            mesh.receiveShadow = true;
+            mesh.userData = { mobId };
+
+            // Add health bar
+            const healthBarContainer = createHealthBar(mobData.health, mobData.maxHealth);
+            healthBarContainer.position.y = 1.5; // Position above mob
+            mesh.add(healthBarContainer);
+
+            // Add to scene
+            scene.add(mesh);
+            mobModels[mobId] = {
+                mesh,
+                healthBarContainer,
+                type: mobData.type
+            };
+
+            // Add special features based on mob type
+            addSpecialMobFeatures(mobId, mobData);
+        }
+
+        // Add special features to mobs based on their type
+        function addSpecialMobFeatures(mobId, mobData) {
+            const model = mobModels[mobId];
+            if (!model) return;
+
+            // Clear any existing special features
+            if (model.specialFeatures) {
+                model.specialFeatures.forEach(feature => {
+                    model.mesh.remove(feature);
+                });
+            }
+            model.specialFeatures = [];
+
+            switch (mobData.type) {
+                case 'sheep':
+                    // Add wool if the sheep has it
+                    if (mobData.hasWool) {
+                        const woolColor = mobData.woolColor || 'white';
+                        const woolMaterial = new THREE.MeshPhongMaterial({ 
+                            color: getColorFromName(woolColor),
+                            shininess: 0
+                        });
+                        const woolMesh = new THREE.Mesh(
+                            new THREE.BoxGeometry(1.2, 1, 1.4),
+                            woolMaterial
+                        );
+                        model.mesh.add(woolMesh);
+                        model.specialFeatures.push(woolMesh);
+                    }
+                    break;
+
+                case 'wolf':
+                    // Add collar if tamed
+                    if (mobData.tamed) {
+                        const collarColor = mobData.collarColor || 'red';
+                        const collarMaterial = new THREE.MeshPhongMaterial({ 
+                            color: getColorFromName(collarColor),
+                            shininess: 0
+                        });
+                        const collarMesh = new THREE.Mesh(
+                            new THREE.TorusGeometry(0.3, 0.05, 8, 16),
+                            collarMaterial
+                        );
+                        collarMesh.position.set(0, 0.3, 0.4);
+                        collarMesh.rotation.x = Math.PI / 2;
+                        model.mesh.add(collarMesh);
+                        model.specialFeatures.push(collarMesh);
+                    }
+                    break;
+
+                case 'creeper':
+                    // Add flashing effect if fuse is lit
+                    if (mobData.fuseLit) {
+                        const flashIntensity = Math.sin(Date.now() * 0.01) * 0.5 + 0.5;
+                        model.mesh.material.emissive = new THREE.Color(1, 1, 1).multiplyScalar(flashIntensity);
+                        
+                        // Make creeper expand slightly based on fuse progress
+                        const scale = 1 + mobData.fuseProgress * 0.2;
+                        model.mesh.scale.set(scale, scale, scale);
+                    } else {
+                        model.mesh.material.emissive = new THREE.Color(0, 0, 0);
+                        model.mesh.scale.set(1, 1, 1);
+                    }
+                    break;
+                    
+                case 'enderman':
+                    // Add glowing eyes
+                    const eyesMaterial = new THREE.MeshBasicMaterial({ color: 0xFF00FF });
+                    const leftEye = new THREE.Mesh(
+                        new THREE.BoxGeometry(0.1, 0.1, 0.1),
+                        eyesMaterial
+                    );
+                    leftEye.position.set(-0.15, 1.3, -0.25);
+                    model.mesh.add(leftEye);
+                    model.specialFeatures.push(leftEye);
+                    
+                    const rightEye = new THREE.Mesh(
+                        new THREE.BoxGeometry(0.1, 0.1, 0.1),
+                        eyesMaterial
+                    );
+                    rightEye.position.set(0.15, 1.3, -0.25);
+                    model.mesh.add(rightEye);
+                    model.specialFeatures.push(rightEye);
+                    
+                    // Add held block if any
+                    if (mobData.heldBlock) {
+                        const blockMaterial = new THREE.MeshPhongMaterial({ 
+                            color: getBlockColor(mobData.heldBlock),
+                            shininess: 0
+                        });
+                        const blockMesh = new THREE.Mesh(
+                            new THREE.BoxGeometry(0.5, 0.5, 0.5),
+                            blockMaterial
+                        );
+                        blockMesh.position.set(0, -1.3, 0);
+                        model.mesh.add(blockMesh);
+                        model.specialFeatures.push(blockMesh);
+                    }
+                    break;
+                    
+                case 'zombie':
+                case 'skeleton':
+                    // Add burning effect if applicable
+                    if (mobData.isBurning) {
+                        const fireMaterial = new THREE.MeshBasicMaterial({ 
+                            color: 0xFF5500,
+                            transparent: true,
+                            opacity: 0.7
+                        });
+                        const fireMesh = new THREE.Mesh(
+                            new THREE.BoxGeometry(0.7, 2, 0.7),
+                            fireMaterial
+                        );
+                        model.mesh.add(fireMesh);
+                        model.specialFeatures.push(fireMesh);
+                    }
+                    break;
+            }
+        }
+
+        // Update mob model
+        function updateMobModel(mobId, mobData) {
+            const model = mobModels[mobId];
+            if (!model) return;
+
+            // Update position and rotation
+            model.mesh.position.set(mobData.position.x, mobData.position.y, mobData.position.z);
+            model.mesh.rotation.y = mobData.rotation.y;
+
+            // Update health bar
+            updateHealthBar(model.healthBarContainer, mobData.health, mobData.maxHealth);
+
+            // Update special features
+            addSpecialMobFeatures(mobId, mobData);
+
+            // Hide if dead
+            model.mesh.visible = !mobData.dead;
+        }
+
+        // Remove mob
+        function removeMob(mobId) {
+            const model = mobModels[mobId];
+            if (model) {
+                scene.remove(model.mesh);
+                delete mobModels[mobId];
+            }
+            delete mobs[mobId];
+        }
+
+        // Update all mob models
+        function updateMobModels() {
+            // Remove all existing mob models
+            for (const mobId in mobModels) {
+                scene.remove(mobModels[mobId].mesh);
+            }
+            mobModels = {};
+
+            // Create new models for all mobs
+            for (const mobId in mobs) {
+                createMobModel(mobId, mobs[mobId]);
+            }
+        }
+
+        // Create projectile model
+        function createProjectileModel(projId, projData) {
+            const geometry = new THREE.BoxGeometry(0.1, 0.1, 0.5);
+            const material = new THREE.MeshBasicMaterial({ color: 0x444444 });
+            const mesh = new THREE.Mesh(geometry, material);
+
+            // Set position
+            mesh.position.set(projData.position.x, projData.position.y, projData.position.z);
+
+            // Set rotation to face direction
+            const dir = projData.direction;
+            mesh.rotation.y = Math.atan2(dir.x, dir.z);
+            mesh.rotation.x = Math.atan2(dir.y, Math.sqrt(dir.x * dir.x + dir.z * dir.z));
+
+            // Add to scene
+            scene.add(mesh);
+            projectileModels[projId] = { mesh };
+        }
+
+        // Update projectile model
+        function updateProjectileModel(projId, projData) {
+            const model = projectileModels[projId];
+            if (!model) return;
+
+            // Update position
+            model.mesh.position.set(projData.position.x, projData.position.y, projData.position.z);
+
+            // Update rotation to face direction
+            const dir = projData.direction;
+            model.mesh.rotation.y = Math.atan2(dir.x, dir.z);
+            model.mesh.rotation.x = Math.atan2(dir.y, Math.sqrt(dir.x * dir.x + dir.z * dir.z));
+        }
+
+        // Remove projectile
+        function removeProjectile(projId) {
+            const model = projectileModels[projId];
+            if (model) {
+                scene.remove(model.mesh);
+                delete projectileModels[projId];
+            }
+            delete projectiles[projId];
+        }
+
+        // Create health bar for mobs
+        function createHealthBar(health, maxHealth) {
+            const container = new THREE.Object3D();
+            
+            // Background
+            const bgGeometry = new THREE.PlaneGeometry(1, 0.1);
+            const bgMaterial = new THREE.MeshBasicMaterial({ color: 0x333333 });
+            const background = new THREE.Mesh(bgGeometry, bgMaterial);
+            container.add(background);
+            
+            // Health bar
+            const healthPercent = health / maxHealth;
+            const barGeometry = new THREE.PlaneGeometry(healthPercent, 0.08);
+            const barMaterial = new THREE.MeshBasicMaterial({ color: getHealthColor(healthPercent) });
+            const healthBar = new THREE.Mesh(barGeometry, barMaterial);
+            healthBar.position.z = 0.01; // Slightly in front of background
+            healthBar.position.x = (healthPercent - 1) / 2; // Align left
+            container.add(healthBar);
+            
+            // Make it always face the camera
+            container.rotation.x = -Math.PI / 2;
+            
+            // Store references
+            container.userData = { healthBar, background };
+            
+            return container;
+        }
+
+        // Update health bar
+        function updateHealthBar(container, health, maxHealth) {
+            if (!container || !container.userData.healthBar) return;
+            
+            const healthBar = container.userData.healthBar;
+            const healthPercent = health / maxHealth;
+            
+            // Update scale
+            healthBar.scale.x = healthPercent;
+            healthBar.position.x = (healthPercent - 1) / 2; // Align left
+            
+            // Update color
+            healthBar.material.color.setHex(getHealthColor(healthPercent));
+        }
+
+        // Get color for health bar based on percentage
+        function getHealthColor(percent) {
+            if (percent > 0.5) {
+                // Green to yellow
+                return 0x00FF00;
+            } else if (percent > 0.25) {
+                // Yellow to orange
+                return 0xFFFF00;
+            } else {
+                // Orange to red
+                return 0xFF0000;
+            }
+        }
+
+        // Get color from name (for wool, collar, etc.)
+        function getColorFromName(colorName) {
+            const colorMap = {
+                'white': 0xFFFFFF,
+                'orange': 0xD87F33,
+                'magenta': 0xB24CD8,
+                'light_blue': 0x6699D8,
+                'yellow': 0xE5E533,
+                'lime': 0x7FCC19,
+                'pink': 0xF27FA5,
+                'gray': 0x4C4C4C,
+                'light_gray': 0x999999,
+                'cyan': 0x4C7F99,
+                'purple': 0x7F3FB2,
+                'blue': 0x334CB2,
+                'brown': 0x664C33,
+                'green': 0x667F33,
+                'red': 0x993333,
+                'black': 0x191919
+            };
+            
+            return colorMap[colorName] || 0xFFFFFF;
+        }
+
+        // Get block color for held blocks
+        function getBlockColor(blockType) {
+            const blockColorMap = {
+                'grass': 0x3baa35,
+                'dirt': 0x8b5a34,
+                'stone': 0x888888,
+                'sand': 0xe0d993,
+                'gravel': 0x777777,
+                'clay': 0xc6c6c6
+            };
+            
+            return blockColorMap[blockType] || 0xAAAAAA;
+        }
+
+        // Update raycasting to handle mob interaction
+        function raycast() {
+            raycaster.setFromCamera(mouse, camera);
+            
+            // Get all raycasting targets - both blocks and mobs
+            const rayCastTargets = [];
+            
+            // Add blocks to targets
+            for (const blockId in blockMeshes) {
+                rayCastTargets.push(blockMeshes[blockId]);
+            }
+            
+            // Add mobs to targets
+            for (const mobId in mobModels) {
+                rayCastTargets.push(mobModels[mobId].mesh);
+            }
+
+            const intersects = raycaster.intersectObjects(rayCastTargets);
+            
+            if (intersects.length > 0) {
+                const intersect = intersects[0];
+                const object = intersect.object;
+                
+                // Check if it's a block or a mob
+                if (object.userData && object.userData.mobId) {
+                    // It's a mob
+                    const mobId = object.userData.mobId;
+                    targetedMob = mobs[mobId];
+                    targetedBlock = null;
+                    
+                    // Highlight targeted mob
     </script>
 </body>
 </html> 

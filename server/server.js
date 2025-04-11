@@ -4,6 +4,7 @@ const { Server } = require('socket.io');
 const { v4: uuidv4 } = require('uuid');
 const path = require('path');
 const saveSystem = require('./saveSystem');
+const MobManager = require('./mobs/mobManager');
 
 const app = express();
 const httpServer = createServer(app);
@@ -61,6 +62,9 @@ const toolTypes = {
   diamond_sword: { name: 'Diamond Sword', durability: 1562, damage: 7 }
 };
 
+// Initialize mob manager
+const mobManager = new MobManager();
+
 // Generate initial world
 function generateWorld() {
   // Create a flat grass world
@@ -102,10 +106,68 @@ function generateWorld() {
     const type = Math.random() > 0.5 ? 'iron_ore' : 'diamond_ore';
     blocks[`${x},${y},${z}`] = { type };
   }
+
+  // Spawn initial mobs
+  spawnInitialMobs();
+}
+
+// Spawn initial mobs in the world
+function spawnInitialMobs() {
+  // Spawn some passive mobs
+  for (let i = 0; i < 5; i++) {
+    const x = (Math.random() * 40) - 20;
+    const z = (Math.random() * 40) - 20;
+    const mobType = ['sheep', 'cow', 'pig', 'chicken'][Math.floor(Math.random() * 4)];
+    mobManager.spawnMob(mobType, { x, y: 1, z });
+  }
+  
+  // Spawn some neutral mobs
+  for (let i = 0; i < 3; i++) {
+    const x = (Math.random() * 40) - 20;
+    const z = (Math.random() * 40) - 20;
+    const mobType = ['wolf', 'spider'][Math.floor(Math.random() * 2)];
+    mobManager.spawnMob(mobType, { x, y: 1, z });
+  }
+  
+  // Spawn some hostile mobs in dark areas
+  for (let i = 0; i < 5; i++) {
+    const x = (Math.random() * 40) - 20;
+    const z = (Math.random() * 40) - 20;
+    const mobType = ['zombie', 'skeleton', 'creeper'][Math.floor(Math.random() * 3)];
+    mobManager.spawnMob(mobType, { x, y: 1, z });
+  }
+}
+
+// Game update loop
+const TICK_RATE = 20; // 20 ticks per second
+let lastUpdateTime = Date.now();
+
+function gameLoop() {
+  const now = Date.now();
+  const deltaTime = now - lastUpdateTime;
+  lastUpdateTime = now;
+  
+  // Convert to game ticks
+  const deltaTicks = deltaTime * TICK_RATE / 1000;
+  
+  // Update mobs
+  mobManager.update({blocks}, players, deltaTicks);
+  
+  // Send updated mob data to all clients
+  io.emit('mobUpdate', mobManager.getMobData());
+  
+  // Send projectile data
+  io.emit('projectileUpdate', mobManager.getProjectileData());
+  
+  // Schedule next update
+  setTimeout(gameLoop, 1000 / TICK_RATE);
 }
 
 // Initialize world
 generateWorld();
+
+// Start game loop
+gameLoop();
 
 io.on('connection', (socket) => {
   console.log('Player connected:', socket.id);
@@ -138,14 +200,22 @@ io.on('connection', (socket) => {
   players[socket.id] = player;
 
   // Send initial game state to the new player
-  socket.emit('gameState', { players, blocks });
+  socket.emit('gameState', { 
+    players, 
+    blocks, 
+    mobs: mobManager.getMobData(),
+    projectiles: mobManager.getProjectileData() 
+  });
 
   // Broadcast new player to others
   socket.broadcast.emit('playerJoin', player);
 
   // Handle save game request
   socket.on('saveGame', (worldName) => {
-    if (saveSystem.saveGame(worldName, players, blocks)) {
+    // Get mob data for saving
+    const mobData = mobManager.getMobData();
+    
+    if (saveSystem.saveGame(worldName, players, blocks, mobData)) {
       socket.emit('saveComplete', { success: true, worldName });
     } else {
       socket.emit('saveComplete', { success: false, error: 'Failed to save game' });
@@ -158,8 +228,31 @@ io.on('connection', (socket) => {
     if (saveData) {
       Object.assign(players, saveData.players);
       Object.assign(blocks, saveData.blocks);
+      
+      // Load mobs if available
+      if (saveData.mobs) {
+        // Clear existing mobs
+        mobManager.mobs = {};
+        
+        // Load saved mobs
+        for (const mobId in saveData.mobs) {
+          const mobData = saveData.mobs[mobId];
+          const mob = mobManager.spawnMob(mobData.type, mobData.position);
+          
+          // Apply saved properties
+          if (mob) {
+            Object.assign(mob, mobData);
+          }
+        }
+      }
+      
       currentWorld = worldName;
-      io.emit('gameState', { players, blocks });
+      io.emit('gameState', { 
+        players, 
+        blocks, 
+        mobs: mobManager.getMobData(),
+        projectiles: mobManager.getProjectileData() 
+      });
       socket.emit('loadComplete', { success: true, worldName });
     } else {
       socket.emit('loadComplete', { success: false, error: 'Failed to load game' });
@@ -208,6 +301,48 @@ io.on('connection', (socket) => {
     io.emit('chatMessage', data);
   });
 
+  // Handle player position update
+  socket.on('playerUpdate', (data) => {
+    const player = players[socket.id];
+    if (!player) return;
+    
+    // Update player data
+    Object.assign(player, data);
+    
+    // Broadcast to other players
+    socket.broadcast.emit('playerUpdate', player);
+  });
+
+  // Handle player attacking a mob
+  socket.on('attackMob', (data) => {
+    const player = players[socket.id];
+    if (!player) return;
+    
+    const { mobId, damage } = data;
+    const result = mobManager.handlePlayerAttack(socket.id, mobId, damage || 1);
+    
+    socket.emit('attackResult', result);
+  });
+
+  // Handle player interaction with a mob
+  socket.on('interactMob', (data) => {
+    const player = players[socket.id];
+    if (!player) return;
+    
+    const { mobId, action, actionData } = data;
+    const result = mobManager.handlePlayerInteraction(socket.id, mobId, { 
+      action, 
+      ...actionData 
+    });
+    
+    socket.emit('interactResult', result);
+    
+    // If interaction changed the mob, broadcast update
+    if (result.success) {
+      io.emit('mobUpdate', { [mobId]: mobManager.mobs[mobId].serialize() });
+    }
+  });
+
   // Handle player hit
   socket.on('playerHit', (data) => {
     const attacker = players[data.attackerId];
@@ -248,7 +383,8 @@ io.on('connection', (socket) => {
   });
 });
 
-const PORT = process.env.PORT || 3001;
+// Start the server
+const PORT = process.env.PORT || 3000;
 httpServer.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
