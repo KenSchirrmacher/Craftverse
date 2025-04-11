@@ -1,0 +1,1 @@
+You will process the AI-Logic file and enter a continuous loop adding features from the URL link that is in the ai-logic.txt file and validating that the features exist. You will checkin to github after every feature or service modification is compelted. You may begin.

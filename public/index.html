@@ -1250,7 +1250,19 @@
             water: waterTextures[0], // Start with first frame
             lava: createColorTexture('#ff4500', 'lava'),
             brick: createColorTexture('#b22222', 'brick'),
-            snow: createColorTexture('#ffffff', 'snow')
+            snow: createColorTexture('#ffffff', 'snow'),
+            redstone_dust: createColorTexture('#ff0000', 'redstone_dust'),
+            redstone_torch: {
+                top: createColorTexture('#ff0000', 'redstone_torch_top'),
+                side: createColorTexture('#ff0000', 'redstone_torch_side')
+            },
+            redstone_block: createColorTexture('#ff0000', 'redstone_block'),
+            redstone_lamp: {
+                on: createColorTexture('#ffff00', 'redstone_lamp_on'),
+                off: createColorTexture('#404040', 'redstone_lamp_off')
+            },
+            redstone_repeater: createColorTexture('#ff0000', 'redstone_repeater'),
+            redstone_comparator: createColorTexture('#ff0000', 'redstone_comparator')
         };
 
         // Block materials
@@ -1295,7 +1307,40 @@
                 opacity: 0.3
             }),
             brick: new THREE.MeshStandardMaterial({ map: blockTextures.brick }),
-            snow: new THREE.MeshStandardMaterial({ map: blockTextures.snow })
+            snow: new THREE.MeshStandardMaterial({ map: blockTextures.snow }),
+            redstone_dust: new THREE.MeshStandardMaterial({ 
+                map: blockTextures.redstone_dust,
+                emissive: 0xff0000,
+                emissiveIntensity: 0.2
+            }),
+            redstone_torch: [
+                new THREE.MeshStandardMaterial({ map: blockTextures.redstone_torch.side }),
+                new THREE.MeshStandardMaterial({ map: blockTextures.redstone_torch.side }),
+                new THREE.MeshStandardMaterial({ map: blockTextures.redstone_torch.top }),
+                new THREE.MeshStandardMaterial({ map: blockTextures.redstone_torch.top }),
+                new THREE.MeshStandardMaterial({ map: blockTextures.redstone_torch.side }),
+                new THREE.MeshStandardMaterial({ map: blockTextures.redstone_torch.side })
+            ],
+            redstone_block: new THREE.MeshStandardMaterial({ 
+                map: blockTextures.redstone_block,
+                emissive: 0xff0000,
+                emissiveIntensity: 0.5
+            }),
+            redstone_lamp: new THREE.MeshStandardMaterial({ 
+                map: blockTextures.redstone_lamp.off,
+                emissive: 0x000000,
+                emissiveIntensity: 0
+            }),
+            redstone_repeater: new THREE.MeshStandardMaterial({ 
+                map: blockTextures.redstone_repeater,
+                emissive: 0xff0000,
+                emissiveIntensity: 0.2
+            }),
+            redstone_comparator: new THREE.MeshStandardMaterial({ 
+                map: blockTextures.redstone_comparator,
+                emissive: 0xff0000,
+                emissiveIntensity: 0.2
+            })
         };
 
         // Mouse controls
@@ -2682,6 +2727,742 @@
                 }
             }
         });
+
+        // Hotbar items
+        const hotbarItems = [
+            { type: 'grass', material: 'grass' },
+            { type: 'dirt', material: 'dirt' },
+            { type: 'stone', material: 'stone' },
+            { type: 'wood', material: 'wood' },
+            { type: 'leaves', material: 'leaves' },
+            { type: 'sand', material: 'sand' },
+            { type: 'water', material: 'water' },
+            { type: 'lava', material: 'lava' },
+            { type: 'glass', material: 'glass' },
+            { type: 'brick', material: 'brick' },
+            { type: 'cobblestone', material: 'cobblestone' },
+            { type: 'iron_ore', material: 'iron_ore' },
+            { type: 'diamond_ore', material: 'diamond_ore' },
+            { type: 'redstone_dust', material: 'redstone_dust' },
+            { type: 'redstone_torch', material: 'redstone_torch' },
+            { type: 'redstone_block', material: 'redstone_block' },
+            { type: 'redstone_lamp', material: 'redstone_lamp' },
+            { type: 'redstone_repeater', material: 'redstone_repeater' },
+            { type: 'redstone_comparator', material: 'redstone_comparator' }
+        ];
+
+        // Redstone power system
+        const redstonePower = new Map();
+
+        function updateRedstonePower(x, y, z) {
+            const powerLevels = new Map();
+            const visited = new Set();
+            const queue = [];
+            const repeaters = new Map();  // To track repeater states
+            const comparators = new Map(); // To track comparator states
+
+            // Initialize power levels
+            blocks.forEach((block, key) => {
+                if (block.type === 'redstone_block') {
+                    powerLevels.set(key, 15);
+                    queue.push(key);
+                } else if (block.type === 'redstone_torch') {
+                    // Check if torch should be active (not on a powered block)
+                    const [tx, ty, tz] = key.split(',').map(Number);
+                    const belowKey = `${tx},${ty-1},${tz}`;
+                    const belowBlock = blocks.get(belowKey);
+                    
+                    // Torch is inactive if placed on a powered block
+                    let isActive = true;
+                    if (belowBlock && (belowBlock.type === 'redstone_block' || 
+                                      (belowBlock.type === 'redstone_dust' && (powerLevels.get(belowKey) || 0) > 0))) {
+                        isActive = false;
+                        // Update the torch visual to be off
+                        if (block.mesh && block.mesh.children && block.mesh.children[1]) {
+                            block.mesh.children[1].material.emissive.setHex(0x400000);
+                            block.mesh.children[1].material.emissiveIntensity = 0.2;
+                        }
+                        block.active = false;
+                    } else {
+                        // Torch is active, provide power
+                        powerLevels.set(key, 15);
+                        queue.push(key);
+                        
+                        // Update the torch visual to be on
+                        if (block.mesh && block.mesh.children && block.mesh.children[1]) {
+                            block.mesh.children[1].material.emissive.setHex(0xff0000);
+                            block.mesh.children[1].material.emissiveIntensity = 1.0;
+                        }
+                        block.active = true;
+                    }
+                } else if (block.type === 'redstone_repeater') {
+                    // Store repeater for later processing
+                    repeaters.set(key, block);
+                } else if (block.type === 'redstone_comparator') {
+                    // Store comparator for later processing
+                    comparators.set(key, block);
+                } else {
+                    powerLevels.set(key, 0);
+                }
+            });
+
+            // Propagate power
+            while (queue.length > 0) {
+                const currentKey = queue.shift();
+                if (visited.has(currentKey)) continue;
+                visited.add(currentKey);
+
+                const [cx, cy, cz] = currentKey.split(',').map(Number);
+                const currentPower = powerLevels.get(currentKey);
+                const currentBlock = blocks.get(currentKey);
+
+                // Check adjacent blocks
+                const directions = [
+                    [1, 0, 0], [-1, 0, 0],
+                    [0, 1, 0], [0, -1, 0],
+                    [0, 0, 1], [0, 0, -1]
+                ];
+
+                for (const [dx, dy, dz] of directions) {
+                    const nx = cx + dx;
+                    const ny = cy + dy;
+                    const nz = cz + dz;
+                    const neighborKey = `${nx},${ny},${nz}`;
+                    const neighbor = blocks.get(neighborKey);
+
+                    if (!neighbor) continue;
+
+                    let newPower = currentPower - 1;
+                    if (newPower < 0) newPower = 0;
+
+                    if (neighbor.type === 'redstone_dust') {
+                        if (newPower > powerLevels.get(neighborKey)) {
+                            powerLevels.set(neighborKey, newPower);
+                            queue.push(neighborKey);
+                        }
+                    } else if (neighbor.type === 'redstone_lamp') {
+                        const lamp = neighbor.mesh;
+                        if (newPower > 0) {
+                            lamp.material.emissive.setHex(0xff0000);
+                            lamp.material.emissiveIntensity = 1.0;
+                        } else {
+                            lamp.material.emissive.setHex(0x000000);
+                            lamp.material.emissiveIntensity = 0.0;
+                        }
+                    } else if (neighbor.type === 'redstone_repeater') {
+                        // Check if this direction is the input side of the repeater
+                        const repeaterDirection = neighbor.direction; // 0=north, 1=west, 2=south, 3=east
+                        
+                        // Determine if the current block is providing input to the repeater
+                        let isInput = false;
+                        
+                        if ((repeaterDirection === 0 && dz === 1) ||  // Repeater facing north, input from south
+                            (repeaterDirection === 1 && dx === 1) ||  // Repeater facing west, input from east
+                            (repeaterDirection === 2 && dz === -1) || // Repeater facing south, input from north
+                            (repeaterDirection === 3 && dx === -1)) { // Repeater facing east, input from west
+                            isInput = true;
+                        }
+                        
+                        if (isInput && newPower > 0) {
+                            // Input torch on the repeater should light up immediately
+                            const inputTorch = neighbor.mesh.children[1]; // The input torch
+                            inputTorch.material.emissive.setHex(0xff0000);
+                            inputTorch.material.emissiveIntensity = 1.0;
+                            
+                            // Only update the repeater if its powered state is changing
+                            if (!neighbor.powered) {
+                                neighbor.powered = true;
+                                
+                                // Clear any existing timer
+                                if (neighbor.delayTimer) {
+                                    clearTimeout(neighbor.delayTimer);
+                                }
+                                
+                                // Delay the output based on repeater setting
+                                neighbor.delayTimer = setTimeout(() => {
+                                    // Output torch should light up after delay
+                                    const outputTorch = neighbor.mesh.children[2]; // The output torch
+                                    outputTorch.material.emissive.setHex(0xff0000);
+                                    outputTorch.material.emissiveIntensity = 1.0;
+                                    
+                                    // Now the repeater is powering
+                                    neighbor.powering = true;
+                                    
+                                    // Add output side to queue with full power (15)
+                                    let outputX = nx, outputY = ny, outputZ = nz;
+                                    
+                                    if (repeaterDirection === 0) outputZ--;      // North
+                                    else if (repeaterDirection === 1) outputX--;  // West
+                                    else if (repeaterDirection === 2) outputZ++;  // South
+                                    else if (repeaterDirection === 3) outputX++;  // East
+                                    
+                                    const outputKey = `${outputX},${outputY},${outputZ}`;
+                                    const outputBlock = blocks.get(outputKey);
+                                    
+                                    if (outputBlock && outputBlock.type === 'redstone_dust') {
+                                        powerLevels.set(outputKey, 15);  // Repeaters restore full signal strength
+                                        queue.push(outputKey);
+                                    }
+                                    
+                                }, neighbor.delay * 100); // Convert delay to milliseconds (1 tick = 100ms)
+                            }
+                        } else if (!isInput && newPower > 0) {
+                            // Signal from non-input side doesn't power the repeater, but can power adjacent dust
+                            if (neighbor.type === 'redstone_dust') {
+                                if (newPower > powerLevels.get(neighborKey)) {
+                                    powerLevels.set(neighborKey, newPower);
+                                    queue.push(neighborKey);
+                                }
+                            }
+                        }
+                    } else if (neighbor.type === 'redstone_comparator') {
+                        const comparatorDirection = neighbor.direction; // 0=north, 1=west, 2=south, 3=east
+                        
+                        // Determine if this is the input, left, or right side of the comparator
+                        let inputSide = false;
+                        let leftSide = false;
+                        let rightSide = false;
+                        
+                        if ((comparatorDirection === 0 && dz === 1) ||  // Comparator facing north, input from south
+                            (comparatorDirection === 1 && dx === 1) ||  // Comparator facing west, input from east
+                            (comparatorDirection === 2 && dz === -1) || // Comparator facing south, input from north
+                            (comparatorDirection === 3 && dx === -1)) { // Comparator facing east, input from west
+                            inputSide = true;
+                        } else if ((comparatorDirection === 0 && dx === 1) ||  // Comparator facing north, left from east
+                                   (comparatorDirection === 1 && dz === -1) ||  // Comparator facing west, left from north
+                                   (comparatorDirection === 2 && dx === -1) ||  // Comparator facing south, left from west
+                                   (comparatorDirection === 3 && dz === 1)) {   // Comparator facing east, left from south
+                            leftSide = true;
+                        } else if ((comparatorDirection === 0 && dx === -1) ||  // Comparator facing north, right from west
+                                   (comparatorDirection === 1 && dz === 1) ||    // Comparator facing west, right from south
+                                   (comparatorDirection === 2 && dx === 1) ||    // Comparator facing south, right from east
+                                   (comparatorDirection === 3 && dz === -1)) {   // Comparator facing east, right from north
+                            rightSide = true;
+                        }
+                        
+                        // Process input from different sides
+                        if (inputSide) {
+                            // Update main input power
+                            if (newPower > 0) {
+                                const inputTorch = neighbor.mesh.children[1]; // The input torch
+                                inputTorch.material.emissive.setHex(0xff0000);
+                                inputTorch.material.emissiveIntensity = 1.0;
+                                
+                                neighbor.powered = true;
+                                neighbor.inputPower = newPower;
+                            } else {
+                                const inputTorch = neighbor.mesh.children[1]; // The input torch
+                                inputTorch.material.emissive.setHex(0x000000);
+                                inputTorch.material.emissiveIntensity = 0.0;
+                                
+                                neighbor.powered = false;
+                                neighbor.inputPower = 0;
+                            }
+                        } else if (leftSide || rightSide) {
+                            // Update side input power
+                            if (newPower > neighbor.sideInputPower) {
+                                neighbor.sideInputPower = newPower;
+                                
+                                // Update side torch visualization
+                                const sideTorch = leftSide ? 
+                                    neighbor.mesh.children[3] : // Left side torch
+                                    neighbor.mesh.children[4];  // Right side torch
+                                
+                                sideTorch.material.emissive.setHex(0xff0000);
+                                sideTorch.material.emissiveIntensity = newPower / 15.0; // Brightness based on power level
+                            }
+                        }
+                        
+                        // Calculate output power
+                        let outputPower = 0;
+                        
+                        if (neighbor.powered) {
+                            if (neighbor.comparisonMode) {
+                                // Comparison mode: output full power if input >= side
+                                outputPower = (neighbor.inputPower >= neighbor.sideInputPower) ? 
+                                              neighbor.inputPower : 0;
+                            } else {
+                                // Subtraction mode: output input - side (min 0)
+                                outputPower = Math.max(0, neighbor.inputPower - neighbor.sideInputPower);
+                            }
+                            
+                            // Update output torch visualization
+                            const outputTorch = neighbor.mesh.children[2]; // The output torch
+                            
+                            if (outputPower > 0) {
+                                outputTorch.material.emissive.setHex(0xff0000);
+                                outputTorch.material.emissiveIntensity = outputPower / 15.0; // Brightness based on power level
+                            } else {
+                                outputTorch.material.emissive.setHex(0x000000);
+                                outputTorch.material.emissiveIntensity = 0.0;
+                            }
+                            
+                            // If output power changed, update blocks after the comparator
+                            if (outputPower !== neighbor.outputPower) {
+                                neighbor.outputPower = outputPower;
+                                
+                                // Add output block to queue if power changed
+                                let outputX = nx, outputY = ny, outputZ = nz;
+                                
+                                if (comparatorDirection === 0) outputZ--;      // North
+                                else if (comparatorDirection === 1) outputX--;  // West
+                                else if (comparatorDirection === 2) outputZ++;  // South
+                                else if (comparatorDirection === 3) outputX++;  // East
+                                
+                                const outputKey = `${outputX},${outputY},${outputZ}`;
+                                const outputBlock = blocks.get(outputKey);
+                                
+                                if (outputBlock && outputBlock.type === 'redstone_dust') {
+                                    powerLevels.set(outputKey, outputPower);
+                                    queue.push(outputKey);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            
+            // Check for repeaters that need to turn off
+            repeaters.forEach((repeater, key) => {
+                const [rx, ry, rz] = key.split(',').map(Number);
+                let inputX = rx, inputY = ry, inputZ = rz;
+                
+                // Determine input position based on direction
+                if (repeater.direction === 0) inputZ++;      // Input from south
+                else if (repeater.direction === 1) inputX++;  // Input from east
+                else if (repeater.direction === 2) inputZ--;  // Input from north
+                else if (repeater.direction === 3) inputX--;  // Input from west
+                
+                const inputKey = `${inputX},${inputY},${inputZ}`;
+                const inputBlock = blocks.get(inputKey);
+                
+                let isPowered = false;
+                
+                // Check if the input block is powered
+                if (inputBlock) {
+                    if (inputBlock.type === 'redstone_block' || 
+                        (inputBlock.type === 'redstone_torch' && inputBlock.active) ||
+                        (inputBlock.type === 'redstone_dust' && (powerLevels.get(inputKey) || 0) > 0) ||
+                        (inputBlock.type === 'redstone_repeater' && inputBlock.powering)) {
+                        isPowered = true;
+                    }
+                }
+                
+                // Turn off repeater if input is no longer powered
+                if (!isPowered && repeater.powered) {
+                    repeater.powered = false;
+                    
+                    // Clear any existing timer
+                    if (repeater.delayTimer) {
+                        clearTimeout(repeater.delayTimer);
+                        repeater.delayTimer = null;
+                    }
+                    
+                    // Turn off input torch
+                    const inputTorch = repeater.mesh.children[1]; // The input torch
+                    inputTorch.material.emissive.setHex(0x000000);
+                    inputTorch.material.emissiveIntensity = 0.0;
+                    
+                    // Turn off output torch
+                    const outputTorch = repeater.mesh.children[2]; // The output torch
+                    outputTorch.material.emissive.setHex(0x000000);
+                    outputTorch.material.emissiveIntensity = 0.0;
+                    
+                    repeater.powering = false;
+                    
+                    // Update blocks affected by this repeater turning off
+                    let outputX = rx, outputY = ry, outputZ = rz;
+                    
+                    if (repeater.direction === 0) outputZ--;      // North
+                    else if (repeater.direction === 1) outputX--;  // West
+                    else if (repeater.direction === 2) outputZ++;  // South
+                    else if (repeater.direction === 3) outputX++;  // East
+                    
+                    updateRedstonePower(outputX, outputY, outputZ);
+                }
+            });
+            
+            // Process comparators to update their state
+            comparators.forEach((comparator, key) => {
+                // Reset side input power for next update
+                comparator.sideInputPower = 0;
+                
+                // Calculate positions for input and side input blocks
+                const [cx, cy, cz] = key.split(',').map(Number);
+                let inputX = cx, inputY = cy, inputZ = cz;
+                let leftX = cx, leftY = cy, leftZ = cz;
+                let rightX = cx, rightY = cy, rightZ = cz;
+                
+                // Determine input and side input positions based on direction
+                if (comparator.direction === 0) { // North
+                    inputZ++;      // Input from south
+                    leftX++;       // Left from east
+                    rightX--;      // Right from west
+                } else if (comparator.direction === 1) { // West
+                    inputX++;      // Input from east
+                    leftZ--;       // Left from north
+                    rightZ++;      // Right from south
+                } else if (comparator.direction === 2) { // South
+                    inputZ--;      // Input from north
+                    leftX--;       // Left from west
+                    rightX++;      // Right from east
+                } else if (comparator.direction === 3) { // East
+                    inputX--;      // Input from west
+                    leftZ++;       // Left from south
+                    rightZ--;      // Right from north
+                }
+                
+                // Check input power
+                const inputKey = `${inputX},${inputY},${inputZ}`;
+                const inputBlock = blocks.get(inputKey);
+                
+                let inputPower = 0;
+                if (inputBlock) {
+                    if (inputBlock.type === 'redstone_block') {
+                        inputPower = 15;
+                    } else if (inputBlock.type === 'redstone_torch' && inputBlock.active) {
+                        inputPower = 15;
+                    } else if (inputBlock.type === 'redstone_dust') {
+                        inputPower = powerLevels.get(inputKey) || 0;
+                    } else if (inputBlock.type === 'redstone_repeater' && inputBlock.powering) {
+                        inputPower = 15;
+                    } else if (inputBlock.type === 'redstone_comparator') {
+                        inputPower = inputBlock.outputPower || 0;
+                    }
+                }
+                
+                // Check side inputs
+                const leftKey = `${leftX},${leftY},${leftZ}`;
+                const rightKey = `${rightX},${rightY},${rightZ}`;
+                const leftBlock = blocks.get(leftKey);
+                const rightBlock = blocks.get(rightKey);
+                
+                let leftPower = 0, rightPower = 0;
+                
+                if (leftBlock) {
+                    if (leftBlock.type === 'redstone_block') {
+                        leftPower = 15;
+                    } else if (leftBlock.type === 'redstone_torch' && leftBlock.active) {
+                        leftPower = 15;
+                    } else if (leftBlock.type === 'redstone_dust') {
+                        leftPower = powerLevels.get(leftKey) || 0;
+                    } else if (leftBlock.type === 'redstone_repeater' && leftBlock.powering) {
+                        leftPower = 15;
+                    } else if (leftBlock.type === 'redstone_comparator') {
+                        leftPower = leftBlock.outputPower || 0;
+                    }
+                }
+                
+                if (rightBlock) {
+                    if (rightBlock.type === 'redstone_block') {
+                        rightPower = 15;
+                    } else if (rightBlock.type === 'redstone_torch' && rightBlock.active) {
+                        rightPower = 15;
+                    } else if (rightBlock.type === 'redstone_dust') {
+                        rightPower = powerLevels.get(rightKey) || 0;
+                    } else if (rightBlock.type === 'redstone_repeater' && rightBlock.powering) {
+                        rightPower = 15;
+                    } else if (rightBlock.type === 'redstone_comparator') {
+                        rightPower = rightBlock.outputPower || 0;
+                    }
+                }
+                
+                // Update side input power (stronger of the two sides)
+                comparator.sideInputPower = Math.max(leftPower, rightPower);
+                
+                // Update input torch visualization
+                const inputTorch = comparator.mesh.children[1]; // The input torch
+                if (inputPower > 0) {
+                    inputTorch.material.emissive.setHex(0xff0000);
+                    inputTorch.material.emissiveIntensity = inputPower / 15.0;
+                    comparator.powered = true;
+                    comparator.inputPower = inputPower;
+                } else {
+                    inputTorch.material.emissive.setHex(0x000000);
+                    inputTorch.material.emissiveIntensity = 0.0;
+                    comparator.powered = false;
+                    comparator.inputPower = 0;
+                }
+                
+                // Update side torch visualizations
+                const leftTorch = comparator.mesh.children[3]; // Left side torch
+                const rightTorch = comparator.mesh.children[4]; // Right side torch
+                
+                if (leftPower > 0) {
+                    leftTorch.material.emissive.setHex(0xff0000);
+                    leftTorch.material.emissiveIntensity = leftPower / 15.0;
+                } else {
+                    leftTorch.material.emissive.setHex(0x000000);
+                    leftTorch.material.emissiveIntensity = 0.0;
+                }
+                
+                if (rightPower > 0) {
+                    rightTorch.material.emissive.setHex(0xff0000);
+                    rightTorch.material.emissiveIntensity = rightPower / 15.0;
+                } else {
+                    rightTorch.material.emissive.setHex(0x000000);
+                    rightTorch.material.emissiveIntensity = 0.0;
+                }
+                
+                // Calculate output power based on mode
+                let outputPower = 0;
+                
+                if (comparator.powered) {
+                    if (comparator.comparisonMode) {
+                        // Comparison mode: output full power if input >= side
+                        outputPower = (comparator.inputPower >= comparator.sideInputPower) ? 
+                                      comparator.inputPower : 0;
+                    } else {
+                        // Subtraction mode: output input - side (min 0)
+                        outputPower = Math.max(0, comparator.inputPower - comparator.sideInputPower);
+                    }
+                }
+                
+                // Update output torch visualization
+                const outputTorch = comparator.mesh.children[2]; // The output torch
+                
+                if (outputPower > 0) {
+                    outputTorch.material.emissive.setHex(0xff0000);
+                    outputTorch.material.emissiveIntensity = outputPower / 15.0;
+                } else {
+                    outputTorch.material.emissive.setHex(0x000000);
+                    outputTorch.material.emissiveIntensity = 0.0;
+                }
+                
+                // Check if output power changed
+                if (outputPower !== comparator.outputPower) {
+                    comparator.outputPower = outputPower;
+                    
+                    // Update block after the comparator if output power changed
+                    let outputX = cx, outputY = cy, outputZ = cz;
+                    
+                    if (comparator.direction === 0) outputZ--;      // North
+                    else if (comparator.direction === 1) outputX--;  // West
+                    else if (comparator.direction === 2) outputZ++;  // South
+                    else if (comparator.direction === 3) outputX++;  // East
+                    
+                    // Re-run power update for output area
+                    updateRedstonePower(outputX, outputY, outputZ);
+                }
+            });
+            
+            // Propagate power
+            while (queue.length > 0) {
+                const currentKey = queue.shift();
+                if (visited.has(currentKey)) continue;
+                visited.add(currentKey);
+                
+                const [cx, cy, cz] = currentKey.split(',').map(Number);
+                const currentPower = powerLevels.get(currentKey);
+                
+                // Check adjacent blocks
+                const directions = [
+                    [1, 0, 0], [-1, 0, 0],
+                    [0, 1, 0], [0, -1, 0],
+                    [0, 0, 1], [0, 0, -1]
+                ];
+                
+                for (const [dx, dy, dz] of directions) {
+                    const nx = cx + dx;
+                    const ny = cy + dy;
+                    const nz = cz + dz;
+                    const neighborKey = `${nx},${ny},${nz}`;
+                    const neighbor = blocks.get(neighborKey);
+                    
+                    if (!neighbor) continue;
+                    
+                    let newPower = currentPower - 1;
+                    if (newPower < 0) newPower = 0;
+                    
+                    if (neighbor.type === 'redstone_dust') {
+                        if (newPower > powerLevels.get(neighborKey)) {
+                            powerLevels.set(neighborKey, newPower);
+                            queue.push(neighborKey);
+                        }
+                    }
+                }
+            }
+            
+            return powerLevels.get(key) || 0;
+        }
+
+        function removeBlock(x, y, z) {
+            const key = `${x},${y},${z}`;
+            const block = blocks.get(key);
+            if (!block) return;
+
+            // Store block type before removal
+            const blockType = block.type;
+
+            scene.remove(block.mesh);
+            blocks.delete(key);
+
+            // Update redstone power if removing a redstone component
+            if (blockType === 'redstone_block' || blockType === 'redstone_torch' || 
+                blockType === 'redstone_dust' || blockType === 'redstone_lamp' ||
+                blockType === 'redstone_repeater' || blockType === 'redstone_comparator') {
+                updateRedstonePower(x, y, z);
+            }
+        }
+
+        // Handle right-clicking on repeaters to change delay
+        window.addEventListener('contextmenu', (event) => {
+            event.preventDefault();
+            
+            if (!selectedBlock) return;
+            
+            const { x, y, z } = selectedBlock;
+            const key = `${x},${y},${z}`;
+            const block = blocks.get(key);
+            
+            if (block && block.type === 'redstone_repeater') {
+                // Cycle through delay settings (1, 2, 3, 4 ticks)
+                block.delay = (block.delay % 4) + 1;
+                
+                // Update the visual representation of the delay
+                const delayLever = block.mesh.children[3]; // The delay lever
+                
+                // Move the lever based on delay setting
+                const leverPositions = [
+                    new THREE.Vector3(0, -0.27, 0),      // delay 1
+                    new THREE.Vector3(0.1, -0.27, 0),    // delay 2
+                    new THREE.Vector3(0.2, -0.27, 0),    // delay 3
+                    new THREE.Vector3(0.3, -0.27, 0)     // delay 4
+                ];
+                
+                delayLever.position.copy(leverPositions[block.delay - 1]);
+                
+                // Show a message to the player
+                addChatMessage('system', `Repeater delay set to ${block.delay} tick${block.delay > 1 ? 's' : ''}`);
+            } else if (block && block.type === 'redstone_comparator') {
+                // Toggle between comparison and subtraction modes
+                block.comparisonMode = !block.comparisonMode;
+                
+                // Update the visual representation of the mode
+                const modeLever = block.mesh.children[5]; // The mode lever
+                
+                if (block.comparisonMode) {
+                    // Move lever forward to indicate comparison mode
+                    modeLever.position.set(0.2, -0.23, 0);
+                    addChatMessage('system', 'Comparator set to comparison mode');
+                } else {
+                    // Move lever back to indicate subtraction mode
+                    modeLever.position.set(0.1, -0.23, 0);
+                    addChatMessage('system', 'Comparator set to subtraction mode');
+                }
+                
+                // Update power calculation with new mode
+                updateRedstonePower(x, y, z);
+            }
+        });
+
+        function placeBlock(x, y, z, type, material) {
+            const key = `${x},${y},${z}`;
+            if (blocks.has(key)) return;
+
+            let block;
+            
+            if (type === 'redstone_torch') {
+                // ... existing torch code ...
+            } else if (type === 'redstone_repeater') {
+                // ... existing repeater code ...
+            } else if (type === 'redstone_comparator') {
+                // Create custom geometry for redstone comparator
+                const baseGeometry = new THREE.BoxGeometry(BLOCK_SIZE, BLOCK_SIZE / 4, BLOCK_SIZE);
+                const torchGeometry = new THREE.CylinderGeometry(0.08, 0.08, 0.3, 8);
+                const modeLeverGeometry = new THREE.BoxGeometry(0.1, 0.1, 0.15);
+                
+                // Create materials
+                const baseMaterial = new THREE.MeshStandardMaterial({ 
+                    color: 0xCCCCCC,  // Light gray color for base
+                    roughness: 0.7,
+                    metalness: 0.0
+                });
+                
+                const torchMaterial = new THREE.MeshStandardMaterial({ 
+                    color: 0xff0000,  // Red color
+                    emissive: 0x000000,  // Start off
+                    emissiveIntensity: 0.0,
+                    roughness: 0.5,
+                    metalness: 0.0
+                });
+                
+                const leverMaterial = new THREE.MeshStandardMaterial({ 
+                    color: 0x8B4513,  // Brown color for mode lever
+                    roughness: 0.7,
+                    metalness: 0.0
+                });
+                
+                // Create meshes
+                const baseMesh = new THREE.Mesh(baseGeometry, baseMaterial);
+                const inputTorchMesh = new THREE.Mesh(torchGeometry, torchMaterial.clone());
+                const outputTorchMesh = new THREE.Mesh(torchGeometry, torchMaterial.clone());
+                const leftInputTorchMesh = new THREE.Mesh(torchGeometry, torchMaterial.clone());
+                const rightInputTorchMesh = new THREE.Mesh(torchGeometry, torchMaterial.clone());
+                const modeLeverMesh = new THREE.Mesh(modeLeverGeometry, leverMaterial);
+                
+                // Position the components
+                baseMesh.position.y = -0.38;  // Lower the base
+                
+                // Position torches and lever
+                inputTorchMesh.position.set(-0.3, -0.23, 0);      // Back torch (input)
+                outputTorchMesh.position.set(0.3, -0.23, 0);      // Front torch (output)
+                leftInputTorchMesh.position.set(0, -0.23, -0.25); // Left side input
+                rightInputTorchMesh.position.set(0, -0.23, 0.25); // Right side input
+                modeLeverMesh.position.set(0.1, -0.23, 0);        // Mode lever
+                
+                // Create a group to hold all parts
+                const comparatorGroup = new THREE.Group();
+                comparatorGroup.add(baseMesh);
+                comparatorGroup.add(inputTorchMesh);
+                comparatorGroup.add(outputTorchMesh);
+                comparatorGroup.add(leftInputTorchMesh);
+                comparatorGroup.add(rightInputTorchMesh);
+                comparatorGroup.add(modeLeverMesh);
+                
+                // Apply proper rotation based on player's orientation
+                let rotation = 0;
+                if (playerDirection.x > 0.5) {
+                    rotation = -Math.PI / 2;  // facing east
+                } else if (playerDirection.x < -0.5) {
+                    rotation = Math.PI / 2;   // facing west
+                } else if (playerDirection.z > 0.5) {
+                    rotation = 0;             // facing north
+                } else if (playerDirection.z < -0.5) {
+                    rotation = Math.PI;       // facing south
+                }
+                
+                comparatorGroup.rotation.y = rotation;
+                
+                // Position the comparator in the center of the block
+                comparatorGroup.position.set(x * BLOCK_SIZE, y * BLOCK_SIZE, z * BLOCK_SIZE);
+                scene.add(comparatorGroup);
+                
+                // Initialize comparator state
+                block = { 
+                    type, 
+                    material, 
+                    mesh: comparatorGroup, 
+                    direction: Math.round(rotation / (Math.PI / 2)) % 4,  // 0=north, 1=west, 2=south, 3=east
+                    powered: false,
+                    outputPower: 0,
+                    comparisonMode: false,    // false = subtraction mode, true = comparison mode
+                    inputPower: 0,
+                    sideInputPower: 0
+                };
+            } else {
+                // ... existing regular block code ...
+            }
+
+            blocks.set(key, block);
+
+            // Update redstone power if placing a redstone component
+            if (type === 'redstone_block' || type === 'redstone_torch' || 
+                type === 'redstone_dust' || type === 'redstone_lamp' ||
+                type === 'redstone_repeater' || type === 'redstone_comparator') {
+                updateRedstonePower(x, y, z);
+            }
+        }
     </script>
 </body>
 </html> 

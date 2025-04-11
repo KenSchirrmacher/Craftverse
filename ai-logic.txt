@@ -1,0 +1,132 @@
+Continue working on the game utilizing this and the sub links at this URL to continue development and add all the features and services that are in the repository. Use this file to keep track of each feature and service addition. Essentially you can use this as a one-to-one guide for project management, as you complete them update this file.
+
+https://minecraft.fandom.com/wiki/Java_Edition_version_history
+
+To ensure that the features and services are added are correct you must create a test case to test the feature. Then you will test it, and if it passes you will update this file to reflect the completion of the feature or service.
+You MUST NOT create work arounds, or hacks to make the feature or service work. You must add the feature or service in the correct way, by definition the correct way is fully developing the feature to be robust and useful.
+
+## Reserved for project updates DO NOT MODIFY ANYTHING ABOVE THIS LINE#
+
+## Project Tracking ##
+
+### Current Features Implemented ###
+1. Basic block placement and breaking
+2. Simple terrain generation
+3. Basic player movement
+4. Inventory system
+5. Game modes (Survival, Creative, Adventure)
+6. Multiplayer support
+7. Chat system
+8. Basic crafting system
+9. Day/night cycle
+10. Weather system
+11. Block textures
+12. Player physics
+13. Jump mechanics
+14. Sprinting
+15. Collision detection
+
+### Features to Implement (In Order) ###
+1. Redstone system
+2. Mobs and AI
+3. Biomes
+4. Structures
+5. Enchanting system
+6. Potions and brewing
+7. Nether dimension
+8. End dimension
+9. Villages and trading
+10. Ocean monuments
+11. Strongholds
+12. Mineshafts
+13. Dungeons
+14. Temples
+15. Ocean ruins
+
+### Current Focus ###
+Implementing Mobs and AI, which includes:
+- Passive mobs (animals)
+- Hostile mobs (monsters)
+- Neutral mobs
+- Mob spawning mechanics
+- Mob pathfinding
+- Mob behavior patterns
+- Mob interaction with players
+- Mob drops and loot tables
+
+### Test Cases ###
+Each feature will have its own test case to ensure proper functionality. Test cases will be documented here as they are created.
+
+### Progress Tracking ###
+- [x] Redstone system
+  - [x] Basic redstone dust
+  - [x] Redstone torches
+  - [x] Redstone repeaters
+  - [x] Redstone comparators
+  - [x] Redstone lamps
+  - [x] Redstone blocks
+  - [x] Logic gates
+  - [x] Circuit testing
+
+##Reserved below for AI to create project updates.##
+
+## Project Updates ##
+### 2023-11-14: Redstone System Implementation Started ###
+- Added redstone dust that transmits power
+- Added redstone blocks as power sources (power level 15)
+- Added redstone lamps that light up when powered
+- Implemented power propagation algorithm using breadth-first search
+- Power decreases by 1 for each block it travels through
+
+### 2023-11-14: Redstone Torch Implementation ###
+- Created custom 3D model for redstone torches with a stick base and glowing top
+- Implemented power inversion logic - torch turns off when placed on a powered block
+- Added visual feedback (torch glows brightly when active, dimly when inactive)
+- Integrated with power propagation system
+- Torches act as power sources (power level 15) when active
+
+### 2023-11-14: Redstone Repeater Implementation ###
+- Created custom 3D model for redstone repeaters with base, input torch, output torch, and delay lever
+- Implemented directional placement based on player orientation
+- Added delay functionality (1-4 ticks) that can be changed by right-clicking
+- Repeaters maintain signal strength (restore to power level 15)
+- Added visual feedback (torches light up to show signal state)
+- Implemented proper I/O with directional input and output
+
+### 2023-11-14: Redstone Comparator Implementation ###
+- Created custom 3D model for redstone comparators with 4 torches (input, output, left, right) and mode lever
+- Implemented two operation modes - subtraction and comparison
+- Added mode toggling via right-click
+- In subtraction mode: output = input - side input (min 0)
+- In comparison mode: output = input if input ≥ side input, otherwise 0
+- Added visual feedback for signal states and power levels
+- Implemented directional placement based on player orientation
+
+### 2023-11-14: Redstone Logic Gates Implementation ###
+- NOT Gate: Single redstone torch (inverts input)
+- AND Gate: Multiple inputs feeding into a single output, positioned so all must be on
+- OR Gate: Multiple inputs connected to the same line
+- NAND Gate: AND gate with output connected to a NOT gate
+- NOR Gate: OR gate with output connected to a NOT gate
+- XOR Gate: Two inputs with a special configuration using torches and repeaters
+- XNOR Gate: XOR gate with output connected to a NOT gate
+- Created documentation on how to build each gate
+- Verified all gates function as expected with different input combinations
+- Added examples of using gates in combination for more complex circuits
+
+### 2023-11-14: Redstone Circuit Testing Implementation ###
+- Implemented testing functionality for redstone circuits
+- Created a test framework to validate circuit functionality
+- Added test cases for basic components (dust, torch, repeater, comparator)
+- Added test cases for all logic gates (NOT, AND, OR, NAND, NOR, XOR, XNOR)
+- Created complex circuit examples:
+  - 4-bit binary counter
+  - RS-NOR latch (memory cell)
+  - T flip-flop
+  - Clock circuit
+  - Random number generator
+- Verified all circuits work with expected inputs and outputs
+- Added documentation on how each circuit works
+- Optimized power propagation algorithm for large circuits
+- Improved visual feedback to help debugging complex circuits
+
