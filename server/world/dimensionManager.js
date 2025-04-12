@@ -1,521 +1,342 @@
 /**
- * DimensionManager - Handles cross-dimension travel and portal linking
+ * DimensionManager - Handles dimension loading, teleportation between dimensions,
+ * and coordinates dimension-specific world generation
  */
 
-const { EventEmitter } = require('events');
+const EventEmitter = require('events');
 
 class DimensionManager extends EventEmitter {
   /**
-   * Create a new dimension manager
-   * @param {Object} server - Server instance
+   * Creates a new Dimension Manager
+   * @param {Object} options - Configuration options
+   * @param {Object} options.server - Server instance
+   * @param {Object} options.dimensions - Initial dimensions to load
    */
-  constructor(server) {
+  constructor(options = {}) {
     super();
-    this.server = server;
-    this.dimensions = new Map(); // Maps dimension id to world instance
-    this.portals = new Map(); // Maps portal keys to portal data
-    this.pendingTeleports = new Map(); // Maps entity id to teleport data
+    this.server = options.server;
     
-    // Default scale factors between dimensions
-    this.dimensionScales = {
-      'overworld_to_nether': 8, // Overworld coordinates ÷ 8 = Nether coordinates
-      'nether_to_overworld': 8  // Nether coordinates × 8 = Overworld coordinates
+    // Store loaded dimensions
+    this.dimensions = new Map();
+    
+    // Dimensions configuration
+    this.dimensionConfig = {
+      overworld: {
+        name: 'overworld',
+        skyColor: '#87CEEB',
+        fogColor: '#C0D8FF',
+        gravity: 1.0,
+        timeSpeed: 1.0,
+        skyLight: true,
+        buildHeight: {
+          min: 0,
+          max: 256
+        }
+      },
+      nether: {
+        name: 'nether',
+        skyColor: '#330808',
+        fogColor: '#330808',
+        gravity: 1.0,
+        timeSpeed: 0,
+        skyLight: false,
+        buildHeight: {
+          min: 0,
+          max: 128
+        }
+      },
+      end: {
+        name: 'end',
+        skyColor: '#000000',
+        fogColor: '#0B0B19',
+        gravity: 1.0,
+        timeSpeed: 0,
+        skyLight: false,
+        buildHeight: {
+          min: 0,
+          max: 256
+        }
+      }
     };
-  }
-  
-  /**
-   * Initialize the dimension manager
-   */
-  init() {
-    // Register event listeners for entity movement through portals
-    this.server.on('entityEnterPortal', this.handleEntityEnterPortal.bind(this));
     
-    // Listen for world ticks to process pending teleports
-    this.server.on('tick', this.processPendingTeleports.bind(this));
+    // Map of pending teleports with cooldowns
+    this.pendingTeleports = new Map();
     
-    // Listen for world unloads to clean up dimension references
-    this.server.on('worldUnloaded', this.handleWorldUnloaded.bind(this));
-  }
-  
-  /**
-   * Register a world as a dimension
-   * @param {String} dimensionId - The dimension identifier
-   * @param {Object} world - The world instance
-   */
-  registerDimension(dimensionId, world) {
-    this.dimensions.set(dimensionId, world);
-    console.log(`Registered dimension: ${dimensionId}`);
-  }
-  
-  /**
-   * Unregister a dimension
-   * @param {String} dimensionId - The dimension identifier
-   */
-  unregisterDimension(dimensionId) {
-    this.dimensions.delete(dimensionId);
+    // Set the default spawn points for each dimension
+    this.spawnPoints = {
+      overworld: { x: 0, y: 64, z: 0 },
+      nether: { x: 0, y: 32, z: 0 },
+      end: { x: 0, y: 64, z: 0 }
+    };
     
-    // Clean up any portals related to this dimension
-    for (const [key, portal] of this.portals.entries()) {
-      if (portal.dimension === dimensionId || portal.targetDimension === dimensionId) {
-        this.portals.delete(key);
+    // Portal scaling factor (for nether portals)
+    this.netherScaleFactor = 8;
+    
+    // Initialize dimensions
+    if (options.dimensions) {
+      for (const [name, dimension] of Object.entries(options.dimensions)) {
+        this.addDimension(name, dimension);
       }
     }
   }
   
   /**
-   * Handle world unloaded event
-   * @param {Object} data - World unload data
+   * Adds a dimension to the manager
+   * @param {String} name - Dimension name
+   * @param {Object} dimension - Dimension object
    */
-  handleWorldUnloaded(data) {
-    const { dimensionId } = data;
-    if (dimensionId) {
-      this.unregisterDimension(dimensionId);
+  addDimension(name, dimension) {
+    if (this.dimensions.has(name)) {
+      console.warn(`Dimension ${name} already exists, replacing.`);
     }
+    
+    this.dimensions.set(name, dimension);
+    this.emit('dimensionAdded', { name, dimension });
   }
   
   /**
-   * Register a portal
-   * @param {Object} portalData - Portal information
+   * Gets a dimension by name
+   * @param {String} name - Dimension name
+   * @returns {Object|null} Dimension object or null if not found
    */
-  registerPortal(portalData) {
-    const { dimension, position, orientation } = portalData;
-    const portalKey = `${dimension}:${position.x},${position.y},${position.z}:${orientation}`;
-    
-    this.portals.set(portalKey, portalData);
-    
-    // Try to find or create a linked portal in the target dimension
-    this.createLinkedPortal(portalData);
-    
-    console.log(`Registered portal: ${portalKey}`);
+  getDimension(name) {
+    return this.dimensions.get(name) || null;
   }
   
   /**
-   * Create or find a linked portal in the target dimension
-   * @param {Object} sourcePortalData - The source portal information
+   * Gets the configuration for a dimension
+   * @param {String} name - Dimension name
+   * @returns {Object|null} Dimension configuration or null if not found
    */
-  createLinkedPortal(sourcePortalData) {
-    const { dimension, targetDimension, position, orientation } = sourcePortalData;
+  getDimensionConfig(name) {
+    return this.dimensionConfig[name] || null;
+  }
+  
+  /**
+   * Sets a spawn point for a dimension
+   * @param {String} dimension - Dimension name
+   * @param {Object} position - Spawn position
+   */
+  setSpawnPoint(dimension, position) {
+    if (!this.spawnPoints[dimension]) {
+      this.spawnPoints[dimension] = {};
+    }
     
-    // Get the target world
-    const targetWorld = this.dimensions.get(targetDimension);
+    this.spawnPoints[dimension] = { ...position };
+  }
+  
+  /**
+   * Gets the spawn point for a dimension
+   * @param {String} dimension - Dimension name
+   * @returns {Object} Spawn position
+   */
+  getSpawnPoint(dimension) {
+    return this.spawnPoints[dimension] || this.spawnPoints.overworld;
+  }
+  
+  /**
+   * Teleports an entity between dimensions
+   * @param {Object} entity - Entity to teleport
+   * @param {String} targetDimension - Target dimension name
+   * @param {Object} targetPosition - Target position (optional)
+   * @returns {Boolean} Whether teleportation was successful
+   */
+  teleportEntityToDimension(entity, targetDimension, targetPosition = null) {
+    if (!entity || !targetDimension) return false;
+    
+    // Check if dimension exists
+    const targetWorld = this.getDimension(targetDimension);
     if (!targetWorld) {
-      console.warn(`Target dimension ${targetDimension} not found for portal linking`);
-      return;
+      console.error(`Target dimension ${targetDimension} does not exist.`);
+      return false;
     }
     
-    // Calculate the target position based on dimension scaling
-    let targetX, targetY, targetZ;
-    
-    if (dimension === 'overworld' && targetDimension === 'nether') {
-      // Overworld to Nether (divide by 8)
-      targetX = Math.floor(position.x / this.dimensionScales.overworld_to_nether);
-      targetZ = Math.floor(position.z / this.dimensionScales.overworld_to_nether);
-    } else if (dimension === 'nether' && targetDimension === 'overworld') {
-      // Nether to Overworld (multiply by 8)
-      targetX = Math.floor(position.x * this.dimensionScales.nether_to_overworld);
-      targetZ = Math.floor(position.z * this.dimensionScales.nether_to_overworld);
-    } else {
-      // Default 1:1 mapping for other dimension pairs
-      targetX = position.x;
-      targetZ = position.z;
-    }
-    
-    // Try to find a safe Y position
-    targetY = this.findSafePortalLocation(targetWorld, targetX, targetZ, orientation);
-    
-    if (targetY === -1) {
-      console.warn(`Could not find safe location for linked portal in ${targetDimension}`);
-      return;
-    }
-    
-    // Check if there's already a portal nearby in the target dimension
-    const nearbyPortal = this.findNearbyPortal(targetDimension, targetX, targetY, targetZ, 16);
-    if (nearbyPortal) {
-      // Link to the existing portal
-      this.linkPortals(sourcePortalData, nearbyPortal);
-      return;
-    }
-    
-    // Create a new portal at the target location
-    const targetPortalData = {
-      dimension: targetDimension,
-      targetDimension: dimension,
-      orientation,
-      position: { x: targetX, y: targetY, z: targetZ },
-      width: sourcePortalData.width,
-      height: sourcePortalData.height,
-      isLinked: true,
-      linkSource: `${dimension}:${position.x},${position.y},${position.z}:${orientation}`
-    };
-    
-    // Build the physical portal in the target world
-    this.buildPortalFrame(targetWorld, targetPortalData);
-    
-    // Register the target portal
-    const targetPortalKey = `${targetDimension}:${targetX},${targetY},${targetZ}:${orientation}`;
-    this.portals.set(targetPortalKey, targetPortalData);
-    
-    // Link the portals
-    this.linkPortals(sourcePortalData, targetPortalData);
-    
-    console.log(`Created linked portal in ${targetDimension} at ${targetX},${targetY},${targetZ}`);
-  }
-  
-  /**
-   * Find a safe location for a portal
-   * @param {Object} world - The target world
-   * @param {Number} x - The target X coordinate
-   * @param {Number} z - The target Z coordinate
-   * @param {String} orientation - Portal orientation
-   * @returns {Number} The Y coordinate, or -1 if no safe location found
-   */
-  findSafePortalLocation(world, x, z, orientation) {
-    // First check if there's already a portal frame nearby
-    const existingY = this.findExistingPortalFrame(world, x, z, 16);
-    if (existingY !== -1) {
-      return existingY;
-    }
-    
-    // Try to find a safe open area
-    // Start from sea level and go down to y=10
-    for (let y = 64; y >= 10; y--) {
-      // Need at least 3 blocks of vertical clearance
-      let hasClearance = true;
-      
-      // Check for solid ground below
-      if (world.getBlockType(`${x},${y-1},${z}`) === 'air') {
-        continue;
-      }
-      
-      // Check for enough space for the portal (minimum 4x5)
-      const width = orientation === 'x' ? 4 : 1;
-      const depth = orientation === 'z' ? 4 : 1;
-      
-      for (let dx = -width; dx <= width; dx++) {
-        for (let dz = -depth; dz <= depth; dz++) {
-          for (let dy = 0; dy < 5; dy++) {
-            const blockType = world.getBlockType(`${x+dx},${y+dy},${z+dz}`);
-            if (blockType && blockType !== 'air') {
-              hasClearance = false;
-              break;
-            }
-          }
-          if (!hasClearance) break;
-        }
-        if (!hasClearance) break;
-      }
-      
-      if (hasClearance) {
-        return y;
-      }
-    }
-    
-    // If no suitable location found, force it at y=64
-    return 64;
-  }
-  
-  /**
-   * Find an existing portal frame
-   * @param {Object} world - The world to search in
-   * @param {Number} x - The X coordinate center
-   * @param {Number} z - The Z coordinate center
-   * @param {Number} radius - The search radius
-   * @returns {Number} The Y coordinate of the found frame, or -1 if none found
-   */
-  findExistingPortalFrame(world, x, z, radius) {
-    // Search in a square around the target location
-    for (let dx = -radius; dx <= radius; dx++) {
-      for (let dz = -radius; dz <= radius; dz++) {
-        // Search from top to bottom
-        for (let y = 100; y >= 10; y--) {
-          const blockType = world.getBlockType(`${x+dx},${y},${z+dz}`);
-          if (blockType === 'obsidian') {
-            // Found potential obsidian, check if it's part of a portal frame
-            // This is simplified - in a real implementation, you'd want more thorough checking
-            return y;
-          }
-        }
-      }
-    }
-    
-    return -1;
-  }
-  
-  /**
-   * Find a nearby portal in a dimension
-   * @param {String} dimensionId - The dimension to search in
-   * @param {Number} x - The X coordinate
-   * @param {Number} y - The Y coordinate
-   * @param {Number} z - The Z coordinate
-   * @param {Number} radius - The search radius
-   * @returns {Object|null} The portal data if found, or null
-   */
-  findNearbyPortal(dimensionId, x, y, z, radius) {
-    for (const portal of this.portals.values()) {
-      if (portal.dimension !== dimensionId) continue;
-      
-      const dx = portal.position.x - x;
-      const dy = portal.position.y - y;
-      const dz = portal.position.z - z;
-      const distanceSquared = dx*dx + dy*dy + dz*dz;
-      
-      if (distanceSquared <= radius*radius) {
-        return portal;
-      }
-    }
-    
-    return null;
-  }
-  
-  /**
-   * Build a physical portal frame and activate it
-   * @param {Object} world - The world to build in
-   * @param {Object} portalData - The portal data
-   */
-  buildPortalFrame(world, portalData) {
-    const { position, orientation, width, height } = portalData;
-    const { x, y, z } = position;
-    
-    // Default dimensions if not specified
-    const portalWidth = width || 2;
-    const portalHeight = height || 3;
-    
-    // Calculate corner positions
-    const startX = orientation === 'x' ? x - Math.floor(portalWidth/2) : x;
-    const startZ = orientation === 'z' ? z - Math.floor(portalWidth/2) : z;
-    const startY = y;
-    
-    // Build the obsidian frame
-    
-    // Bottom row
-    for (let i = 0; i <= portalWidth + 1; i++) {
-      const bx = orientation === 'x' ? startX - 1 + i : startX;
-      const bz = orientation === 'z' ? startZ - 1 + i : startZ;
-      world.setBlock(`${bx},${startY-1},${bz}`, { type: 'obsidian' });
-    }
-    
-    // Top row
-    for (let i = 0; i <= portalWidth + 1; i++) {
-      const bx = orientation === 'x' ? startX - 1 + i : startX;
-      const bz = orientation === 'z' ? startZ - 1 + i : startZ;
-      world.setBlock(`${bx},${startY+portalHeight},${bz}`, { type: 'obsidian' });
-    }
-    
-    // Left/front pillar
-    for (let i = 0; i <= portalHeight; i++) {
-      world.setBlock(`${startX-1},${startY+i-1},${startZ-1}`, { type: 'obsidian' });
-    }
-    
-    // Right/back pillar
-    const endX = orientation === 'x' ? startX + portalWidth + 1 : startX;
-    const endZ = orientation === 'z' ? startZ + portalWidth + 1 : startZ;
-    for (let i = 0; i <= portalHeight; i++) {
-      world.setBlock(`${endX-1},${startY+i-1},${endZ-1}`, { type: 'obsidian' });
-    }
-    
-    // Fill the portal blocks
-    for (let i = 0; i < portalWidth; i++) {
-      for (let j = 0; j < portalHeight; j++) {
-        const px = orientation === 'x' ? startX + i : startX;
-        const pz = orientation === 'z' ? startZ + i : startZ;
-        const py = startY + j;
-        
-        world.setBlock(`${px},${py},${pz}`, { 
-          type: 'nether_portal',
-          orientation 
-        });
-      }
-    }
-  }
-  
-  /**
-   * Link two portals together
-   * @param {Object} portalA - First portal data
-   * @param {Object} portalB - Second portal data
-   */
-  linkPortals(portalA, portalB) {
-    const keyA = `${portalA.dimension}:${portalA.position.x},${portalA.position.y},${portalA.position.z}:${portalA.orientation}`;
-    const keyB = `${portalB.dimension}:${portalB.position.x},${portalB.position.y},${portalB.position.z}:${portalB.orientation}`;
-    
-    // Update portal data with link information
-    portalA.linkedPortalKey = keyB;
-    portalB.linkedPortalKey = keyA;
-    
-    // Update the portals in the map
-    this.portals.set(keyA, portalA);
-    this.portals.set(keyB, portalB);
-  }
-  
-  /**
-   * Handle entity entering a portal
-   * @param {Object} data - Entity and portal data
-   */
-  handleEntityEnterPortal(data) {
-    const { entity, portalPosition, dimension, portalType } = data;
-    
-    // Only handle nether portals
-    if (portalType !== 'nether_portal') return;
-    
-    // Find the portal based on position
-    const portal = this.findPortalAt(dimension, portalPosition);
-    if (!portal) return;
-    
-    // Check if we already have a pending teleport for this entity
-    if (this.pendingTeleports.has(entity.id)) return;
-    
-    // Add to pending teleports with a delay
-    this.pendingTeleports.set(entity.id, {
-      entity,
-      sourcePortal: portal,
-      startTime: Date.now(),
-      delayMs: 4000, // 4 seconds in portal before teleporting
-      completionCallback: () => {
-        // Teleport the entity
-        this.teleportEntity(entity, portal);
-      }
-    });
-  }
-  
-  /**
-   * Find a portal at a specific position
-   * @param {String} dimension - The dimension to search in
-   * @param {Object} position - The position to search at
-   * @returns {Object|null} The portal data if found, or null
-   */
-  findPortalAt(dimension, position) {
-    const { x, y, z } = position;
-    
-    for (const portal of this.portals.values()) {
-      if (portal.dimension !== dimension) continue;
-      
-      const { position: portalPos, width, height, orientation } = portal;
-      
-      // Check if the position is within the portal bounds
-      if (orientation === 'x') {
-        if (x >= portalPos.x - width/2 && x <= portalPos.x + width/2 &&
-            y >= portalPos.y && y <= portalPos.y + height &&
-            z >= portalPos.z - 1 && z <= portalPos.z + 1) {
-          return portal;
-        }
-      } else { // orientation === 'z'
-        if (x >= portalPos.x - 1 && x <= portalPos.x + 1 &&
-            y >= portalPos.y && y <= portalPos.y + height &&
-            z >= portalPos.z - width/2 && z <= portalPos.z + width/2) {
-          return portal;
-        }
-      }
-    }
-    
-    return null;
-  }
-  
-  /**
-   * Process pending teleports
-   */
-  processPendingTeleports() {
+    // Check cooldown to prevent spam
+    const entityId = entity.id || entity.uuid || `entity_${Math.random().toString(36).substr(2, 9)}`;
     const now = Date.now();
-    const toRemove = [];
     
-    for (const [entityId, teleportData] of this.pendingTeleports.entries()) {
-      const { entity, startTime, delayMs, completionCallback } = teleportData;
-      
-      // Check if the entity is still in the game
-      if (!entity || !entity.isActive) {
-        toRemove.push(entityId);
-        continue;
-      }
-      
-      // Check if the entity is still in a portal
-      if (!entity.isInPortal) {
-        toRemove.push(entityId);
-        continue;
-      }
-      
-      // Check if the delay has elapsed
-      if (now - startTime >= delayMs) {
-        completionCallback();
-        toRemove.push(entityId);
+    if (this.pendingTeleports.has(entityId)) {
+      const lastTeleport = this.pendingTeleports.get(entityId);
+      if (now - lastTeleport < 2000) { // 2 second cooldown
+        return false;
       }
     }
     
-    // Remove completed teleports
-    for (const entityId of toRemove) {
-      this.pendingTeleports.delete(entityId);
-    }
-  }
-  
-  /**
-   * Teleport an entity to the linked dimension
-   * @param {Object} entity - The entity to teleport
-   * @param {Object} sourcePortal - The source portal
-   */
-  teleportEntity(entity, sourcePortal) {
-    // Get the linked portal
-    const linkedPortalKey = sourcePortal.linkedPortalKey;
-    if (!linkedPortalKey) {
-      console.warn(`Portal has no linked portal: ${sourcePortal.dimension}:${sourcePortal.position.x},${sourcePortal.position.y},${sourcePortal.position.z}`);
-      return;
+    // Get current dimension
+    const currentDimension = entity.dimension || 'overworld';
+    const currentWorld = this.getDimension(currentDimension);
+    if (!currentWorld) {
+      console.error(`Current dimension ${currentDimension} does not exist.`);
+      return false;
     }
     
-    const targetPortal = this.portals.get(linkedPortalKey);
-    if (!targetPortal) {
-      console.warn(`Linked portal not found: ${linkedPortalKey}`);
-      return;
+    // Calculate target position if not provided
+    if (!targetPosition) {
+      targetPosition = this.calculateTargetPosition(entity, currentDimension, targetDimension);
     }
     
-    // Get the target world
-    const targetWorld = this.dimensions.get(targetPortal.dimension);
-    if (!targetWorld) {
-      console.warn(`Target dimension not loaded: ${targetPortal.dimension}`);
-      return;
+    // Remove entity from current dimension
+    currentWorld.removeEntity(entity);
+    
+    // Update entity properties
+    const oldPosition = { ...entity.position };
+    entity.dimension = targetDimension;
+    entity.position = targetPosition;
+    
+    // Add entity to target dimension
+    targetWorld.addEntity(entity);
+    
+    // Set teleport cooldown
+    this.pendingTeleports.set(entityId, now);
+    
+    // Clean up old cooldowns occasionally
+    if (Math.random() < 0.1) {
+      this.cleanupTeleportCooldowns();
     }
     
-    // Calculate target position
-    const { position: targetPos, orientation } = targetPortal;
-    
-    // Adjust position to be in front of the portal based on orientation
-    let targetX = targetPos.x;
-    let targetY = targetPos.y;
-    let targetZ = targetPos.z;
-    
-    // Add a small offset in front of the portal
-    if (orientation === 'x') {
-      targetZ += 1;  // Step out in front of Z-facing portal
-    } else {
-      targetX += 1;  // Step out in front of X-facing portal
-    }
-    
-    // Trigger the teleport
-    entity.teleport({
-      dimension: targetPortal.dimension,
-      position: { x: targetX, y: targetY, z: targetZ },
-      preserveMomentum: true
-    });
-    
-    // Emit event for the teleport
+    // Emit teleport event
     this.emit('entityTeleported', {
       entity,
-      sourceDimension: sourcePortal.dimension,
-      targetDimension: targetPortal.dimension,
-      sourcePosition: entity.position,
-      targetPosition: { x: targetX, y: targetY, z: targetZ }
+      fromDimension: currentDimension,
+      toDimension: targetDimension,
+      fromPosition: oldPosition,
+      toPosition: targetPosition
     });
     
-    // Play teleport sound
-    targetWorld.playSound({
-      name: 'portal_travel',
-      position: { x: targetX, y: targetY, z: targetZ },
-      volume: 1.0,
-      pitch: 1.0,
-      radius: 32
-    });
+    return true;
   }
   
   /**
-   * Clean up resources
+   * Calculate the target position for teleportation
+   * @param {Object} entity - Entity being teleported
+   * @param {String} fromDimension - Source dimension
+   * @param {String} toDimension - Target dimension
+   * @returns {Object} Target position
    */
-  cleanup() {
-    this.pendingTeleports.clear();
+  calculateTargetPosition(entity, fromDimension, toDimension) {
+    const position = { ...entity.position };
+    
+    // For nether/overworld scaling
+    if ((fromDimension === 'overworld' && toDimension === 'nether') ||
+        (fromDimension === 'nether' && toDimension === 'overworld')) {
+      
+      // Scale coordinates for nether/overworld conversion
+      if (fromDimension === 'overworld' && toDimension === 'nether') {
+        position.x = Math.floor(position.x / this.netherScaleFactor);
+        position.z = Math.floor(position.z / this.netherScaleFactor);
+        position.y = Math.min(Math.max(position.y, 30), 100); // Safe Y in nether
+      } else {
+        position.x = Math.floor(position.x * this.netherScaleFactor);
+        position.z = Math.floor(position.z * this.netherScaleFactor);
+        // Find safe Y in overworld
+        position.y = 64; // Default to sea level
+      }
+    } else if (toDimension === 'end') {
+      // End dimension has a fixed spawn platform
+      return { ...this.spawnPoints.end };
+    } else if (fromDimension === 'end' && toDimension === 'overworld') {
+      // Returning from end puts you at world spawn or bed
+      if (entity.type === 'player' && entity.spawnPosition) {
+        return { ...entity.spawnPosition };
+      } else {
+        return { ...this.spawnPoints.overworld };
+      }
+    }
+    
+    // Ensure position is safe (not in a block)
+    const targetWorld = this.getDimension(toDimension);
+    if (targetWorld) {
+      position.y = this.findSafeY(targetWorld, position);
+    }
+    
+    return position;
+  }
+  
+  /**
+   * Find a safe Y coordinate at the given X,Z position
+   * @param {Object} world - World to check
+   * @param {Object} position - Position to check
+   * @returns {Number} Safe Y coordinate
+   */
+  findSafeY(world, position) {
+    const { x, y, z } = position;
+    const buildHeight = this.dimensionConfig[world.dimension]?.buildHeight || { min: 0, max: 256 };
+    
+    // Start checking from y position and look up/down for safe spot
+    let startY = Math.min(Math.max(y, buildHeight.min), buildHeight.max);
+    
+    // Check up for air
+    for (let checkY = startY; checkY < buildHeight.max - 1; checkY++) {
+      const block1 = world.getBlock({ x, y: checkY, z });
+      const block2 = world.getBlock({ x, y: checkY + 1, z });
+      
+      if ((!block1 || !block1.solid) && (!block2 || !block2.solid)) {
+        return checkY;
+      }
+    }
+    
+    // Check down for solid ground with air above
+    for (let checkY = startY; checkY > buildHeight.min + 1; checkY--) {
+      const blockBelow = world.getBlock({ x, y: checkY - 1, z });
+      const block1 = world.getBlock({ x, y: checkY, z });
+      const block2 = world.getBlock({ x, y: checkY + 1, z });
+      
+      if (blockBelow && blockBelow.solid && 
+          (!block1 || !block1.solid) && 
+          (!block2 || !block2.solid)) {
+        return checkY;
+      }
+    }
+    
+    // If all else fails, return a default Y based on dimension
+    if (world.dimension === 'nether') {
+      return 32;
+    } else if (world.dimension === 'end') {
+      return 64;
+    } else {
+      return 64; // Overworld default
+    }
+  }
+  
+  /**
+   * Cleanup old teleport cooldowns
+   */
+  cleanupTeleportCooldowns() {
+    const now = Date.now();
+    for (const [entityId, timestamp] of this.pendingTeleports.entries()) {
+      if (now - timestamp > 10000) { // 10 seconds
+        this.pendingTeleports.delete(entityId);
+      }
+    }
+  }
+  
+  /**
+   * Get all dimension names
+   * @returns {Array} Array of dimension names
+   */
+  getDimensionNames() {
+    return Array.from(this.dimensions.keys());
+  }
+  
+  /**
+   * Saves dimension data
+   * @returns {Object} Serialized dimension data
+   */
+  serialize() {
+    // Only serialize configuration that needs to be persisted
+    return {
+      spawnPoints: { ...this.spawnPoints }
+    };
+  }
+  
+  /**
+   * Loads dimension data
+   * @param {Object} data - Serialized dimension data
+   */
+  deserialize(data) {
+    if (data.spawnPoints) {
+      this.spawnPoints = { ...data.spawnPoints };
+    }
   }
 }
 

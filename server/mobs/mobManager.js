@@ -2,6 +2,8 @@
 const passiveMobs = require('./passiveMobs');
 const neutralMobs = require('./neutralMobs');
 const hostileMobs = require('./hostileMobs');
+const VillagerNPC = require('./villagerNPC');
+const ZombieVillager = require('./zombieVillager');
 
 class MobManager {
   constructor() {
@@ -10,7 +12,8 @@ class MobManager {
     this.mobCap = {
       passive: 10,  // Max passive mobs
       neutral: 10,  // Max neutral mobs
-      hostile: 15   // Max hostile mobs
+      hostile: 15,  // Max hostile mobs
+      villager: 20  // Max villagers
     };
     this.spawnRanges = {
       passive: { min: 24, max: 48 },    // Spawn 24-48 blocks from player
@@ -33,7 +36,10 @@ class MobManager {
       // Hostile mobs
       'zombie': hostileMobs.Zombie,
       'skeleton': hostileMobs.Skeleton,
-      'creeper': hostileMobs.Creeper
+      'creeper': hostileMobs.Creeper,
+      
+      // Villagers
+      'villager': VillagerNPC
     };
     this.daytime = true;
     this.worldTime = 0;
@@ -49,6 +55,9 @@ class MobManager {
     // Weather conditions
     this.isRaining = false;
     this.moonPhase = 0; // 0-7, with 0 being full moon
+    
+    // Villages
+    this.villages = {};
   }
 
   // Set the biome manager reference
@@ -307,7 +316,8 @@ class MobManager {
     const mobTypes = {
       passive: ['sheep', 'cow', 'pig', 'chicken'],
       neutral: ['wolf', 'spider', 'enderman'],
-      hostile: ['zombie', 'skeleton', 'creeper']
+      hostile: ['zombie', 'skeleton', 'creeper'],
+      villager: ['villager']
     };
     
     const availableTypes = mobTypes[category];
@@ -320,7 +330,7 @@ class MobManager {
   }
 
   // Spawn a specific mob type
-  spawnMob(mobType, position) {
+  spawnMob(mobType, position, options = {}) {
     const MobClass = this.mobRegistry[mobType];
     
     if (!MobClass) {
@@ -328,7 +338,8 @@ class MobManager {
       return null;
     }
     
-    const mob = new MobClass(position);
+    // Create a new mob instance
+    const mob = new MobClass(position, options);
     this.mobs[mob.id] = mob;
     
     console.log(`Spawned ${mobType} at`, position);
@@ -544,6 +555,205 @@ class MobManager {
   // Get all projectile data for sending to clients
   getProjectileData() {
     return { ...this.projectiles };
+  }
+
+  /**
+   * Add a village to track
+   * @param {Object} village - Village data
+   */
+  addVillage(village) {
+    this.villages[village.id] = village;
+  }
+  
+  /**
+   * Get village by ID
+   * @param {string} villageId - Village ID
+   * @returns {Object|null} - Village data or null if not found
+   */
+  getVillage(villageId) {
+    return this.villages[villageId] || null;
+  }
+  
+  /**
+   * Get all villages
+   * @returns {Object} - All villages
+   */
+  getVillages() {
+    return this.villages;
+  }
+  
+  /**
+   * Handle player interaction with a villager for trading
+   * @param {string} playerId - Player ID
+   * @param {string} mobId - Mob ID
+   * @param {Object} data - Interaction data
+   * @returns {Object} - Interaction result
+   */
+  handleVillagerTrade(playerId, mobId, data) {
+    const mob = this.mobs[mobId];
+    const player = this.getPlayerById(playerId);
+    
+    if (!mob || mob.type !== 'villager') {
+      return { success: false, error: 'Not a villager' };
+    }
+    
+    if (data.action === 'get_trades') {
+      // Return available trades
+      return {
+        success: true,
+        trades: mob.getAvailableTrades(),
+        villagerInfo: {
+          profession: mob.profession,
+          level: mob.level,
+          experience: mob.experience,
+          experienceNeeded: mob.experienceNeeded,
+          villageId: mob.villageId
+        }
+      };
+    } else if (data.action === 'execute_trade') {
+      // Execute a trade using the reputation manager if available
+      if (global.villageReputationManager && mob.villageId) {
+        return mob.executeTrade(player, data.tradeId, global.villageReputationManager);
+      } else {
+        return mob.executeTrade(player, data.tradeId);
+      }
+    }
+    
+    return { success: false, error: 'Unknown action' };
+  }
+
+  /**
+   * Get a player by ID
+   * @param {string} playerId - Player ID to find
+   * @returns {Object|null} - Player object or null if not found
+   */
+  getPlayerById(playerId) {
+    // This relies on the server setting players on the mobManager
+    // If that's not happening, this would need to be implemented differently
+    if (this.players && this.players[playerId]) {
+      return this.players[playerId];
+    }
+    
+    // Fallback to simple player with ID
+    return { id: playerId };
+  }
+
+  /**
+   * Register players with the mob manager
+   * @param {Object} players - Object mapping player IDs to player objects
+   */
+  registerPlayers(players) {
+    this.players = players;
+  }
+
+  /**
+   * Handle zombie villager curing
+   * @param {string} zombieId - Zombie villager ID
+   * @param {string} playerId - Player ID who cured
+   * @returns {Object} - The new villager created or null
+   */
+  handleZombieVillagerCure(zombieId, playerId) {
+    const zombieVillager = this.mobs[zombieId];
+    if (!zombieVillager || zombieVillager.type !== 'zombie_villager') {
+      return null;
+    }
+    
+    // Get zombie villager data before removing it
+    const {
+      position,
+      profession,
+      level,
+      trades,
+      villageId,
+      isChild
+    } = zombieVillager;
+    
+    // Remove the zombie villager
+    delete this.mobs[zombieId];
+    
+    // Create a new villager at the same position
+    const villager = this.spawnMob('villager', position, {
+      profession,
+      level,
+      trades,
+      villageId,
+      isChild,
+      // The new villager is created with the same properties
+    });
+    
+    // Update reputation if applicable
+    if (global.villageReputationManager && villageId) {
+      global.villageReputationManager.updateReputation(
+        villageId,
+        playerId,
+        'ZOMBIE_CURED'
+      );
+    }
+    
+    return villager;
+  }
+
+  /**
+   * Handle villager conversion to zombie
+   * @param {string} villagerId - Villager ID
+   * @returns {Object} - The new zombie villager or null
+   */
+  handleVillagerConversion(villagerId) {
+    const villager = this.mobs[villagerId];
+    if (!villager || villager.type !== 'villager') {
+      return null;
+    }
+    
+    // Start conversion process on villager
+    villager.startZombieConversion();
+    
+    // The rest of the conversion will happen in the villager's update method
+    return villager;
+  }
+
+  /**
+   * Spawn a villager with profession and attributes
+   * @param {Object} position - Spawn position
+   * @param {Object} options - Villager options (profession, level, etc.)
+   * @param {string} villageId - Village this villager belongs to
+   * @returns {Object} - New villager mob
+   */
+  spawnVillager(position, options = {}, villageId = null) {
+    if (villageId) {
+      options.villageId = villageId;
+    }
+    
+    return this.spawnMob('villager', position, options);
+  }
+
+  /**
+   * Complete villager to zombie villager conversion
+   * @param {string} villagerId - Villager ID
+   * @returns {Object} - The new zombie villager or null
+   */
+  completeVillagerConversion(villagerId) {
+    const villager = this.mobs[villagerId];
+    if (!villager || villager.type !== 'villager' || !villager.isConverting) {
+      return null;
+    }
+    
+    // Get conversion data
+    const conversionData = villager.completeZombieConversion();
+    
+    // Remove the villager
+    delete this.mobs[villagerId];
+    
+    // Spawn a zombie villager
+    const zombieVillager = this.spawnMob('zombie_villager', conversionData.position, {
+      profession: conversionData.profession,
+      level: conversionData.level,
+      trades: conversionData.trades,
+      villageId: conversionData.villageId,
+      isChild: conversionData.isChild,
+      originalVillagerId: conversionData.originalVillagerId
+    });
+    
+    return zombieVillager;
   }
 }
 

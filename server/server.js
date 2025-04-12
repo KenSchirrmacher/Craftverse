@@ -15,6 +15,7 @@ const PotionRegistry = require('./items/potionRegistry');
 const PortalManager = require('./world/portalManager');
 const DimensionManager = require('./world/dimensionManager');
 const NetherDimension = require('./world/netherDimension');
+const VillageReputationManager = require('./world/villageReputationManager');
 
 const app = express();
 const httpServer = createServer(app);
@@ -172,6 +173,7 @@ global.dimensionManager.registerDimension('nether', netherDimension);
 // Initialize game systems
 const saveSystem = new SaveSystem('saves');
 const potionRegistry = new PotionRegistry();
+global.villageReputationManager = new VillageReputationManager();
 
 // Generate initial world
 function generateWorld() {
@@ -259,6 +261,11 @@ function gameLoop() {
     global.statusEffectsManager.update(TICK_RATE);
   }
   
+  // Update reputation system
+  if (global.villageReputationManager) {
+    global.villageReputationManager.update(deltaTime);
+  }
+  
   // Schedule next update
   setTimeout(gameLoop, 1000 / TICK_RATE);
 }
@@ -315,7 +322,11 @@ io.on('connection', (socket) => {
     // Get mob data for saving
     const mobData = mobManager.getMobData();
     
-    if (saveSystem.saveGame(worldName, players, blocks, mobData)) {
+    // Get reputation data if available
+    const reputationData = global.villageReputationManager ? 
+      global.villageReputationManager.serialize() : null;
+    
+    if (saveSystem.saveGame(worldName, players, blocks, mobData, { reputation: reputationData })) {
       socket.emit('saveComplete', { success: true, worldName });
     } else {
       socket.emit('saveComplete', { success: false, error: 'Failed to save game' });
@@ -344,6 +355,11 @@ io.on('connection', (socket) => {
             Object.assign(mob, mobData);
           }
         }
+      }
+      
+      // Load reputation data if available
+      if (saveData.reputation && global.villageReputationManager) {
+        global.villageReputationManager.deserialize(saveData.reputation);
       }
       
       currentWorld = worldName;
@@ -1061,6 +1077,145 @@ io.on('connection', (socket) => {
     socket.emit('netherBlocks', {
       position,
       blocks: nearbyBlocks
+    });
+  });
+
+  // Handle villager trade interaction
+  socket.on('villagerTrade', (data) => {
+    const { mobId, action, tradeId } = data;
+    const player = players[socket.id];
+    
+    if (!player) return;
+    
+    // Get the villager
+    const villager = mobManager.mobs[mobId];
+    if (!villager) {
+      return socket.emit('tradeResult', { success: false, error: 'Villager not found' });
+    }
+    
+    // Process the trade
+    if (action === 'get_trades') {
+      // Return available trades
+      const tradeData = mobManager.handleVillagerTrade(socket.id, mobId, { action });
+      
+      // Add village reputation if available
+      if (villager.villageId && global.villageReputationManager) {
+        tradeData.reputation = global.villageReputationManager.getReputation(
+          villager.villageId, 
+          socket.id
+        );
+        
+        tradeData.discount = global.villageReputationManager.getPriceDiscount(
+          villager.villageId, 
+          socket.id
+        );
+      }
+      
+      socket.emit('tradeResult', tradeData);
+    } else if (action === 'execute_trade') {
+      // Execute the trade with reputation manager if available
+      let result;
+      if (villager.villageId && global.villageReputationManager) {
+        result = villager.executeTrade(player, tradeId, global.villageReputationManager);
+      } else {
+        result = villager.executeTrade(player, tradeId);
+      }
+      
+      // Return result to client
+      socket.emit('tradeResult', result);
+      
+      // If inventory updated, broadcast to other players
+      if (result.success) {
+        socket.broadcast.emit('playerUpdate', {
+          id: socket.id,
+          inventory: player.inventory
+        });
+      }
+    } else {
+      socket.emit('tradeResult', { success: false, error: 'Unknown action' });
+    }
+  });
+
+  // Add handler for zombie villager curing
+  socket.on('cureZombieVillager', (data) => {
+    const { mobId } = data;
+    const player = players[socket.id];
+    
+    if (!player) return;
+    
+    // Check if player has necessary items (golden apple & weakness potion)
+    if (!player.inventory.golden_apple || player.inventory.golden_apple < 1) {
+      return socket.emit('cureResult', { 
+        success: false, 
+        error: 'Missing golden apple' 
+      });
+    }
+    
+    if (!player.inventory.potion_weakness || player.inventory.potion_weakness < 1) {
+      return socket.emit('cureResult', { 
+        success: false, 
+        error: 'Missing weakness potion' 
+      });
+    }
+    
+    // Get the zombie villager
+    const zombieVillager = mobManager.mobs[mobId];
+    if (!zombieVillager || zombieVillager.type !== 'zombie_villager') {
+      return socket.emit('cureResult', { 
+        success: false, 
+        error: 'Not a zombie villager' 
+      });
+    }
+    
+    // Consume items
+    player.inventory.golden_apple--;
+    player.inventory.potion_weakness--;
+    
+    // Start cure process (zombieVillager.startCuring would be implemented in the zombie villager class)
+    if (typeof zombieVillager.startCuring === 'function') {
+      zombieVillager.startCuring(player.id);
+      
+      socket.emit('cureResult', { 
+        success: true, 
+        message: 'Started curing process' 
+      });
+      
+      // Update player inventory
+      io.emit('playerUpdate', player);
+    } else {
+      socket.emit('cureResult', { 
+        success: false, 
+        error: 'Cannot cure this zombie villager' 
+      });
+    }
+  });
+
+  // Add handler for reputation events
+  socket.on('villageReputationEvent', (data) => {
+    const { villageId, eventType } = data;
+    const playerId = socket.id;
+    
+    if (!global.villageReputationManager) {
+      return socket.emit('error', { message: 'Reputation system not available' });
+    }
+    
+    // Update reputation (only certain events are allowed from client)
+    const allowedClientEvents = ['ZOMBIE_ATTACK_DEFENDED'];
+    if (!allowedClientEvents.includes(eventType)) {
+      return socket.emit('error', { message: 'Invalid reputation event' });
+    }
+    
+    // Update reputation
+    const newReputation = global.villageReputationManager.updateReputation(
+      villageId, 
+      playerId, 
+      eventType
+    );
+    
+    // Return updated reputation
+    socket.emit('reputationUpdate', {
+      villageId,
+      reputation: newReputation
     });
   });
 });

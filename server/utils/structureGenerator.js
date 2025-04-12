@@ -1,6 +1,7 @@
 /**
  * Structure Generator - Handles generation of predefined structures in the world
  */
+const VillageGenerator = require('./villageGenerator');
 
 class StructureGenerator {
   /**
@@ -12,8 +13,22 @@ class StructureGenerator {
     this.seed = options.seed || Math.floor(Math.random() * 1000000);
     this.structures = {};
     
+    // Create village generator
+    this.villageGenerator = new VillageGenerator({ seed: this.seed });
+    
+    // Entity spawner function (to be set by server)
+    this.entitySpawner = null;
+    
     // Register built-in structure generators
     this.registerDefaultStructures();
+  }
+  
+  /**
+   * Set the entity spawner function
+   * @param {Function} spawner - Function to spawn entities
+   */
+  setEntitySpawner(spawner) {
+    this.entitySpawner = spawner;
   }
   
   /**
@@ -504,23 +519,52 @@ class StructureGenerator {
   }
   
   /**
-   * Placeholder for village generation
+   * Generate a village at the specified position
    * @param {Object} position - Position to generate the village
    * @param {Object} options - Additional options
    * @param {Function} blockSetter - Function to set blocks
    * @returns {Object} - Structure data
    */
   generateVillage(position, options, blockSetter) {
-    // In a real implementation, this would be much more complex
     const { x, y, z } = position;
+    const biomeType = options.biome || 'plains';
     
-    // For now, just place a simple marker block
-    this.setBlock(blockSetter, x, y, z, { type: 'emerald_block', metadata: { structureType: 'village' } });
+    // Use the village generator to create a village
+    const entitySpawner = (type, pos, entityOptions) => {
+      // Use the entity spawner if available, otherwise just return the data
+      if (this.entitySpawner) {
+        return this.entitySpawner(type, pos, entityOptions);
+      }
+      
+      // Fallback return entity data only
+      return {
+        type,
+        position: pos,
+        ...entityOptions
+      };
+    };
     
+    const village = this.villageGenerator.generateVillage(
+      position,
+      biomeType,
+      blockSetter,
+      entitySpawner
+    );
+    
+    // Return village data
     return {
       type: 'village',
+      id: village.id,
       position: { x, y, z },
-      size: { width: 1, height: 1, depth: 1 }
+      size: { 
+        width: 64, // Approximate village size
+        height: 8, 
+        depth: 64 
+      },
+      biome: biomeType,
+      buildings: village.buildings.length,
+      villagers: village.villagers.length,
+      data: village // Include full village data
     };
   }
   
