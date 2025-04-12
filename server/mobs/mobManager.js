@@ -39,6 +39,36 @@ class MobManager {
     this.worldTime = 0;
     this.lastSpawnTime = 0;
     this.spawnCooldown = 200; // Ticks between spawn attempts (10 seconds)
+    
+    // Reference to the biome manager (set by server when initializing)
+    this.biomeManager = null;
+    
+    // World seed (set by server when initializing)
+    this.worldSeed = 0;
+    
+    // Weather conditions
+    this.isRaining = false;
+    this.moonPhase = 0; // 0-7, with 0 being full moon
+  }
+
+  // Set the biome manager reference
+  setBiomeManager(biomeManager) {
+    this.biomeManager = biomeManager;
+  }
+  
+  // Set the world seed
+  setWorldSeed(seed) {
+    this.worldSeed = seed;
+  }
+  
+  // Set weather conditions
+  setWeather(isRaining) {
+    this.isRaining = isRaining;
+  }
+  
+  // Set moon phase
+  setMoonPhase(phase) {
+    this.moonPhase = phase % 8; // Ensure it's between 0-7
   }
 
   // Update all mobs
@@ -183,19 +213,96 @@ class MobManager {
       z: player.position.z + Math.cos(angle) * distance
     };
     
-    // Select a mob type to spawn based on category
-    const mobType = this.selectMobType(mobCategory);
-    
-    // Spawn the mob
-    if (mobType) {
-      this.spawnMob(mobType, spawnPos);
-      return true;
+    // If biome manager is available, use biome-specific spawning
+    if (this.biomeManager) {
+      return this.trySpawnBiomeSpecificMob(spawnPos, mobCategory);
+    } else {
+      // Fall back to original spawning if no biome manager
+      const mobType = this.selectMobType(mobCategory);
+      
+      if (mobType) {
+        this.spawnMob(mobType, spawnPos);
+        return true;
+      }
     }
     
     return false;
   }
 
-  // Select a random mob type based on category
+  /**
+   * Try to spawn a biome-specific mob at the given position
+   * @param {Object} position - Spawn position
+   * @param {string} category - Mob category (passive, neutral, hostile)
+   * @returns {boolean} - Whether a mob was spawned
+   */
+  trySpawnBiomeSpecificMob(position, category) {
+    // Get biome at spawn position
+    const biome = this.biomeManager.getBiomeAt(position.x, position.z, this.worldSeed);
+    
+    if (!biome) {
+      return false;
+    }
+    
+    // Get spawn list for the category with current conditions
+    const spawnList = biome.getMobSpawnList(category, {
+      isDaytime: this.daytime,
+      moonPhase: this.moonPhase,
+      isRaining: this.isRaining
+    });
+    
+    if (!spawnList || spawnList.length === 0) {
+      return false;
+    }
+    
+    // Calculate total weight
+    let totalWeight = 0;
+    for (const entry of spawnList) {
+      totalWeight += entry.weight;
+    }
+    
+    if (totalWeight <= 0) {
+      return false;
+    }
+    
+    // Select a mob type based on weights
+    let randomValue = Math.random() * totalWeight;
+    let selectedEntry = null;
+    
+    for (const entry of spawnList) {
+      randomValue -= entry.weight;
+      if (randomValue <= 0) {
+        selectedEntry = entry;
+        break;
+      }
+    }
+    
+    if (!selectedEntry) {
+      return false;
+    }
+    
+    // Determine how many mobs to spawn
+    const count = selectedEntry.minCount + 
+      Math.floor(Math.random() * (selectedEntry.maxCount - selectedEntry.minCount + 1));
+    
+    // Spawn the mobs
+    for (let i = 0; i < count; i++) {
+      // Add a little randomness to position for groups
+      const offsetX = (Math.random() * 6) - 3;
+      const offsetZ = (Math.random() * 6) - 3;
+      
+      const mobPos = {
+        x: position.x + offsetX,
+        y: position.y,
+        z: position.z + offsetZ
+      };
+      
+      this.spawnMob(selectedEntry.type, mobPos);
+    }
+    
+    return true;
+  }
+
+  // Original method kept for backwards compatibility
   selectMobType(category) {
     const mobTypes = {
       passive: ['sheep', 'cow', 'pig', 'chicken'],

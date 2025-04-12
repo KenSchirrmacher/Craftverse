@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Brewing Stand UI Demo</title>
+    <link rel="stylesheet" href="css/brewingStand.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #222;
+            color: #eee;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .controls {
+            margin-bottom: 20px;
+            padding: 10px;
+            background-color: #333;
+            border-radius: 5px;
+            display: flex;
+            gap: 10px;
+        }
+        
+        button {
+            padding: 8px 16px;
+            background-color: #4CAF50;
+            border: none;
+            color: white;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        
+        button:hover {
+            background-color: #45a049;
+        }
+        
+        .debug-panel {
+            width: 400px;
+            height: 200px;
+            background-color: #333;
+            border-radius: 5px;
+            padding: 10px;
+            margin-top: 20px;
+            overflow-y: auto;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <h1>Brewing Stand UI Demo</h1>
+    
+    <div class="controls">
+        <button id="openBtn">Open Brewing Stand</button>
+        <button id="toggleActiveBtn">Toggle Brewing</button>
+        <button id="resetBtn">Reset State</button>
+    </div>
+    
+    <div class="debug-panel" id="debugPanel"></div>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    <script>
+        // Mock game object with player inventory and socket
+        const game = {
+            player: {
+                inventory: {
+                    items: Array(36).fill(null),
+                    moveItem: function(fromIndex, toIndex) {
+                        const item = this.items[fromIndex];
+                        this.items[fromIndex] = this.items[toIndex];
+                        this.items[toIndex] = item;
+                        return true;
+                    },
+                    controls: {
+                        lock: function() {},
+                        unlock: function() {}
+                    }
+                }
+            },
+            socket: {
+                on: function(event, callback) {
+                    this.callbacks = this.callbacks || {};
+                    this.callbacks[event] = callback;
+                },
+                emit: function(event, data) {
+                    log(`Socket emit: ${event}`, data);
+                    if (event === 'brewingStand:getState') {
+                        // Mock response
+                        setTimeout(() => {
+                            if (this.callbacks && this.callbacks['brewingStand:state']) {
+                                this.callbacks['brewingStand:state'](mockBrewingState);
+                            }
+                        }, 100);
+                    }
+                },
+                off: function() {}
+            }
+        };
+        
+        // Add some test items to inventory
+        game.player.inventory.items[0] = { id: 'glass_bottle', count: 3 };
+        game.player.inventory.items[1] = { id: 'nether_wart', count: 10 };
+        game.player.inventory.items[2] = { id: 'blaze_powder', count: 5 };
+        game.player.inventory.items[3] = { id: 'sugar', count: 8 };
+        game.player.inventory.items[4] = { id: 'glistering_melon', count: 3 };
+        
+        // Mock brewing state
+        const mockBrewingState = {
+            ingredientSlot: null,
+            fuelSlot: null,
+            bottleSlots: [null, null, null],
+            brewingProgress: 0,
+            fuelLevel: 0,
+            maxFuelLevel: 20,
+            isActive: false
+        };
+        
+        // Debug logging
+        function log(message, data) {
+            const debugPanel = document.getElementById('debugPanel');
+            const logItem = document.createElement('div');
+            logItem.style.marginBottom = '5px';
+            logItem.style.borderBottom = '1px solid #555';
+            logItem.style.paddingBottom = '5px';
+            
+            logItem.textContent = message;
+            if (data) {
+                const dataStr = JSON.stringify(data, null, 2);
+                const dataElem = document.createElement('pre');
+                dataElem.textContent = dataStr;
+                dataElem.style.fontSize = '11px';
+                dataElem.style.color = '#aaa';
+                logItem.appendChild(dataElem);
+            }
+            
+            debugPanel.appendChild(logItem);
+            debugPanel.scrollTop = debugPanel.scrollHeight;
+        }
+        
+        let brewingUI;
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            // Import the brewing stand UI script
+            const script = document.createElement('script');
+            script.src = 'js/ui/brewingStandUI.js';
+            script.onload = function() {
+                log('BrewingStandUI script loaded');
+                
+                // Set up event listeners
+                document.getElementById('openBtn').addEventListener('click', () => {
+                    if (!brewingUI) {
+                        brewingUI = new BrewingStandUI(game, {x: 0, y: 0, z: 0});
+                    }
+                    brewingUI.open();
+                    log('Brewing stand opened');
+                });
+                
+                document.getElementById('toggleActiveBtn').addEventListener('click', () => {
+                    if (!brewingUI) return;
+                    
+                    mockBrewingState.isActive = !mockBrewingState.isActive;
+                    
+                    if (mockBrewingState.isActive) {
+                        mockBrewingState.brewingProgress = 0;
+                        const interval = setInterval(() => {
+                            mockBrewingState.brewingProgress += 0.05;
+                            if (mockBrewingState.brewingProgress >= 1) {
+                                mockBrewingState.brewingProgress = 0;
+                                mockBrewingState.isActive = false;
+                                clearInterval(interval);
+                            }
+                            
+                            if (brewingUI && game.socket.callbacks['brewingStand:progress']) {
+                                game.socket.callbacks['brewingStand:progress'](mockBrewingState.brewingProgress);
+                            }
+                        }, 100);
+                    }
+                    
+                    brewingUI.setState(mockBrewingState);
+                    log(`Brewing ${mockBrewingState.isActive ? 'started' : 'stopped'}`);
+                });
+                
+                document.getElementById('resetBtn').addEventListener('click', () => {
+                    if (!brewingUI) return;
+                    
+                    mockBrewingState.ingredientSlot = null;
+                    mockBrewingState.fuelSlot = null;
+                    mockBrewingState.bottleSlots = [null, null, null];
+                    mockBrewingState.brewingProgress = 0;
+                    mockBrewingState.fuelLevel = 0;
+                    mockBrewingState.isActive = false;
+                    
+                    brewingUI.setState(mockBrewingState);
+                    log('Brewing stand state reset');
+                });
+            };
+            
+            document.body.appendChild(script);
+        });
+    </script>
+</body>
+</html> 
