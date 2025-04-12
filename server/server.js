@@ -16,6 +16,7 @@ const PortalManager = require('./world/portalManager');
 const DimensionManager = require('./world/dimensionManager');
 const NetherDimension = require('./world/netherDimension');
 const VillageReputationManager = require('./world/villageReputationManager');
+const CombatManager = require('./combat/combatManager');
 
 const app = express();
 const httpServer = createServer(app);
@@ -146,6 +147,12 @@ global.statusEffectsManager = new StatusEffectsManager();
 // Initialize brewing system
 global.brewingSystem = new BrewingSystem(io);
 
+// Initialize combat manager
+global.combatManager = new CombatManager({
+  server: io,
+  statusEffectsManager: global.statusEffectsManager
+});
+
 // Initialize dimension manager
 global.dimensionManager = new DimensionManager({ server: io });
 
@@ -267,6 +274,19 @@ function gameLoop() {
     global.statusEffectsManager.update(TICK_RATE);
   }
   
+  // Update combat manager (cooldowns, shield states, etc.)
+  if (global.combatManager) {
+    global.combatManager.tick(deltaTime);
+    
+    // Send cooldown updates to players
+    for (const playerId in players) {
+      const cooldown = global.combatManager.getAttackCooldown(playerId);
+      if (cooldown) {
+        io.to(playerId).emit('attackCooldownUpdate', cooldown);
+      }
+    }
+  }
+  
   // Update reputation system
   if (global.villageReputationManager) {
     global.villageReputationManager.update(deltaTime);
@@ -291,7 +311,11 @@ io.on('connection', (socket) => {
     position: { x: 0, y: 1, z: 0 },
     rotation: { y: 0 },
     health: 100,
+    maxHealth: 100,
     movementMode: 'walk',
+    isBlocking: false,
+    offhandItem: null,
+    mainHandItem: null,
     inventory: {
       grass: 64,
       dirt: 64,
@@ -440,8 +464,27 @@ io.on('connection', (socket) => {
     const player = players[socket.id];
     if (!player) return;
     
-    const { mobId, damage } = data;
-    const result = mobManager.handlePlayerAttack(socket.id, mobId, damage || 1);
+    const { mobId, damage, itemId } = data;
+    
+    // Check attack cooldown through Combat Manager
+    const cooldown = global.combatManager.getAttackCooldown(socket.id);
+    if (cooldown && cooldown.progress < 1) {
+      // Attack still on cooldown, apply damage multiplier
+      const damageMultiplier = global.combatManager.getDamageMultiplier(socket.id);
+      data.damage = (damage || 1) * damageMultiplier;
+    }
+    
+    // Process the attack
+    const result = mobManager.handlePlayerAttack(socket.id, mobId, data.damage || 1);
+    
+    // Start a new attack cooldown if attack was successful
+    if (result.success) {
+      global.combatManager.startAttackCooldown(socket.id, itemId || 'hand');
+    }
+    
+    // Send cooldown info with the result
+    const newCooldown = global.combatManager.getAttackCooldown(socket.id);
+    result.cooldown = newCooldown;
     
     socket.emit('attackResult', result);
   });
@@ -471,18 +514,60 @@ io.on('connection', (socket) => {
     const target = players[data.targetId];
     
     if (!attacker || !target) return;
-
-    // Apply damage
-    target.health -= data.damage;
+    
+    // Create attack data object
+    const attackData = {
+      itemId: data.weaponId || 'hand',
+      baseDamage: data.damage || 1,
+      knockback: data.knockback || 0.5,
+      effects: data.effects || []
+    };
+    
+    // Process attack through combat manager (handles cooldowns, shields, etc.)
+    const processedAttack = global.combatManager.processAttack(
+      data.attackerId, 
+      data.targetId, 
+      attackData
+    );
+    
+    // Check if target is blocking with shield
+    let wasBlocked = false;
+    let blockMessage = '';
+    
+    // Apply damage based on processed attack
+    target.health -= processedAttack.damage;
+    
+    // If damage was reduced due to shield blocking
+    if (processedAttack.damage < attackData.baseDamage) {
+      wasBlocked = true;
+      blockMessage = 'Attack partially blocked by shield!';
+    }
     
     // Check for death
     if (target.health <= 0) {
-        target.health = 0;
-        io.emit('playerDeath', { playerId: target.id });
+      target.health = 0;
+      io.emit('playerDeath', { playerId: target.id });
     }
 
     // Update target's health
     io.emit('playerUpdate', target);
+    
+    // Send attack result to attacker
+    io.to(data.attackerId).emit('attackResult', {
+      success: true,
+      damage: processedAttack.damage,
+      wasBlocked,
+      message: blockMessage,
+      cooldown: global.combatManager.getAttackCooldown(data.attackerId)
+    });
+    
+    // Send hit info to target
+    io.to(data.targetId).emit('playerDamaged', {
+      damage: processedAttack.damage,
+      attacker: data.attackerId,
+      wasBlocked,
+      knockback: processedAttack.knockback
+    });
   });
 
   // Handle player respawn
@@ -1222,6 +1307,72 @@ io.on('connection', (socket) => {
     socket.emit('reputationUpdate', {
       villageId,
       reputation: newReputation
+    });
+  });
+
+  // Handle player shield actions
+  socket.on('shieldAction', (data) => {
+    const player = players[socket.id];
+    if (!player) return;
+
+    const { action, shieldItem } = data;
+    
+    if (action === 'block') {
+      // Start blocking with shield
+      const activated = global.combatManager.activateShield(socket.id, shieldItem);
+      
+      socket.emit('shieldActionResult', {
+        success: activated,
+        action: 'block',
+        message: activated ? 'Shield raised' : 'Shield could not be activated'
+      });
+      
+      // Broadcast shield state to other players
+      socket.broadcast.emit('playerUpdate', {
+        id: socket.id,
+        isBlocking: activated
+      });
+    } 
+    else if (action === 'lower') {
+      // Stop blocking
+      global.combatManager.deactivateShield(socket.id);
+      
+      socket.emit('shieldActionResult', {
+        success: true,
+        action: 'lower',
+        message: 'Shield lowered'
+      });
+      
+      // Broadcast shield state to other players
+      socket.broadcast.emit('playerUpdate', {
+        id: socket.id,
+        isBlocking: false
+      });
+    }
+  });
+  
+  // Handle offhand item management
+  socket.on('setOffhandItem', (data) => {
+    const player = players[socket.id];
+    if (!player) return;
+    
+    const { item } = data;
+    
+    // Set item in offhand
+    global.combatManager.setOffhandItem(socket.id, item);
+    
+    // Update player inventory
+    player.offhandItem = item;
+    
+    socket.emit('offhandItemSet', {
+      success: true,
+      item
+    });
+    
+    // Broadcast offhand update to other players
+    socket.broadcast.emit('playerUpdate', {
+      id: socket.id,
+      offhandItem: item
     });
   });
 });
