@@ -44,22 +44,17 @@ You MUST NOT create work arounds, or hacks to make the feature or service work. 
 13. Ocean ruins
 
 ### Current Focus ###
-Implementing Biomes, which includes:
-- Various biome types (plains, forest, desert, mountains, etc.)
-- Biome-specific terrain generation
-- Biome-specific vegetation and features
-- Biome transitions and borders
-- Temperature and rainfall systems
-- Biome-specific mobs spawning
-- Rivers and oceans as biome separators
-
-Implementing the Potions and Brewing system, which includes:
-- Brewing stand mechanics
-- Potion ingredients and recipes
-- Potion effects on players and mobs
-- Status effects system
-- Splash and lingering potions
-- Custom potion mechanics
+Implementing the Nether dimension, which includes:
+- Nether portal mechanics (creation, activation)
+- Dimension transition and player teleportation
+- Nether-specific biomes (Nether Wastes, Soul Sand Valley, Crimson Forest, Warped Forest, Basalt Deltas)
+- Nether-specific terrain generation
+- Nether-specific blocks (netherrack, soul sand, basalt, etc.)
+- Nether-specific mobs (ghasts, blazes, piglins, etc.)
+- Nether-specific vegetation and features
+- Nether fortresses and structure generation
+- Lava oceans and unique hazards
+- Nether coordinate scaling (8:1 ratio with Overworld)
 
 ### Test Cases ###
 Each feature will have its own test case to ensure proper functionality. Test cases will be documented here as they are created.
