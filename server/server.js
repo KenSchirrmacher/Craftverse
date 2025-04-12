@@ -83,7 +83,13 @@ const blockTypes = {
   ancient_debris: { name: 'Ancient Debris', hardness: 30 },
   nether_brick: { name: 'Nether Brick', hardness: 2 },
   gilded_blackstone: { name: 'Gilded Blackstone', hardness: 1.5 },
-  nether_portal: { name: 'Nether Portal', hardness: -1, solid: false, transparent: true, light: 11 }
+  nether_portal: { name: 'Nether Portal', hardness: -1, solid: false, transparent: true, light: 11 },
+  
+  // Ocean monument blocks
+  prismarine: { name: 'Prismarine', hardness: 1.5 },
+  prismarine_bricks: { name: 'Prismarine Bricks', hardness: 1.5 },
+  dark_prismarine: { name: 'Dark Prismarine', hardness: 1.5 },
+  sea_lantern: { name: 'Sea Lantern', hardness: 0.3, light: 15 }
 };
 
 // Tool types and their properties

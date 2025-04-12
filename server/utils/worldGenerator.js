@@ -512,6 +512,7 @@ class WorldGenerator {
       case 'desert_pyramid':
       case 'jungle_temple':
       case 'witch_hut':
+      case 'ocean_monument':
         return 64;
       case 'stronghold':
         return 128;
@@ -540,7 +541,8 @@ class WorldGenerator {
       'desert_pyramid',
       'jungle_temple',
       'witch_hut',
-      'stronghold'
+      'stronghold',
+      'ocean_monument'
     ].includes(structureType);
   }
 

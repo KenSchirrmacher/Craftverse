@@ -424,8 +424,263 @@ class Creeper extends MobBase {
   }
 }
 
+// Guardian - underwater hostile mob with ranged laser attack
+class Guardian extends MobBase {
+  constructor(position) {
+    super('guardian', position, 30, 0.5); // type, position, health, speed
+    this.attackDamage = 5;
+    this.attackRange = 8; // Ranged attack
+    this.aggroRange = 16;
+    this.laserCooldown = 0;
+    this.firingLaser = false;
+    this.laserTarget = null;
+    this.laserChargeTime = 2000; // 2 seconds to charge laser
+    this.laserChargingProgress = 0;
+    this.waterBreathingOnly = true; // Can only survive in water
+    this.outOfWaterTimer = 0;
+  }
+
+  update(world, players, deltaTime) {
+    super.update(world, players, deltaTime);
+    
+    // Check if guardian is in water
+    const blockAtPosition = world.getBlockAt(
+      Math.floor(this.position.x),
+      Math.floor(this.position.y),
+      Math.floor(this.position.z)
+    );
+    
+    const inWater = blockAtPosition && blockAtPosition.type === 'water';
+    
+    if (this.waterBreathingOnly && !inWater) {
+      this.outOfWaterTimer += deltaTime;
+      
+      // Take damage if out of water for too long
+      if (this.outOfWaterTimer >= 1000) { // 1 second
+        this.takeDamage(1);
+        this.outOfWaterTimer = 0;
+      }
+    } else {
+      this.outOfWaterTimer = 0;
+    }
+    
+    // Handle laser attack
+    if (this.targetEntity && this.state === 'attack' && inWater) {
+      this.laserCooldown -= deltaTime;
+      
+      if (this.laserCooldown <= 0 && !this.firingLaser) {
+        // Start charging laser
+        this.firingLaser = true;
+        this.laserTarget = this.targetEntity;
+        this.laserChargingProgress = 0;
+      }
+      
+      if (this.firingLaser) {
+        // Update laser charging
+        this.laserChargingProgress += deltaTime;
+        
+        // Fire laser when charged
+        if (this.laserChargingProgress >= this.laserChargeTime) {
+          this.fireLaser(this.laserTarget);
+          this.firingLaser = false;
+          this.laserCooldown = 3000; // 3 seconds between attacks
+        }
+      }
+    } else if (this.firingLaser) {
+      // Cancel laser if target lost
+      this.firingLaser = false;
+    }
+  }
+
+  // Fire laser at target
+  fireLaser(target) {
+    // Calculate direction to target
+    const dx = target.position.x - this.position.x;
+    const dy = target.position.y - this.position.y;
+    const dz = target.position.z - this.position.z;
+    
+    // Check if target is visible
+    const distance = Math.sqrt(dx * dx + dy * dy + dz * dz);
+    
+    if (distance > this.attackRange) {
+      return null; // Target too far
+    }
+    
+    // Deal damage to target
+    target.takeDamage(this.attackDamage, this);
+    
+    // Return laser effect data for client
+    return {
+      type: 'laser',
+      start: {
+        x: this.position.x,
+        y: this.position.y + 0.5, // Laser comes from middle of guardian
+        z: this.position.z
+      },
+      end: {
+        x: target.position.x,
+        y: target.position.y + 1, // Target at head level
+        z: target.position.z
+      },
+      duration: 500 // Half second beam effect
+    };
+  }
+
+  getClientData() {
+    const data = super.getClientData();
+    data.firingLaser = this.firingLaser;
+    data.laserCharge = this.firingLaser ? (this.laserChargingProgress / this.laserChargeTime) : 0;
+    
+    if (this.firingLaser && this.laserTarget) {
+      data.laserTarget = {
+        id: this.laserTarget.id,
+        type: this.laserTarget.type
+      };
+    }
+    
+    return data;
+  }
+
+  getDrops() {
+    const loot = [];
+    
+    // Drops prismarine shards
+    if (Math.random() < 0.8) {
+      loot.push({
+        type: 'item',
+        itemType: 'prismarine_shard',
+        count: Math.floor(Math.random() * 2) + 1
+      });
+    }
+    
+    // Chance to drop prismarine crystals
+    if (Math.random() < 0.3) {
+      loot.push({
+        type: 'item',
+        itemType: 'prismarine_crystal',
+        count: Math.floor(Math.random() * 2) + 1
+      });
+    }
+    
+    // Chance to drop raw fish
+    if (Math.random() < 0.4) {
+      loot.push({
+        type: 'item',
+        itemType: 'raw_fish',
+        count: 1
+      });
+    }
+    
+    return loot;
+  }
+
+  isHostile() {
+    return true;
+  }
+}
+
+// Elder Guardian - stronger guardian with mining fatigue effect
+class ElderGuardian extends Guardian {
+  constructor(position) {
+    super(position);
+    this.type = 'elder_guardian'; // Override type
+    this.health = 80;
+    this.maxHealth = 80;
+    this.attackDamage = 8;
+    this.attackRange = 10;
+    this.aggroRange = 20;
+    this.miningFatigueRange = 50; // Range to apply mining fatigue effect
+    this.miningFatigueTimer = 0;
+    this.miningFatigueInterval = 60000; // Apply effect every minute
+  }
+
+  update(world, players, deltaTime) {
+    super.update(world, players, deltaTime);
+    
+    // Apply mining fatigue effect to nearby players
+    this.miningFatigueTimer += deltaTime;
+    
+    if (this.miningFatigueTimer >= this.miningFatigueInterval) {
+      this.applyMiningFatigue(players);
+      this.miningFatigueTimer = 0;
+    }
+  }
+
+  // Apply mining fatigue status effect to nearby players
+  applyMiningFatigue(players) {
+    const affectedPlayers = [];
+    
+    for (const playerId in players) {
+      const player = players[playerId];
+      
+      // Calculate distance to player
+      const dx = player.position.x - this.position.x;
+      const dy = player.position.y - this.position.y;
+      const dz = player.position.z - this.position.z;
+      const distance = Math.sqrt(dx * dx + dy * dy + dz * dz);
+      
+      // Apply effect if player is in range
+      if (distance <= this.miningFatigueRange) {
+        // Apply mining fatigue effect
+        const effect = {
+          type: 'mining_fatigue',
+          duration: 300000, // 5 minutes
+          level: 1,
+          source: this.id
+        };
+        
+        player.applyStatusEffect(effect);
+        affectedPlayers.push(playerId);
+      }
+    }
+    
+    return affectedPlayers;
+  }
+
+  // Generate loot drops (improved from regular guardian)
+  getLoot() {
+    const loot = [];
+    
+    // Always drop prismarine shards
+    loot.push({
+      type: 'item',
+      itemType: 'prismarine_shard',
+      count: Math.floor(Math.random() * 2) + 2
+    });
+    
+    // Always drop prismarine crystals
+    loot.push({
+      type: 'item',
+      itemType: 'prismarine_crystal',
+      count: Math.floor(Math.random() * 2) + 1
+    });
+    
+    // Chance to drop wet sponge
+    if (Math.random() < 0.33) {
+      loot.push({
+        type: 'item',
+        itemType: 'wet_sponge',
+        count: 1
+      });
+    }
+    
+    // Chance to drop raw fish
+    if (Math.random() < 0.5) {
+      loot.push({
+        type: 'item',
+        itemType: 'raw_fish',
+        count: Math.floor(Math.random() * 2) + 1
+      });
+    }
+    
+    return loot;
+  }
+}
+
 module.exports = {
   Zombie,
   Skeleton,
-  Creeper
+  Creeper,
+  Guardian,
+  ElderGuardian
 }; 

@@ -50,6 +50,7 @@ class StructureGenerator {
     this.registerStructure('village', this.generateVillage);
     this.registerStructure('stronghold', this.generateStronghold);
     this.registerStructure('mineshaft', this.generateMineshaft);
+    this.registerStructure('ocean_monument', this.generateOceanMonument);
   }
   
   /**
@@ -608,6 +609,302 @@ class StructureGenerator {
       position: { x, y, z },
       size: { width: 1, height: 1, depth: 1 }
     };
+  }
+  
+  /**
+   * Generate an ocean monument
+   * @param {Object} position - Position to generate the monument
+   * @param {Object} options - Additional options
+   * @param {Function} blockSetter - Function to set blocks
+   * @returns {Object} - Structure data
+   */
+  generateOceanMonument(position, options, blockSetter) {
+    const { x, y, z } = position;
+    
+    // Adjust the position to ensure it's underwater
+    const monumentY = Math.min(y, 60 - 15); // Monument should be fully underwater
+    
+    // Main building materials
+    const primaryMaterial = { type: 'prismarine' };
+    const secondaryMaterial = { type: 'prismarine_bricks' };
+    const accentMaterial = { type: 'dark_prismarine' };
+    const lightMaterial = { type: 'sea_lantern' };
+    const waterMaterial = { type: 'water' };
+    
+    // Monument dimensions
+    const width = 21;
+    const height = 18;
+    const depth = 21;
+    
+    // Generate the monument base
+    this.generateOceanMonumentBase(x, monumentY, z, width, depth, primaryMaterial, secondaryMaterial, accentMaterial, blockSetter);
+    
+    // Generate the monument interior
+    this.generateOceanMonumentInterior(x, monumentY, z, width, height, depth, primaryMaterial, secondaryMaterial, lightMaterial, waterMaterial, blockSetter);
+    
+    // Generate the monument roof and spires
+    this.generateOceanMonumentRoof(x, monumentY + 12, z, width, depth, primaryMaterial, secondaryMaterial, accentMaterial, lightMaterial, blockSetter);
+    
+    // Spawn guardians if entity spawner is available
+    if (this.entitySpawner) {
+      // Spawn regular guardians
+      for (let i = 0; i < 6; i++) {
+        const guardianX = x + (Math.random() * 16) - 8;
+        const guardianY = monumentY + 5 + (Math.random() * 8);
+        const guardianZ = z + (Math.random() * 16) - 8;
+        
+        this.entitySpawner({
+          type: 'guardian',
+          position: { x: guardianX, y: guardianY, z: guardianZ }
+        });
+      }
+      
+      // Spawn an elder guardian in the center
+      this.entitySpawner({
+        type: 'elder_guardian',
+        position: { x, y: monumentY + 8, z }
+      });
+    }
+    
+    return {
+      type: 'ocean_monument',
+      position: { x, y: monumentY, z },
+      size: { width, height, depth },
+      significantStructure: true
+    };
+  }
+  
+  /**
+   * Generate the base of an ocean monument
+   * @private
+   * @param {number} x - X coordinate
+   * @param {number} y - Y coordinate
+   * @param {number} z - Z coordinate
+   * @param {number} width - Monument width
+   * @param {number} depth - Monument depth
+   * @param {Object} primaryMaterial - Primary building material
+   * @param {Object} secondaryMaterial - Secondary building material
+   * @param {Object} accentMaterial - Accent building material
+   * @param {Function} blockSetter - Function to set blocks
+   */
+  generateOceanMonumentBase(x, y, z, width, depth, primaryMaterial, secondaryMaterial, accentMaterial, blockSetter) {
+    const halfWidth = Math.floor(width / 2);
+    const halfDepth = Math.floor(depth / 2);
+    
+    // Generate a platform as the base
+    for (let dx = -halfWidth; dx <= halfWidth; dx++) {
+      for (let dz = -halfDepth; dz <= halfDepth; dz++) {
+        // Use primary material for the base
+        this.setBlock(blockSetter, x + dx, y, z + dz, primaryMaterial);
+        
+        // Add a layer of secondary material for the floor
+        this.setBlock(blockSetter, x + dx, y + 1, z + dz, secondaryMaterial);
+        
+        // Add accent border around the edges
+        if (Math.abs(dx) === halfWidth || Math.abs(dz) === halfDepth) {
+          for (let dy = 1; dy <= 3; dy++) {
+            this.setBlock(blockSetter, x + dx, y + dy, z + dz, accentMaterial);
+          }
+        }
+      }
+    }
+    
+    // Create entrance steps
+    for (let step = 0; step < 3; step++) {
+      for (let i = -2; i <= 2; i++) {
+        this.setBlock(blockSetter, x + i, y - step, z + halfDepth + step + 1, primaryMaterial);
+      }
+    }
+  }
+  
+  /**
+   * Generate the interior of an ocean monument
+   * @private
+   * @param {number} x - X coordinate
+   * @param {number} y - Y coordinate
+   * @param {number} z - Z coordinate
+   * @param {number} width - Monument width
+   * @param {number} height - Monument height
+   * @param {number} depth - Monument depth
+   * @param {Object} primaryMaterial - Primary building material
+   * @param {Object} secondaryMaterial - Secondary building material
+   * @param {Object} lightMaterial - Light material
+   * @param {Object} waterMaterial - Water material
+   * @param {Function} blockSetter - Function to set blocks
+   */
+  generateOceanMonumentInterior(x, y, z, width, height, depth, primaryMaterial, secondaryMaterial, lightMaterial, waterMaterial, blockSetter) {
+    const halfWidth = Math.floor(width / 2);
+    const halfDepth = Math.floor(depth / 2);
+    
+    // Generate walls
+    for (let dx = -halfWidth + 1; dx <= halfWidth - 1; dx++) {
+      for (let dz = -halfDepth + 1; dz <= halfDepth - 1; dz++) {
+        // Skip the inside of the monument (fill with water later)
+        if (Math.abs(dx) < halfWidth - 1 && Math.abs(dz) < halfDepth - 1) {
+          continue;
+        }
+        
+        // Build walls
+        for (let dy = 2; dy < height - 3; dy++) {
+          this.setBlock(blockSetter, x + dx, y + dy, z + dz, primaryMaterial);
+          
+          // Add decorative windows at regular intervals
+          if ((dy % 3 === 0) && (Math.abs(dx) === halfWidth - 1 || Math.abs(dz) === halfDepth - 1)) {
+            this.setBlock(blockSetter, x + dx, y + dy, z + dz, secondaryMaterial);
+          }
+        }
+      }
+    }
+    
+    // Create central chambers and hallways
+    this.createCentralChamber(x, y + 4, z, primaryMaterial, secondaryMaterial, lightMaterial, waterMaterial, blockSetter);
+    
+    // Fill interior with water
+    for (let dx = -halfWidth + 2; dx <= halfWidth - 2; dx++) {
+      for (let dy = 2; dy < height - 4; dy++) {
+        for (let dz = -halfDepth + 2; dz <= halfDepth - 2; dz++) {
+          // Skip areas where chambers and hallways are built
+          if (Math.abs(dx) < 3 && Math.abs(dz) < 3 && dy >= 4 && dy <= 8) {
+            continue;
+          }
+          
+          this.setBlock(blockSetter, x + dx, y + dy, z + dz, waterMaterial);
+        }
+      }
+    }
+    
+    // Add decorative light sources
+    for (let dx = -halfWidth + 3; dx <= halfWidth - 3; dx += 4) {
+      for (let dz = -halfDepth + 3; dz <= halfDepth - 3; dz += 4) {
+        this.setBlock(blockSetter, x + dx, y + 3, z + dz, lightMaterial);
+        this.setBlock(blockSetter, x + dx, y + height - 5, z + dz, lightMaterial);
+      }
+    }
+  }
+  
+  /**
+   * Create a central chamber in the ocean monument
+   * @private
+   * @param {number} x - X coordinate
+   * @param {number} y - Y coordinate
+   * @param {number} z - Z coordinate
+   * @param {Object} primaryMaterial - Primary building material
+   * @param {Object} secondaryMaterial - Secondary building material
+   * @param {Object} lightMaterial - Light material
+   * @param {Object} waterMaterial - Water material
+   * @param {Function} blockSetter - Function to set blocks
+   */
+  createCentralChamber(x, y, z, primaryMaterial, secondaryMaterial, lightMaterial, waterMaterial, blockSetter) {
+    // Create a 5x5x5 chamber
+    for (let dx = -2; dx <= 2; dx++) {
+      for (let dy = 0; dy <= 4; dy++) {
+        for (let dz = -2; dz <= 2; dz++) {
+          // If it's a wall block
+          if (Math.abs(dx) === 2 || Math.abs(dz) === 2 || dy === 0 || dy === 4) {
+            this.setBlock(blockSetter, x + dx, y + dy, z + dz, secondaryMaterial);
+          } else {
+            // Interior is water
+            this.setBlock(blockSetter, x + dx, y + dy, z + dz, waterMaterial);
+          }
+        }
+      }
+    }
+    
+    // Add light sources in the corners
+    this.setBlock(blockSetter, x + 2, y + 1, z + 2, lightMaterial);
+    this.setBlock(blockSetter, x - 2, y + 1, z + 2, lightMaterial);
+    this.setBlock(blockSetter, x + 2, y + 1, z - 2, lightMaterial);
+    this.setBlock(blockSetter, x - 2, y + 1, z - 2, lightMaterial);
+    
+    // Add a decorative centerpiece
+    this.setBlock(blockSetter, x, y + 1, z, primaryMaterial);
+    this.setBlock(blockSetter, x, y + 2, z, lightMaterial);
+    
+    // Create doorways/passages in four directions
+    // North
+    this.setBlock(blockSetter, x, y + 1, z - 2, waterMaterial);
+    this.setBlock(blockSetter, x, y + 2, z - 2, waterMaterial);
+    // South
+    this.setBlock(blockSetter, x, y + 1, z + 2, waterMaterial);
+    this.setBlock(blockSetter, x, y + 2, z + 2, waterMaterial);
+    // East
+    this.setBlock(blockSetter, x + 2, y + 1, z, waterMaterial);
+    this.setBlock(blockSetter, x + 2, y + 2, z, waterMaterial);
+    // West
+    this.setBlock(blockSetter, x - 2, y + 1, z, waterMaterial);
+    this.setBlock(blockSetter, x - 2, y + 2, z, waterMaterial);
+  }
+  
+  /**
+   * Generate the roof and spires of an ocean monument
+   * @private
+   * @param {number} x - X coordinate
+   * @param {number} y - Y coordinate (roof level)
+   * @param {number} z - Z coordinate
+   * @param {number} width - Monument width
+   * @param {number} depth - Monument depth
+   * @param {Object} primaryMaterial - Primary building material
+   * @param {Object} secondaryMaterial - Secondary building material
+   * @param {Object} accentMaterial - Accent building material
+   * @param {Object} lightMaterial - Light material
+   * @param {Function} blockSetter - Function to set blocks
+   */
+  generateOceanMonumentRoof(x, y, z, width, depth, primaryMaterial, secondaryMaterial, accentMaterial, lightMaterial, blockSetter) {
+    const halfWidth = Math.floor(width / 2);
+    const halfDepth = Math.floor(depth / 2);
+    
+    // Create a flat roof
+    for (let dx = -halfWidth + 1; dx <= halfWidth - 1; dx++) {
+      for (let dz = -halfDepth + 1; dz <= halfDepth - 1; dz++) {
+        this.setBlock(blockSetter, x + dx, y, z + dz, secondaryMaterial);
+      }
+    }
+    
+    // Add decorative elements to the roof
+    for (let dx = -halfWidth + 3; dx <= halfWidth - 3; dx += 5) {
+      for (let dz = -halfDepth + 3; dz <= halfDepth - 3; dz += 5) {
+        this.setBlock(blockSetter, x + dx, y + 1, z + dz, accentMaterial);
+        
+        // Create small spires at regular intervals
+        if ((dx === 0 || dz === 0) && !(dx === 0 && dz === 0)) {
+          for (let dy = 1; dy <= 3; dy++) {
+            this.setBlock(blockSetter, x + dx, y + dy, z + dz, primaryMaterial);
+          }
+          this.setBlock(blockSetter, x + dx, y + 4, z + dz, accentMaterial);
+        }
+      }
+    }
+    
+    // Create main central spire
+    for (let dy = 1; dy <= 5; dy++) {
+      for (let dx = -1; dx <= 1; dx++) {
+        for (let dz = -1; dz <= 1; dz++) {
+          if (dx === 0 && dz === 0) {
+            this.setBlock(blockSetter, x, y + dy, z, secondaryMaterial);
+          } else {
+            this.setBlock(blockSetter, x + dx, y + dy, z + dz, primaryMaterial);
+          }
+        }
+      }
+    }
+    
+    // Add a light at the top of the central spire
+    this.setBlock(blockSetter, x, y + 6, z, lightMaterial);
+    
+    // Add smaller corner spires
+    const cornerSpires = [
+      { dx: halfWidth - 3, dz: halfDepth - 3 },
+      { dx: halfWidth - 3, dz: -(halfDepth - 3) },
+      { dx: -(halfWidth - 3), dz: halfDepth - 3 },
+      { dx: -(halfWidth - 3), dz: -(halfDepth - 3) }
+    ];
+    
+    for (const spire of cornerSpires) {
+      for (let dy = 1; dy <= 3; dy++) {
+        this.setBlock(blockSetter, x + spire.dx, y + dy, z + spire.dz, primaryMaterial);
+      }
+      this.setBlock(blockSetter, x + spire.dx, y + 4, z + spire.dz, accentMaterial);
+    }
   }
 }
 

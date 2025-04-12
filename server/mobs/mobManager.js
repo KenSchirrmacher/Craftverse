@@ -37,6 +37,8 @@ class MobManager {
       'zombie': hostileMobs.Zombie,
       'skeleton': hostileMobs.Skeleton,
       'creeper': hostileMobs.Creeper,
+      'guardian': hostileMobs.Guardian,
+      'elder_guardian': hostileMobs.ElderGuardian,
       
       // Villagers
       'villager': VillagerNPC
