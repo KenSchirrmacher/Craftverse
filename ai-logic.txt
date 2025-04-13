@@ -49,18 +49,18 @@ You MUST NOT create work arounds, or hacks to make the feature or service work. 
 4. ~~Temples~~
 5. ~~Ocean ruins~~
 6. ~~Combat update~~
-7. Nether update
+7. ~~Nether update~~
 8. Caves & Cliffs update
 
 ### Current Focus ###
-Implementing Nether update, which includes:
-- New biomes (Soul Sand Valley, Warped Forest, Crimson Forest, Basalt Deltas)
-- New mob types (Piglins, Hoglins, Striders, Zoglins)
-- New block types (Ancient debris, Basalt, Blackstone variants, Nether gold ore)
-- Ancient debris and Netherite equipment
-- Ruined portals in Overworld and Nether
-- Soul fire and soul fire torches
-- Improved bartering system with Piglins
+Implementing Caves & Cliffs update, which includes:
+- New biomes (Lush Caves, Dripstone Caves, etc.)
+- New mobs (Axolotl, Goat, Glow Squid)
+- New blocks (Copper, Amethyst, Deepslate, etc.)
+- New world generation with increased height and depth
+- Cave generation improvements
+- Mountain generation improvements
+- Archaeology system
 
 ### Test Cases ###
 Each feature will have its own test case to ensure proper functionality. Test cases will be documented here as they are created.
@@ -212,6 +212,16 @@ Each feature will have its own test case to ensure proper functionality. Test ca
   - [x] Integration with status effects system (haste, mining fatigue affecting cooldowns)
   - [x] Socket event handlers for new combat interactions
   - [x] Comprehensive test suite for verifying combat mechanics
+
+- [x] Nether update
+  - [x] New biomes (Soul Sand Valley, Warped Forest, Crimson Forest, Basalt Deltas)
+  - [x] New mob types (Piglins, Hoglins, Striders, Zoglins)
+  - [x] New block types (Ancient debris, Basalt, Blackstone variants, Nether gold ore)
+  - [x] Ancient debris and Netherite equipment
+  - [x] Ruined portals in Overworld and Nether
+  - [x] Soul fire and soul fire torches
+  - [x] Improved bartering system with Piglins
+  - [x] Comprehensive test suite for verifying Nether Update features
 
 ##Reserved below for AI to create project updates.##
 
@@ -599,4 +609,102 @@ Each feature will have its own test case to ensure proper functionality. Test ca
 - Modified game loop to update combat states and cooldowns
 - Added client notifications for combat events (cooldowns, blocking)
 - Successfully tested all combat mechanics with comprehensive test suite
+
+### 2023-11-29: Nether Mobs - Zoglin Implementation ###
+- Added Zoglin class extending MobBase in server/mobs/netherMobs.js
+- Implemented as an undead hostile mob that attacks all entities including other mobs
+- Added special undead properties (healing effects harm, harming effects heal)
+- Implemented attack mechanics with knockback effect
+- Created baby zoglin variant with reduced health and damage
+- Added state management, serialization, and deserialization
+- Connected to the Hoglin zombification mechanic through transformToZoglin()
+- Registered in mobRegistry for spawning in the Nether update
+- Completed all nether mob implementations (Piglin, Zombified Piglin, Hoglin, Strider, Zoglin)
+- Created comprehensive test suite in server/tests/zoglinTest.js to verify Zoglin functionality
+- Implemented test cases for basic properties, combat mechanics, undead damage handling, and Hoglin transformation
+
+### 2023-11-30: Nether Blocks Implementation ###
+- Created `netherBlocks.js` to implement all new block types from the Nether Update
+- Implemented AncientDebrisBlock with high blast resistance (1200) and diamond pickaxe requirement
+- Added BasaltBlock with directional placement and orientation-specific textures
+- Created PolishedBasaltBlock extending BasaltBlock with same orientation mechanics
+- Implemented BlackstoneBlock and its variants (Polished, Chiseled, Gilded)
+- Added special drop mechanics for GildedBlackstoneBlock (10% chance to drop gold nuggets)
+- Implemented NetherGoldOreBlock with fortune-influenced gold nugget drops
+- Created SoulSoilBlock with entity slowdown effect and soul fire conversion
+- Added SoulFireTorchBlock with placement logic and reduced light level compared to regular torches
+- Developed comprehensive test suite in server/tests/netherBlocksTest.js to verify block properties
+- Test cases include orientation settings, drop mechanics, enchantment interactions, and special block behaviors
+
+### 2024-02-10: Basalt Deltas Biome Implementation ###
+- Created BasaltDeltasBiome class extending NetherBiome in server/biomes/basaltDeltasBiome.js
+- Implemented unique terrain generation with basalt columns and blackstone surfaces
+- Added magma block generation near lava level for volcanic appearance
+- Configured biome with high weirdness and erosion values for placement in the nether
+- Set appropriate fog color (#6A6A6A) and high fog density (0.8) for ash-filled atmosphere
+- Implemented gilded blackstone as a rare decorative block (5% chance) in the biome
+- Connected to structure generation system with reduced fortress chance but added ruined portal structures
+- Completed all five nether biomes (Nether Wastes, Soul Sand Valley, Crimson Forest, Warped Forest, Basalt Deltas)
+
+### 2024-02-10: Ruined Portal Implementation ###
+- Added generateRuinedPortal method to StructureGenerator class in server/utils/structureGenerator.js
+- Implemented portal frame generation with configurable decay, size, and tilting
+- Created different variants based on dimension (stone/cobblestone for overworld, blackstone/basalt for nether)
+- Added buried portal variant with 50% chance in overworld
+- Implemented chest generation with 75% chance containing ruined portal loot
+- Added atmospheric elements like netherrack and fire for detail
+- Used magma blocks in nether variant for environmental consistency
+- Created helper methods for generating the frame and surroundings
+- Made portals highly configurable with size options (small, medium, large)
+- Added variable decay levels to create naturally deteriorated appearances
+
+### 2024-02-10: Soul Fire and Soul Fire Torch Implementation ###
+- Enhanced FireBlock class to support both regular fire and soul fire variants
+- Made soul fire do more damage (2 hearts vs 1 heart) but have less light (level 10 vs 15)
+- Added automatic fire type detection based on block below (soul sand/soil creates soul fire)
+- Implemented lower spread chance for soul fire (0.2 vs 0.4) for balance
+- Created SoulFireTorch class extending TorchBlock with blue flame color (#7EB8C4)
+- Added reduced light level for soul torch (10 vs 15 for regular torch)
+- Implemented visual differences with smaller flame height and fewer particles
+- Created comprehensive test suite in server/tests/netherUpdateTest.js
+- Added tests for biomes, blocks, fire behavior, and ruined portal generation
+- Successfully verified all Nether Update features
+
+### 2024-02-12: Lush Caves Biome Implementation ###
+- Created LushCavesBiome class extending Biome in server/biomes/lushCavesBiome.js
+- Implemented underground cave detection and generation system
+- Added moss blocks and clay patches with variable distribution
+- Implemented glow berry vines, spore blossoms, and dripleaf plants as unique features
+- Created water puddles and pools with axolotl spawning
+- Added azalea bushes and flowering azalea with appropriate distribution
+- Implemented cave region detection using 3D noise
+- Created biome-specific mob spawning with axolotls and glow squids
+- Integrated with world generation to place lush caves under certain surface biomes
+- Added specialized blocks for the biome:
+  - DripLeafBlock with tilting mechanics when players stand on it
+  - MossBlock with natural spreading and bone meal interaction
+- Integrated with the existing noise generation system for proper cave placement
+- Registered in the BiomeRegistry to make it available for world generation
+- Enhanced WorldGenerator to handle underground biomes with specialized cave generation
+- Added tests to verify lush caves generation and feature placement
+
+### 2024-02-20: Aquatic Mobs Implementation - Squid and Glow Squid ###
+- Added Squid and GlowSquid classes to server/mobs/passiveMobs.js
+- Implemented basic and advanced aquatic mob behavior:
+  - Water dependency with suffocation damage when out of water
+  - Unique swimming motion with random direction changes
+  - Ink release defense mechanism when damaged
+  - Fleeing from damage sources
+- Created GlowSquid with enhanced features:
+  - Glowing effect with variable intensity
+  - Flash effect when damaged
+  - Glow ink sac drops
+- Implemented InkSacItem and GlowInkSacItem in server/items/inkSacItem.js
+  - Regular ink sacs function as black dye
+  - Glow ink sacs have special application to signs and item frames
+  - Both have proper crafting properties
+- Registered mobs in the mobRegistry for proper spawning
+- Configured spawn rates in Lush Caves biome
+- Created comprehensive test suite in server/tests/aquaticMobsTest.js
+- Updated Axolotl predator behavior to properly target the new aquatic mobs
 

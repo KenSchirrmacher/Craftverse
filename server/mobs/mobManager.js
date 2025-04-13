@@ -2,6 +2,7 @@
 const passiveMobs = require('./passiveMobs');
 const neutralMobs = require('./neutralMobs');
 const hostileMobs = require('./hostileMobs');
+const netherMobs = require('./netherMobs');
 const VillagerNPC = require('./villagerNPC');
 const ZombieVillager = require('./zombieVillager');
 
@@ -27,6 +28,8 @@ class MobManager {
       'cow': passiveMobs.Cow,
       'pig': passiveMobs.Pig,
       'chicken': passiveMobs.Chicken,
+      'squid': passiveMobs.Squid,
+      'glow_squid': passiveMobs.GlowSquid,
       
       // Neutral mobs
       'wolf': neutralMobs.Wolf,
@@ -39,6 +42,14 @@ class MobManager {
       'creeper': hostileMobs.Creeper,
       'guardian': hostileMobs.Guardian,
       'elder_guardian': hostileMobs.ElderGuardian,
+      'silverfish': hostileMobs.Silverfish,
+      
+      // Nether mobs
+      'piglin': netherMobs.Piglin,
+      'zombified_piglin': netherMobs.ZombifiedPiglin,
+      'hoglin': netherMobs.Hoglin,
+      'strider': netherMobs.Strider,
+      'zoglin': netherMobs.Zoglin,
       
       // Villagers
       'villager': VillagerNPC
