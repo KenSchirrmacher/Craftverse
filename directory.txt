@@ -22,6 +22,7 @@
 - server/blocks/amethystCluster.js - Implementation of amethyst clusters
 - server/blocks/buddingAmethyst.js - Implementation of budding amethyst block
 - server/blocks/calciteBlock.js - Implementation of calcite found in amethyst geodes
+- server/blocks/candleBlock.js - Implementation of candles with stacking and colored variants
 - server/blocks/cavesCliffsBlocks.js - Implementation of various Caves & Cliffs blocks
 - server/blocks/chorusPlantBlock.js - Implementation of End chorus plants
 - server/blocks/deepslateVariants.js - Implementation of deepslate and its variants
@@ -75,6 +76,7 @@
 - server/tests/axolotlTest.js - Tests for Axolotl implementation
 - server/tests/aquaticMobsTest.js - Tests for Squid and GlowSquid mobs
 - server/tests/calciteBlockTest.js - Tests for Calcite block
+- server/tests/candleBlockTest.js - Tests for Candle blocks including colored variants and stacking
 - server/tests/deepslateVariantsTest.js - Tests for Deepslate variants
 - server/tests/goatTest.js - Tests for Goat implementation
 - server/tests/mountainGoatBiomeTest.js - Tests for Mountain Goat biome

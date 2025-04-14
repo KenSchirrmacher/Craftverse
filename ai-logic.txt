@@ -822,3 +822,46 @@ Calcite is a key component of amethyst geodes, providing a visually distinctive 
 
 Next, I'll implement the Candle block, which is a decorative light source with unique stacking and color variants.
 
+### 2024-07-30: Caves & Cliffs Update - Candle Block Implementation Complete ###
+
+Ahoy there! I've successfully implemented the Candle blocks for the Caves & Cliffs update. These be the details of me work:
+
+1. Created a new file `server/blocks/candleBlock.js` with:
+   - Base `CandleBlock` class with proper stacking mechanics (1-4 candles per block)
+   - `CandleState` helper class to track count, lit state, and waterlogged properties
+   - Support for all 16 color variants using a factory pattern
+   - Scalable light emission (3-6 based on candle count)
+   - Waterlogging support with proper interaction
+
+2. Implemented key features:
+   - Multiple candle positioning based on count (1-4 candles per block)
+   - Directional placement with proper visuals
+   - Interaction mechanics:
+     - Lighting with flint and steel
+     - Extinguishing by hand or water
+     - Particle effects for candle actions
+   - Block drops that match count and color
+   - Proper serialization/deserialization for game state
+
+3. Created comprehensive tests in `server/tests/candleBlockTest.js` that verify:
+   - Basic properties and initialization
+   - Light emission scaling with candle count
+   - Stacking mechanics up to 4 candles
+   - Color variant handling
+   - Placement rules and waterlogging
+   - Interaction mechanics (lighting, extinguishing)
+   - Water flow interactions
+   - Proper drops and serialization
+
+4. Registered all candle variants in the global block registry:
+   - Added default white candle
+   - Added all 16 color variants with proper properties
+   - Set appropriate hardness, transparency, and light values
+
+5. Updated the project tracking:
+   - Marked candles as completed in project.txt
+   - Updated current tasks list
+   - Added candles to the directory.txt file
+
+All 20 tests are passing successfully. The implementation provides a fully functional candle block system with all the features from the Caves & Cliffs update. The candles will provide players with decorative light sources that have unique stacking mechanics and can be dyed in various colors.
+

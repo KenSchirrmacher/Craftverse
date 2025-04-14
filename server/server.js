@@ -90,7 +90,26 @@ const blockTypes = {
   prismarine: { name: 'Prismarine', hardness: 1.5 },
   prismarine_bricks: { name: 'Prismarine Bricks', hardness: 1.5 },
   dark_prismarine: { name: 'Dark Prismarine', hardness: 1.5 },
-  sea_lantern: { name: 'Sea Lantern', hardness: 0.3, light: 15 }
+  sea_lantern: { name: 'Sea Lantern', hardness: 0.3, light: 15 },
+  
+  // Caves & Cliffs blocks
+  candle: { name: 'Candle', hardness: 0.1, light: 3, transparent: true },
+  white_candle: { name: 'White Candle', hardness: 0.1, light: 3, transparent: true },
+  orange_candle: { name: 'Orange Candle', hardness: 0.1, light: 3, transparent: true },
+  magenta_candle: { name: 'Magenta Candle', hardness: 0.1, light: 3, transparent: true },
+  light_blue_candle: { name: 'Light Blue Candle', hardness: 0.1, light: 3, transparent: true },
+  yellow_candle: { name: 'Yellow Candle', hardness: 0.1, light: 3, transparent: true },
+  lime_candle: { name: 'Lime Candle', hardness: 0.1, light: 3, transparent: true },
+  pink_candle: { name: 'Pink Candle', hardness: 0.1, light: 3, transparent: true },
+  gray_candle: { name: 'Gray Candle', hardness: 0.1, light: 3, transparent: true },
+  light_gray_candle: { name: 'Light Gray Candle', hardness: 0.1, light: 3, transparent: true },
+  cyan_candle: { name: 'Cyan Candle', hardness: 0.1, light: 3, transparent: true },
+  purple_candle: { name: 'Purple Candle', hardness: 0.1, light: 3, transparent: true },
+  blue_candle: { name: 'Blue Candle', hardness: 0.1, light: 3, transparent: true },
+  brown_candle: { name: 'Brown Candle', hardness: 0.1, light: 3, transparent: true },
+  green_candle: { name: 'Green Candle', hardness: 0.1, light: 3, transparent: true },
+  red_candle: { name: 'Red Candle', hardness: 0.1, light: 3, transparent: true },
+  black_candle: { name: 'Black Candle', hardness: 0.1, light: 3, transparent: true }
 };
 
 // Tool types and their properties
