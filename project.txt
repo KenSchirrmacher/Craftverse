@@ -1,0 +1,59 @@
+## Project: Craftverse - Minecraft-like Game
+## Last Updated: Current Date
+
+# Current Project: Caves & Cliffs Update Implementation
+
+## Feature Status
+- [IN PROGRESS] New biomes
+  - [COMPLETED] Lush Caves biome
+  - [COMPLETED] Dripstone Caves biome
+  - [COMPLETED] Mountain Goat biome (special mountain variant for goats)
+
+- [COMPLETED] New mobs
+  - [COMPLETED] Axolotl
+  - [COMPLETED] Goat (neutral mob with special behaviors)
+  - [COMPLETED] Glow Squid (aquatic mob with glow effect)
+
+- [IN PROGRESS] New blocks
+  - [COMPLETED] Powder Snow (with entity sinking and freezing effects)
+  - [COMPLETED] Copper blocks (with oxidation states)
+  - [COMPLETED] Amethyst blocks (with crystal growth system)
+  - [COMPLETED] Deepslate blocks (deeper stone variants)
+  - [COMPLETED] Dripleaf plants
+  - [COMPLETED] Moss blocks
+  - [IN PROGRESS] Caves & Cliffs additional block types
+
+- [PENDING] New world generation
+  - [PENDING] Increased world height/depth
+  - [PENDING] New cave generation system
+  - [PENDING] Improved mountain generation
+  - [PENDING] Underground biome generation
+
+- [PENDING] Archaeology system
+  - [PENDING] Brush tool
+  - [PENDING] Archaeological sites
+  - [PENDING] Pottery sherds and reconstruction
+
+## Current Tasks
+1. Implement additional Caves & Cliffs block types
+2. Design and implement improved cave generation system
+3. Design and implement mountain terrain improvements
+
+## Completed Tasks
+1. Implemented PowderSnow block with entity sinking mechanics and freezing damage
+2. Implemented Goat mob with ramming behavior and powder snow interaction
+3. Implemented Axolotl mob with hunting and play-dead mechanics
+4. Created MountainGoat biome with increased goat spawns and powder snow patches
+5. Implemented copper block with oxidation states
+6. Implemented amethyst blocks with crystal growth mechanics
+7. Implemented deepslate blocks for deep underground areas
+8. Added dripstone cave generation with pointed dripstone blocks
+9. Added lush caves with clay pools, dripleaf plants, and moss blocks
+10. Implemented Squid and GlowSquid mobs with proper aquatic behavior
+
+## Next Milestones
+1. Finish remaining block implementations
+2. Update world generation with new height limits
+3. Implement new cave generation system
+4. Integrate underground biomes into world generation
+5. Implement archaeology system 

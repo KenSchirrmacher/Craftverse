@@ -1,0 +1,89 @@
+# Craftverse - Directory Structure
+
+## Server
+### Main Files
+- server/server.js - Main server implementation, handles socket connections, game state, etc.
+- server/saveSystem.js - Handles saving and loading game data
+
+### Mobs
+- server/mobs/mobManager.js - Manages mob spawning, updates, and interactions
+- server/mobs/mobBase.js - Base class for all mobs with common functionality
+- server/mobs/passiveMobs.js - Implementation of passive mobs (Sheep, Cow, Pig, Chicken, etc.)
+- server/mobs/neutralMobs.js - Implementation of neutral mobs (Wolf, Spider, Enderman, Goat, etc.)
+- server/mobs/hostileMobs.js - Implementation of hostile mobs (Zombie, Skeleton, Creeper, etc.)
+- server/mobs/netherMobs.js - Implementation of nether-specific mobs (Piglin, Hoglin, etc.)
+- server/mobs/aquaticMobs.js - Implementation of aquatic mobs (Squid, GlowSquid, etc.)
+- server/mobs/axolotl.js - Implementation of Axolotl mob for Caves & Cliffs update
+- server/mobs/villagerNPC.js - Implementation of Villager NPCs with professions and trading
+- server/mobs/zombieVillager.js - Implementation of Zombie Villagers with curing mechanics
+
+### Blocks
+- server/blocks/amethystBlock.js - Implementation of amethyst block and amethyst cluster growth
+- server/blocks/amethystCluster.js - Implementation of amethyst clusters
+- server/blocks/buddingAmethyst.js - Implementation of budding amethyst block
+- server/blocks/cavesCliffsBlocks.js - Implementation of various Caves & Cliffs blocks
+- server/blocks/chorusPlantBlock.js - Implementation of End chorus plants
+- server/blocks/deepslateBlock.js - Implementation of deepslate variants
+- server/blocks/dripleafBlock.js - Implementation of big and small dripleaf plants
+- server/blocks/dripstoneBlock.js - Implementation of dripstone block
+- server/blocks/endGatewayBlock.js - Implementation of End gateway blocks for teleportation
+- server/blocks/endPortalBlock.js - Implementation of End portal blocks
+- server/blocks/endPortalFrameBlock.js - Implementation of End portal frame blocks
+- server/blocks/fireBlock.js - Implementation of fire blocks with spreading mechanics
+- server/blocks/largeAmethystBud.js - Implementation of large amethyst buds
+- server/blocks/mediumAmethystBud.js - Implementation of medium amethyst buds
+- server/blocks/mossBlock.js - Implementation of moss blocks with spreading mechanics
+- server/blocks/netherBlocks.js - Implementation of Nether-specific blocks
+- server/blocks/netherPortalBlock.js - Implementation of Nether portal blocks
+- server/blocks/pointedDripstoneBlock.js - Implementation of pointed dripstone with growth/falling
+- server/blocks/powderSnowBlock.js - Implementation of powder snow with entity sinking
+- server/blocks/prismarineBlocks.js - Implementation of prismarine blocks for ocean monuments
+- server/blocks/smallAmethystBud.js - Implementation of small amethyst buds
+- server/blocks/soulFireTorch.js - Implementation of soul fire torches
+
+### Biomes
+- server/biomes/baseBiome.js - Base class for all biomes
+- server/biomes/biomeManager.js - Manages biome selection and blending
+- server/biomes/biomeRegistry.js - Registry of all available biomes
+- server/biomes/desertBiome.js - Implementation of desert biome
+- server/biomes/forestBiome.js - Implementation of forest biome
+- server/biomes/jungleBiome.js - Implementation of jungle biome
+- server/biomes/lushCavesBiome.js - Implementation of lush caves biome for Caves & Cliffs
+- server/biomes/mountainsBiome.js - Implementation of mountains biome
+- server/biomes/mountainGoatBiome.js - Implementation of mountain goat biome variant
+- server/biomes/oceanBiome.js - Implementation of ocean biomes
+- server/biomes/plainsBiome.js - Implementation of plains biome
+
+### World
+- server/world/chunkLoader.js - Handles loading and unloading chunks as needed
+- server/world/dimensionManager.js - Manages different dimensions (Overworld, Nether, End)
+- server/world/endDimension.js - Implementation of End dimension
+- server/world/netherDimension.js - Implementation of Nether dimension
+- server/world/portalManager.js - Manages portal creation and teleportation
+- server/world/villageReputationManager.js - Manages player reputation with villages
+- server/world/worldGenerator.js - Handles world generation
+
+### Utils
+- server/utils/mathUtils.js - Utility functions for mathematics
+- server/utils/noiseGenerator.js - Noise generation for terrain
+- server/utils/structureGenerator.js - Handles generation of structures
+- server/utils/villageGenerator.js - Handles generation of villages
+
+### Tests
+- server/tests/axolotlTest.js - Tests for Axolotl implementation
+- server/tests/goatTest.js - Tests for Goat implementation
+- server/tests/mountainGoatBiomeTest.js - Tests for Mountain Goat biome
+- server/tests/netherBlocksTest.js - Tests for Nether blocks
+- server/tests/powderSnowBlockTest.js - Tests for Powder Snow block
+- server/tests/aquaticMobsTest.js - Tests for Squid and GlowSquid mobs
+
+## Client
+- public/index.html - Main client page
+- public/js/client.js - Client-side game logic
+- public/js/renderer.js - Handles rendering the game world
+- public/css/styles.css - Styling for the game interface
+
+## Core Files
+- ai-logic.txt - Tracks the development progress and implementation details
+- project.txt - Project tracking for current development focus
+- directory.txt - This file, listing all important files in the project 

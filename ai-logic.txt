@@ -708,3 +708,59 @@ Each feature will have its own test case to ensure proper functionality. Test ca
 - Created comprehensive test suite in server/tests/aquaticMobsTest.js
 - Updated Axolotl predator behavior to properly target the new aquatic mobs
 
+### 2023-11-14: Caves & Cliffs Update - Squid Implementation Plan ###
+
+Current Issue:
+The Caves & Cliffs update requires implementation of the GlowSquid mob, but we need a base Squid class first. From examining the code, we can see that the axolotl.js file references both 'squid' and 'glow_squid' as potential targets in its targetMobs array, but there's no actual implementation of either class yet.
+
+Solution Plan:
+1. Create a new file called aquaticMobs.js to hold aquatic mob implementations
+2. Implement a base Squid class with:
+   - Swimming behavior in water
+   - Sinking in air
+   - Squid ink defense mechanism
+   - Proper drops (ink sacs)
+   - Integration with mob manager
+
+3. Implement GlowSquid class extending from Squid with:
+   - Glowing particles effect
+   - Special drops (glow ink sacs)
+   - Light emission property
+   - Spawn conditions in deep dark water
+
+4. Update mobManager.js to properly register both mob types
+5. Create appropriate test cases in a new aquaticMobsTest.js file
+6. Ensure the axolotl hunt behavior works correctly with these new implementations
+
+This approach ensures we have a robust implementation for both aquatic mobs while maintaining the code structure and following best practices with reusable components.
+
+### 2023-11-14: Caves & Cliffs Update - Squid and GlowSquid Implementation Complete ###
+
+I have successfully implemented the aquatic mobs for the Caves & Cliffs update. This includes:
+
+1. Created a new file `server/mobs/aquaticMobs.js` with:
+   - A base `Squid` class with:
+     - Water detection and appropriate physics for water/air environments
+     - Swimming behavior with natural movement patterns (idle, swim, dive, surface)
+     - Defensive ink squirting with cooldown
+     - Jet propulsion escape mechanic when threatened
+     - Proper serialization/deserialization for game state persistence
+
+   - A `GlowSquid` class that extends the Squid with:
+     - Glowing effect with pulsating intensity
+     - Particle spawn system for the glow effect
+     - Hypnotizing effect on nearby players
+     - Special drops (glow ink sacs)
+     - Light emission properties for underwater illumination
+
+2. Updated the `mobManager.js` file to register both mob types using the aquaticMobs module
+
+3. Created comprehensive tests in `server/tests/aquaticMobsTest.js` to verify:
+   - Proper movement and physics in and out of water
+   - Defensive behaviors and responses to damage
+   - Glow effects and particle generation
+   - Hypnotizing effect for the GlowSquid
+   - Proper drops for both mob types
+
+These implementations complete the aquatic mob requirements for the Caves & Cliffs update and properly integrate with the existing systems like the Axolotl's hunting behavior.
+
