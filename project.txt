@@ -21,7 +21,13 @@
   - [COMPLETED] Deepslate blocks (deeper stone variants)
   - [COMPLETED] Dripleaf plants
   - [COMPLETED] Moss blocks
-  - [IN PROGRESS] Caves & Cliffs additional block types
+  - [COMPLETED] Tuff (stone variant found near geodes)
+  - [COMPLETED] Calcite (white stone found in geodes)
+  - [IN PROGRESS] Candles (decorative light sources with multiple colors)
+  - [PENDING] Glow Berries (light-emitting berries on cave vines)
+  - [PENDING] Spore Blossom (ceiling plant with particle effects)
+  - [PENDING] Sculk Sensor (vibration-detecting redstone component)
+  - [PENDING] Lightning Rod (attracts lightning strikes)
 
 - [PENDING] New world generation
   - [PENDING] Increased world height/depth
@@ -35,9 +41,10 @@
   - [PENDING] Pottery sherds and reconstruction
 
 ## Current Tasks
-1. Implement additional Caves & Cliffs block types
-2. Design and implement improved cave generation system
-3. Design and implement mountain terrain improvements
+1. Implement Candle blocks with stacking and color variants
+2. Implement remaining Caves & Cliffs block types
+3. Design and implement improved cave generation system
+4. Design and implement mountain terrain improvements
 
 ## Completed Tasks
 1. Implemented PowderSnow block with entity sinking mechanics and freezing damage
@@ -50,6 +57,9 @@
 8. Added dripstone cave generation with pointed dripstone blocks
 9. Added lush caves with clay pools, dripleaf plants, and moss blocks
 10. Implemented Squid and GlowSquid mobs with proper aquatic behavior
+11. Implemented Deepslate variants (natural, cobbled, bricks, tiles, etc.)
+12. Implemented Tuff block with proper world generation parameters
+13. Implemented Calcite block with amethyst geode integration
 
 ## Next Milestones
 1. Finish remaining block implementations

@@ -21,9 +21,10 @@
 - server/blocks/amethystBlock.js - Implementation of amethyst block and amethyst cluster growth
 - server/blocks/amethystCluster.js - Implementation of amethyst clusters
 - server/blocks/buddingAmethyst.js - Implementation of budding amethyst block
+- server/blocks/calciteBlock.js - Implementation of calcite found in amethyst geodes
 - server/blocks/cavesCliffsBlocks.js - Implementation of various Caves & Cliffs blocks
 - server/blocks/chorusPlantBlock.js - Implementation of End chorus plants
-- server/blocks/deepslateBlock.js - Implementation of deepslate variants
+- server/blocks/deepslateVariants.js - Implementation of deepslate and its variants
 - server/blocks/dripleafBlock.js - Implementation of big and small dripleaf plants
 - server/blocks/dripstoneBlock.js - Implementation of dripstone block
 - server/blocks/endGatewayBlock.js - Implementation of End gateway blocks for teleportation
@@ -40,6 +41,7 @@
 - server/blocks/prismarineBlocks.js - Implementation of prismarine blocks for ocean monuments
 - server/blocks/smallAmethystBud.js - Implementation of small amethyst buds
 - server/blocks/soulFireTorch.js - Implementation of soul fire torches
+- server/blocks/tuffBlock.js - Implementation of tuff found near geodes and in dripstone caves
 
 ### Biomes
 - server/biomes/baseBiome.js - Base class for all biomes
@@ -71,11 +73,14 @@
 
 ### Tests
 - server/tests/axolotlTest.js - Tests for Axolotl implementation
+- server/tests/aquaticMobsTest.js - Tests for Squid and GlowSquid mobs
+- server/tests/calciteBlockTest.js - Tests for Calcite block
+- server/tests/deepslateVariantsTest.js - Tests for Deepslate variants
 - server/tests/goatTest.js - Tests for Goat implementation
 - server/tests/mountainGoatBiomeTest.js - Tests for Mountain Goat biome
 - server/tests/netherBlocksTest.js - Tests for Nether blocks
 - server/tests/powderSnowBlockTest.js - Tests for Powder Snow block
-- server/tests/aquaticMobsTest.js - Tests for Squid and GlowSquid mobs
+- server/tests/tuffBlockTest.js - Tests for Tuff block
 
 ## Client
 - public/index.html - Main client page

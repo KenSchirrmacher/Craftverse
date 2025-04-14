@@ -708,32 +708,6 @@ Each feature will have its own test case to ensure proper functionality. Test ca
 - Created comprehensive test suite in server/tests/aquaticMobsTest.js
 - Updated Axolotl predator behavior to properly target the new aquatic mobs
 
-### 2023-11-14: Caves & Cliffs Update - Squid Implementation Plan ###
-
-Current Issue:
-The Caves & Cliffs update requires implementation of the GlowSquid mob, but we need a base Squid class first. From examining the code, we can see that the axolotl.js file references both 'squid' and 'glow_squid' as potential targets in its targetMobs array, but there's no actual implementation of either class yet.
-
-Solution Plan:
-1. Create a new file called aquaticMobs.js to hold aquatic mob implementations
-2. Implement a base Squid class with:
-   - Swimming behavior in water
-   - Sinking in air
-   - Squid ink defense mechanism
-   - Proper drops (ink sacs)
-   - Integration with mob manager
-
-3. Implement GlowSquid class extending from Squid with:
-   - Glowing particles effect
-   - Special drops (glow ink sacs)
-   - Light emission property
-   - Spawn conditions in deep dark water
-
-4. Update mobManager.js to properly register both mob types
-5. Create appropriate test cases in a new aquaticMobsTest.js file
-6. Ensure the axolotl hunt behavior works correctly with these new implementations
-
-This approach ensures we have a robust implementation for both aquatic mobs while maintaining the code structure and following best practices with reusable components.
-
 ### 2023-11-14: Caves & Cliffs Update - Squid and GlowSquid Implementation Complete ###
 
 I have successfully implemented the aquatic mobs for the Caves & Cliffs update. This includes:
@@ -763,4 +737,88 @@ I have successfully implemented the aquatic mobs for the Caves & Cliffs update. 
    - Proper drops for both mob types
 
 These implementations complete the aquatic mob requirements for the Caves & Cliffs update and properly integrate with the existing systems like the Axolotl's hunting behavior.
+
+### 2023-11-15: Caves & Cliffs Update - Deepslate Variants Implementation Complete ###
+
+I have successfully implemented the deepslate variants for the Caves & Cliffs update. This includes:
+
+1. Created a new file `server/blocks/deepslateVariants.js` with the following blocks:
+   - `DeepslateBlock`: The natural stone variant found in deep caves with directional/pillar properties
+   - `CobbledDeepslateBlock`: Obtained from mining deepslate without silk touch
+   - `DeepslateBricksBlock`: Crafted decorative variant
+   - `CrackedDeepslateBricksBlock`: Weathered variant obtained from smelting
+   - `DeepslateTilesBlock`: Crafted decorative variant
+   - `CrackedDeepslateTilesBlock`: Weathered variant obtained from smelting
+   - `ChiseledDeepslateBlock`: Decorative variant with unique texture
+   - `PolishedDeepslateBlock`: Crafted smooth variant
+   - `DeepslateCoalOreBlock`: Ore variant that's harder to mine but compatible with fortune enchantment
+
+2. Implemented key features for deepslate variants:
+   - Higher hardness and mining time compared to regular stone variants
+   - Proper blast resistance values (6.0)
+   - Directional placement for the base deepslate (pillar-like behavior)
+   - Proper mining requirements (stone pickaxe or higher)
+   - Correct drops with silk touch support
+   - Fortune enchantment compatibility for ore variants
+
+3. Created comprehensive tests in `server/tests/deepslateVariantsTest.js` to verify:
+   - Proper block initialization with correct properties
+   - Correct drop behavior with and without silk touch
+   - Fortune enchantment functionality for ore blocks
+   - Correct orientation/placement behavior
+   - Serialization and deserialization for game state persistence
+
+The deepslate variants provide the foundation for the deeper underground areas in the Caves & Cliffs update, bringing more variety and visual interest to deep mining. Next, I'll focus on implementing the Tuff block, which is another stone variant found near geodes and in dripstone caves.
+
+### 2023-11-15: Caves & Cliffs Update - Tuff Block Implementation Complete ###
+
+I have successfully implemented the Tuff block for the Caves & Cliffs update:
+
+1. Created a new file `server/blocks/tuffBlock.js` with the `TuffBlock` class:
+   - Implemented basic block properties with appropriate hardness and mining requirements
+   - Added world generation parameters to control where tuff spawns in the world
+   - Created custom generation logic that takes into account:
+     - Depth factor (more common below y=32)
+     - Proximity to amethyst geodes
+     - Noise-based clustering for natural-looking distribution
+   - Implemented proper mining behavior with tool requirements and silk touch support
+
+2. Created comprehensive tests in `server/tests/tuffBlockTest.js` to verify:
+   - Proper block initialization with correct properties
+   - Correct drop behavior with and without the right tools
+   - Silk touch compatibility
+   - World generation behavior with noise-based placement
+   - Depth-based generation probabilities
+   - Geode proximity detection
+   - Serialization and deserialization for game state persistence
+
+Tuff adds another layer of underground variation to the Caves & Cliffs update, serving as an indicator of nearby amethyst geodes and adding visual diversity to the cave systems. Next, I'll implement the Calcite block, which is another stone variant specifically found in amethyst geodes.
+
+### 2023-11-15: Caves & Cliffs Update - Calcite Block Implementation Complete ###
+
+I have successfully implemented the Calcite block for the Caves & Cliffs update:
+
+1. Created a new file `server/blocks/calciteBlock.js` with the `CalciteBlock` class:
+   - Implemented basic block properties with reduced hardness (0.75) to reflect its softer nature
+   - Added custom sound handling for unique calcite sounds
+   - Created specialized generation logic for amethyst geodes:
+     - Calcite forms the middle layer of geode shells
+     - Positioned between smooth basalt (outer) and amethyst (inner)
+     - Implements precise distance calculations for geode layer placement
+   - Added slight slipperiness property (0.6) for unique player movement feel
+   - Implemented proper mining behavior with tool requirements and silk touch support
+
+2. Created comprehensive tests in `server/tests/calciteBlockTest.js` to verify:
+   - Proper block initialization with correct properties
+   - Slipperiness characteristic
+   - Custom sound properties
+   - Correct drop behavior with various tools
+   - Silk touch compatibility
+   - Geode layer generation mathematics
+   - Layer boundary detection for proper shell formation
+   - Serialization and deserialization for game state persistence
+
+Calcite is a key component of amethyst geodes, providing a visually distinctive middle layer in the geode shell structure. Its softer properties and slight slipperiness add unique characteristics that make exploring geodes more interesting. Combined with Tuff and Deepslate, these new stone variants significantly enhance the underground exploration experience in the Caves & Cliffs update.
+
+Next, I'll implement the Candle block, which is a decorative light source with unique stacking and color variants.
 
