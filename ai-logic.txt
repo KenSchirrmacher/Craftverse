@@ -865,3 +865,30 @@ Ahoy there! I've successfully implemented the Candle blocks for the Caves & Clif
 
 All 20 tests are passing successfully. The implementation provides a fully functional candle block system with all the features from the Caves & Cliffs update. The candles will provide players with decorative light sources that have unique stacking mechanics and can be dyed in various colors.
 
+### 2023-11-15: Base Item Implementation ###
+- Created the base Item class as the foundation for all game items
+- Implemented core item properties: ID, name, stackability, durability, type, etc.
+- Added durability management (reduce, repair, and check if broken)
+- Implemented item stacking logic with proper validation
+- Added serialization/deserialization methods for saving and loading
+- Implemented client data formatting for UI display
+- Created methods for tooltips and item use
+- Designed as an EventEmitter to allow for event-based item behaviors
+
+### 2023-11-16: Caves & Cliffs Update - Glow Berries Implementation ###
+- Created GlowBerryItem class extending the base Item class in server/items/glowBerryItem.js
+- Implemented food functionality with hunger and saturation restoration
+- Added planting mechanics to grow cave vines when used on cave ceilings
+- Created CaveVineBlock, CaveVineBodyBlock, and CaveVineHeadBlock in server/blocks/caveVineBlock.js
+- Implemented cave vine growth system with age-based berry growth
+- Added light emission (level 14) for vines with berries
+- Implemented player interaction for harvesting berries without breaking vines
+- Added bone meal interaction to accelerate berry growth
+- Created comprehensive test suite in server/tests/glowBerryTest.js to verify:
+  - Food mechanics (hunger/saturation restoration)
+  - Planting mechanics (placement rules, vine creation)
+  - Harvesting mechanics (berry collection)
+  - Light emission properties
+  - Serialization and event handling
+- Integrated with the base Item system for consistent behavior and serialization
+

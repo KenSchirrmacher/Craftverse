@@ -17,6 +17,19 @@
 - server/mobs/villagerNPC.js - Implementation of Villager NPCs with professions and trading
 - server/mobs/zombieVillager.js - Implementation of Zombie Villagers with curing mechanics
 
+### Items
+- server/items/item.js - Base Item class for all in-game items with core functionality
+- server/items/flintAndSteelItem.js - Implementation of flint and steel for lighting fires and portals
+- server/items/glowBerryItem.js - Implementation of glow berries for Caves & Cliffs update
+- server/items/inkSacItem.js - Implementation of ink sacs obtained from squids
+- server/items/netheriteItems.js - Implementation of netherite equipment and tools
+- server/items/potionItem.js - Implementation of potions with various effects
+- server/items/potionRecipes.js - Implementation of brewing recipes
+- server/items/potionRegistry.js - Registry of all potion types and effects
+- server/items/shield.js - Implementation of shield mechanics
+- server/items/shieldItem.js - Implementation of shield items with durability and banner patterns
+- server/items/specialArrows.js - Implementation of special arrow types like tipped arrows
+
 ### Blocks
 - server/blocks/amethystBlock.js - Implementation of amethyst block and amethyst cluster growth
 - server/blocks/amethystCluster.js - Implementation of amethyst clusters
@@ -78,6 +91,7 @@
 - server/tests/calciteBlockTest.js - Tests for Calcite block
 - server/tests/candleBlockTest.js - Tests for Candle blocks including colored variants and stacking
 - server/tests/deepslateVariantsTest.js - Tests for Deepslate variants
+- server/tests/glowBerryTest.js - Tests for Glow Berries and Cave Vines implementation
 - server/tests/goatTest.js - Tests for Goat implementation
 - server/tests/mountainGoatBiomeTest.js - Tests for Mountain Goat biome
 - server/tests/netherBlocksTest.js - Tests for Nether blocks
