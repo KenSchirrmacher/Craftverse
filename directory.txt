@@ -33,9 +33,12 @@
 ### Blocks
 - server/blocks/amethystBlock.js - Implementation of amethyst block and amethyst cluster growth
 - server/blocks/amethystCluster.js - Implementation of amethyst clusters
+- server/blocks/baseBlock.js - Base Block class for all block types with common functionality
+- server/blocks/blockRegistry.js - Registry for block types with management functionality
 - server/blocks/buddingAmethyst.js - Implementation of budding amethyst block
 - server/blocks/calciteBlock.js - Implementation of calcite found in amethyst geodes
 - server/blocks/candleBlock.js - Implementation of candles with stacking and colored variants
+- server/blocks/caveVineBlock.js - Implementation of cave vines with glow berries
 - server/blocks/cavesCliffsBlocks.js - Implementation of various Caves & Cliffs blocks
 - server/blocks/chorusPlantBlock.js - Implementation of End chorus plants
 - server/blocks/deepslateVariants.js - Implementation of deepslate and its variants
@@ -55,6 +58,7 @@
 - server/blocks/prismarineBlocks.js - Implementation of prismarine blocks for ocean monuments
 - server/blocks/smallAmethystBud.js - Implementation of small amethyst buds
 - server/blocks/soulFireTorch.js - Implementation of soul fire torches
+- server/blocks/sporeBlossomBlock.js - Implementation of spore blossom with particle effects
 - server/blocks/tuffBlock.js - Implementation of tuff found near geodes and in dripstone caves
 
 ### Biomes
@@ -85,6 +89,9 @@
 - server/utils/structureGenerator.js - Handles generation of structures
 - server/utils/villageGenerator.js - Handles generation of villages
 
+### Particles
+- server/particles/particleSystem.js - Particle management system for visual effects
+
 ### Tests
 - server/tests/axolotlTest.js - Tests for Axolotl implementation
 - server/tests/aquaticMobsTest.js - Tests for Squid and GlowSquid mobs
@@ -96,6 +103,7 @@
 - server/tests/mountainGoatBiomeTest.js - Tests for Mountain Goat biome
 - server/tests/netherBlocksTest.js - Tests for Nether blocks
 - server/tests/powderSnowBlockTest.js - Tests for Powder Snow block
+- server/tests/sporeBlossomTest.js - Tests for Spore Blossom implementation
 - server/tests/tuffBlockTest.js - Tests for Tuff block
 
 ## Client
