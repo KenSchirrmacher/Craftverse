@@ -1,0 +1,11 @@
+Added Candle Block Implementation for Caves & Cliffs Update
+
+This implementation includes:
+- Base CandleBlock class with stacking mechanics (1-4 candles)
+- Support for 16 color variants
+- Light emission based on candle count
+- Waterlogging support
+- Interaction mechanics (lighting, extinguishing)
+- Comprehensive test suite
+
+All tests pass successfully. 
