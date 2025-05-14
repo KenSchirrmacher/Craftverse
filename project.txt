@@ -85,8 +85,13 @@
 
 ## Feature Status
 - [IN PROGRESS] Deep Dark biome
-  - [IN PROGRESS] Sculk blocks family
-  - [IN PROGRESS] Ancient City structures
+  - [COMPLETED] Sculk blocks family
+    - [COMPLETED] Sculk Block (base block)
+    - [COMPLETED] Sculk Vein (spreading vein block)
+    - [COMPLETED] Sculk Catalyst (source of sculk growth)
+    - [COMPLETED] Sculk Sensor (vibration detector)
+    - [COMPLETED] Sculk Shrieker (warden summoner)
+  - [PENDING] Ancient City structures
   - [PENDING] Warden mob
   - [PENDING] Darkness effect
   
@@ -98,14 +103,19 @@
 - [PENDING] Allay mob
 
 ## Current Tasks
-1. Complete Deep Dark biome implementation
-2. Implement remaining Sculk blocks (Shrieker, Catalyst, Vein, Block)
-3. Design and implement Warden mob AI
-4. Create Ancient City structure generation
+1. Continue Deep Dark biome implementation
+2. Implement Warden mob with proper AI
+3. Create Ancient City structure generation
+4. Implement Darkness effect mechanics
 
 ## Completed Tasks
 1. Analyzed and verified Weather System implementation
 2. Verified Lightning Rod functionality
 3. Created DeepDarkBiome class with proper properties
 4. Implemented SculkSensorBlock with vibration detection
-5. Created comprehensive tests for Deep Dark biome 
+5. Created comprehensive tests for Deep Dark biome
+6. Implemented base SculkBlock with proper properties
+7. Implemented SculkVeinBlock with face-based spreading
+8. Implemented SculkCatalystBlock for handling mob death events
+9. Implemented SculkShriekerBlock for warning and Warden summoning
+10. Added tests for all Sculk block types 

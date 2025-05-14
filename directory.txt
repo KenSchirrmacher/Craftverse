@@ -66,7 +66,11 @@
 - server/blocks/soulFireTorch.js - Implementation of soul fire torches
 - server/blocks/sporeBlossomBlock.js - Implementation of spore blossom with particle effects
 - server/blocks/tuffBlock.js - Implementation of tuff found near geodes and in dripstone caves
+- server/blocks/sculkBlock.js - Implementation of the base sculk block for the Deep Dark biome
+- server/blocks/sculkVeinBlock.js - Implementation of sculk vein blocks that grow on surfaces
+- server/blocks/sculkCatalystBlock.js - Implementation of sculk catalyst for spreading sculk
 - server/blocks/sculkSensorBlock.js - Implementation of sculk sensor with vibration detection
+- server/blocks/sculkShriekerBlock.js - Implementation of sculk shrieker for summoning the Warden
 
 ### Biomes
 - server/biomes/baseBiome.js - Base class for all biomes
@@ -121,6 +125,11 @@
 - server/tests/weatherLightningIntegrationTest.js - Integration tests for Weather System and Lightning Rod
 - server/tests/simpleLightningTest.js - Simple tests focusing on core functionality of lightning
 - server/tests/deepDarkBiomeTest.js - Tests for the Deep Dark biome implementation
+- server/tests/sculkBlockTest.js - Tests for the base SculkBlock implementation
+- server/tests/sculkVeinTest.js - Tests for SculkVeinBlock implementation
+- server/tests/sculkCatalystTest.js - Tests for SculkCatalystBlock implementation
+- server/tests/sculkSensorTest.js - Tests for SculkSensorBlock vibration detection
+- server/tests/sculkShriekerTest.js - Tests for SculkShriekerBlock warning and Warden summoning
 
 ## Client
 - public/index.html - Main client page
