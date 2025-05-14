@@ -55,6 +55,9 @@ class WorldGenerator {
     
     // Structure placeholders - used to track structure locations
     this.structurePlaceholders = new Map();
+    
+    // Initialize world generation parameters
+    this.initializeWorld();
   }
 
   /**
@@ -188,41 +191,246 @@ class WorldGenerator {
   generateCaves(chunkBlocks, startX, startZ, chunkSize) {
     // Get cave noise functions
     const caveNoise = this.terrainNoiseGenerators.caveNoise;
+    const caveMaskNoise = this.terrainNoiseGenerators.caveMaskNoise;
     
-    // Iterate through potential cave areas
+    // Track potential dungeon locations
+    const potentialDungeonLocations = [];
+    
+    // Track air pockets for potential dungeon locations
+    const airPockets = new Map();
+    
+    // Precheck for lush caves biome potential
+    const isLushCavesRegion = {};
+    
+    // Check if this chunk can contain lush caves
     for (let x = 0; x < chunkSize; x++) {
       for (let z = 0; z < chunkSize; z++) {
         const worldX = startX + x;
         const worldZ = startZ + z;
         
-        // Get surface height at this position
-        const surfaceHeight = Math.floor(this.biomeManager.getBlendedHeight(worldX, worldZ, this.seed));
+        // Get biome at this position
+        const biome = this.biomeManager.getBiomeAt(worldX, this.seaLevel, worldZ, this.seed);
         
-        // Generate caves only below ground level
-        for (let y = this.worldDepth + 1; y < surfaceHeight - 1; y++) {
-          // Skip if we're within 10 blocks of the world depth (preserve bedrock layer)
-          if (y - this.worldDepth < 10) continue;
+        // Check if the biome supports lush caves
+        if (biome && biome.id === 'plains' || biome.id === 'forest' || biome.id === 'jungle') {
+          // Use noise to place lush caves in clusters
+          const lushNoise = this.climateNoiseGenerators.precipitation.get(worldX * 0.005, worldZ * 0.005);
+          if (lushNoise > 0.7) {
+            isLushCavesRegion[`${worldX},${worldZ}`] = true;
+          }
+        }
+      }
+    }
+    
+    // Process each block in the chunk
+    for (let x = 0; x < chunkSize; x++) {
+      for (let z = 0; z < chunkSize; z++) {
+        const worldX = startX + x;
+        const worldZ = startZ + z;
+        
+        // Get maximum terrain height at this position
+        const maxHeight = this.seaLevel + 5; // Only dig caves up to slightly above sea level
+        const minHeight = 5; // Do not dig caves at the very bottom of the world
+        
+        // Check for lush caves potential in this column
+        const hasLushCavesPotential = isLushCavesRegion[`${worldX},${worldZ}`];
+        
+        // Track consecutive air blocks for dungeon detection
+        let airCount = 0;
+        let lastAirY = 0;
+        
+        // Generate caves from bottom to top
+        for (let y = minHeight; y < maxHeight; y++) {
+          const key = `${worldX},${y},${worldZ}`;
           
-          // Calculate cave noise value for this position
-          const noiseValue = caveNoise.get(worldX * 0.05, y * 0.05, worldZ * 0.05);
+          // Skip if this position doesn't have a block or is already open
+          if (!chunkBlocks[key] || chunkBlocks[key].type === 'air' || 
+              chunkBlocks[key].type === 'water' || chunkBlocks[key].type === 'lava') {
+            continue;
+          }
           
-          // Lower density (higher threshold) near the surface
-          const depthFactor = Math.min((surfaceHeight - y) / 20, 1.0);
-          const threshold = 0.2 + (0.2 * depthFactor);
+          // Cave generation is based on 3D Perlin noise
+          const caveValue = Math.abs(caveNoise.get(worldX * 0.02, y * 0.02, worldZ * 0.02));
           
-          // If noise value is above threshold, create a cave (air block)
-          if (noiseValue > threshold) {
-            const key = `${worldX},${y},${worldZ}`;
+          // Higher cave density deeper underground
+          const depthFactor = 1.0 - (y - minHeight) / (maxHeight - minHeight);
+          const caveThreshold = 0.5 - (depthFactor * 0.2);
+          
+          // Check if we should place a cave here
+          if (caveValue > caveThreshold) {
+            // Skip if this is bedrock
+            if (chunkBlocks[key].type === 'bedrock') {
+              continue;
+            }
             
-            // Only replace solid blocks, not water or other non-solid
-            const currentBlock = chunkBlocks[key];
-            if (currentBlock && currentBlock.type !== 'water' && currentBlock.type !== 'air') {
-              chunkBlocks[key] = { type: 'air' };
+            // Create a cave
+            if (y < this.seaLevel - 8) {
+              // Below sea level, we have a chance for lava pools
+              const lavaChance = (this.seaLevel - y) / (this.seaLevel - minHeight) * 0.15;
+              if (Math.random() < lavaChance) {
+                chunkBlocks[key] = { type: 'lava' };
+              } else {
+                chunkBlocks[key] = { type: 'cave_air' };
+              }
+            } else {
+              // Regular cave air
+              chunkBlocks[key] = { type: 'cave_air' };
+            }
+            
+            // Track air count for dungeon detection
+            airCount++;
+            lastAirY = y;
+          } else {
+            // When we hit a solid block after air, check for dungeon placement
+            if (airCount >= 5 && lastAirY > minHeight + 10) {
+              potentialDungeonLocations.push({ x: worldX, y: lastAirY - Math.floor(airCount / 2), z: worldZ });
+            }
+            airCount = 0;
+          }
+          
+          // Apply lush caves biome decorations
+          if (hasLushCavesPotential && chunkBlocks[key].type === 'cave_air') {
+            // Use 3D noise to determine lush cave regions
+            const lushCaveValue = caveMaskNoise ? 
+              caveMaskNoise.get(worldX * 0.01, y * 0.01, worldZ * 0.01) : 
+              Math.sin(worldX * 0.01) * Math.cos(worldZ * 0.01) * Math.sin(y * 0.01);
+            
+            if (lushCaveValue > 0.4) {
+              // Check ceiling and floor blocks
+              const floorKey = `${worldX},${y-1},${worldZ}`;
+              const ceilingKey = `${worldX},${y+1},${worldZ}`;
+              
+              const hasSolidFloor = chunkBlocks[floorKey] && 
+                chunkBlocks[floorKey].type !== 'air' && 
+                chunkBlocks[floorKey].type !== 'cave_air' &&
+                chunkBlocks[floorKey].type !== 'water';
+              
+              const hasSolidCeiling = chunkBlocks[ceilingKey] && 
+                chunkBlocks[ceilingKey].type !== 'air' && 
+                chunkBlocks[ceilingKey].type !== 'cave_air' &&
+                chunkBlocks[ceilingKey].type !== 'water';
+              
+              // 10% chance to replace floor with moss blocks
+              if (hasSolidFloor && chunkBlocks[floorKey].type === 'stone' && Math.random() < 0.1) {
+                chunkBlocks[floorKey] = { type: 'moss_block' };
+              }
+              
+              // Ceiling decorations (glow berries, spore blossoms)
+              if (hasSolidCeiling && Math.random() < 0.05) {
+                // Randomly select between glow berries and spore blossoms
+                if (Math.random() < 0.5) {
+                  chunkBlocks[key] = { type: 'glow_berry_vine', length: Math.floor(Math.random() * 3) + 1 };
+                } else {
+                  chunkBlocks[key] = { type: 'spore_blossom' };
+                }
+              }
+              
+              // Small water puddles on the floor
+              if (hasSolidFloor && Math.random() < 0.03) {
+                chunkBlocks[key] = { type: 'water' };
+              }
+              
+              // Floor vegetation (dripleafs, azaleas)
+              if (hasSolidFloor && Math.random() < 0.08) {
+                if (Math.random() < 0.6) {
+                  // Small dripleaf
+                  chunkBlocks[key] = { type: 'small_dripleaf' };
+                } else {
+                  // Azalea
+                  const isFlowering = Math.random() < 0.4;
+                  chunkBlocks[key] = { type: isFlowering ? 'flowering_azalea' : 'azalea' };
+                }
+              }
             }
           }
         }
       }
     }
+    
+    // After basic cave generation, place dungeons
+    if (potentialDungeonLocations.length > 0) {
+      this.generateCaveDungeons(chunkBlocks, potentialDungeonLocations);
+    }
+  }
+  
+  /**
+   * Generate dungeons in suitable cave locations
+   * @private
+   * @param {Object} chunkBlocks - Block data to modify
+   * @param {Array} potentialLocations - List of potential dungeon locations
+   */
+  generateCaveDungeons(chunkBlocks, potentialLocations) {
+    // Skip if no potential locations or dungeons are disabled
+    if (!potentialLocations.length || !this.generationSettings.generateStructures) {
+      return;
+    }
+    
+    // Normalize the dungeon frequency based on world seed
+    const dungeonFrequency = 0.15 + (this.randomFromSeed(this.seed + 500) * 0.1); // 15-25% chance
+    
+    // Sort locations by y-level (prefer deeper dungeons)
+    potentialLocations.sort((a, b) => a.y - b.y);
+    
+    // For each potential location, decide if we should place a dungeon
+    for (const location of potentialLocations) {
+      // Check if we should generate a dungeon here
+      if (this.randomFromSeed(this.seed + location.x * 174.3 + location.z * 93.7) < dungeonFrequency) {
+        // Check if there's enough space for a dungeon
+        if (this.isSpaceForDungeon(chunkBlocks, location.x, location.y, location.z)) {
+          // Place a dungeon at this location
+          this.generateStructureWithGenerator(
+            chunkBlocks,
+            { x: location.x, y: location.y, z: location.z },
+            'dungeon',
+            {}
+          );
+          
+          // Register the dungeon to avoid placing structures too close
+          this.registerStructurePlacement(location.x, location.z, 'dungeon');
+          
+          // Only place one dungeon per chunk to avoid overcrowding
+          break;
+        }
+      }
+    }
+  }
+  
+  /**
+   * Check if there's enough space for a dungeon
+   * @private
+   * @param {Object} chunkBlocks - Block data to check
+   * @param {number} x - X coordinate
+   * @param {number} y - Y coordinate
+   * @param {number} z - Z coordinate
+   * @returns {boolean} - Whether there's enough space
+   */
+  isSpaceForDungeon(chunkBlocks, x, y, z) {
+    // Check for a roughly 7x7x5 area around the position
+    const checkRadius = 4;
+    const checkHeight = 3;
+    
+    // Count how many air blocks are in the potential dungeon space
+    let airCount = 0;
+    const totalBlocks = (checkRadius * 2 + 1) * (checkHeight * 2 + 1) * (checkRadius * 2 + 1);
+    
+    // We want at least 50% of the volume to be air for a good dungeon location
+    const requiredAirPercentage = 0.5;
+    
+    for (let dx = -checkRadius; dx <= checkRadius; dx++) {
+      for (let dy = -checkHeight; dy <= checkHeight; dy++) {
+        for (let dz = -checkRadius; dz <= checkRadius; dz++) {
+          const blockKey = `${x + dx},${y + dy},${z + dz}`;
+          const block = chunkBlocks[blockKey];
+          
+          if (!block || block.type === 'air') {
+            airCount++;
+          }
+        }
+      }
+    }
+    
+    // Check if there's enough air space for a dungeon
+    return (airCount / totalBlocks) >= requiredAirPercentage;
   }
 
   /**
@@ -373,6 +581,203 @@ class WorldGenerator {
   }
 
   /**
+   * Initialize world generation parameters and prepare the world for generation
+   * @private
+   */
+  initializeWorld() {
+    // Set up the biome manager to use our noise generators
+    if (this.biomeManager) {
+      this.biomeManager.setNoiseGenerators(this.climateNoiseGenerators);
+    }
+
+    // Set the entity spawner on the structure generator
+    this.structureGenerator.entitySpawner = (entityData) => {
+      // Store the entity spawn data to be processed by the server
+      if (!this.pendingEntitySpawns) {
+        this.pendingEntitySpawns = [];
+      }
+      
+      this.pendingEntitySpawns.push(entityData);
+      return entityData;
+    };
+    
+    // Initialize global structures like strongholds and mineshafts
+    this.globalStructures = {
+      strongholds: [],
+      mineshafts: [],
+      desertTemples: [],
+      jungleTemples: []
+    };
+    
+    // Generate stronghold positions
+    // Strongholds are placed in rings around the origin
+    this.generateStrongholdPositions();
+    
+    // Generate mineshaft positions - more common than strongholds
+    this.generateMineshaftPositions();
+    
+    // Generate desert temple positions
+    this.generateDesertTemplePositions();
+    
+    // Generate jungle temple positions
+    this.generateJungleTemplePositions();
+  }
+  
+  /**
+   * Generate stronghold positions
+   * @private
+   */
+  generateStrongholdPositions() {
+    // Strongholds are placed in rings around the origin
+    // Typically 3-8 strongholds generate in concentric rings around the world origin
+    const strongholdCount = 3 + Math.floor(this.randomFromSeed(this.seed + 1) * 5); // 3-8 strongholds
+    
+    // Generate strongholds in a ring around the origin, between 1000-5000 blocks away
+    const minDistance = 1000;
+    const maxDistance = 5000;
+    
+    for (let i = 0; i < strongholdCount; i++) {
+      // Calculate angle based on position in the ring
+      const angle = (i / strongholdCount) * Math.PI * 2;
+      
+      // Calculate distance from origin (with some randomness)
+      const distance = minDistance + this.randomFromSeed(this.seed + i * 100) * (maxDistance - minDistance);
+      
+      // Calculate coordinates
+      const x = Math.floor(Math.cos(angle) * distance);
+      const z = Math.floor(Math.sin(angle) * distance);
+      
+      // Store stronghold position
+      this.globalStructures.strongholds.push({
+        x, z, 
+        generated: false
+      });
+    }
+  }
+  
+  /**
+   * Generate mineshaft positions
+   * @private
+   */
+  generateMineshaftPositions() {
+    // Mineshafts are more numerous and randomly distributed underground
+    // They spawn within chunks according to a probability function
+    
+    // We'll pre-determine some mineshaft locations for specific chunks
+    // rather than checking on every chunk generation (which would be less efficient)
+    const mineshaftCount = 15 + Math.floor(this.randomFromSeed(this.seed + 2000) * 10); // 15-25 mineshafts
+    
+    // Distribution range - within a large area around the origin
+    const maxRange = 8000;
+    
+    // Minimum distance between mineshafts
+    const minDistance = 400;
+    
+    for (let i = 0; i < mineshaftCount; i++) {
+      // Generate a random position within the range
+      let attempts = 0;
+      let validPosition = false;
+      let x, z;
+      
+      // Try to find a position that's at least minDistance away from other mineshafts
+      while (!validPosition && attempts < 20) {
+        x = Math.floor(this.randomFromSeed(this.seed + i * 200 + attempts) * maxRange * 2) - maxRange;
+        z = Math.floor(this.randomFromSeed(this.seed + i * 200 + 100 + attempts) * maxRange * 2) - maxRange;
+        
+        validPosition = true;
+        
+        // Check distance to other mineshafts
+        for (const mineshaft of this.globalStructures.mineshafts) {
+          const dx = x - mineshaft.x;
+          const dz = z - mineshaft.z;
+          const distance = Math.sqrt(dx * dx + dz * dz);
+          
+          if (distance < minDistance) {
+            validPosition = false;
+            break;
+          }
+        }
+        
+        attempts++;
+      }
+      
+      // If we found a valid position, add the mineshaft
+      if (validPosition) {
+        this.globalStructures.mineshafts.push({
+          x, z,
+          generated: false
+        });
+      }
+    }
+  }
+  
+  /**
+   * Generate desert temple positions throughout the world
+   * @private
+   */
+  generateDesertTemplePositions() {
+    // Desert temples should only generate in desert biomes
+    // Store them to generate when those chunks are loaded
+    const numTemples = 20; // Number of temples in the world
+    const range = 8000; // Range from spawn for temples
+    
+    for (let i = 0; i < numTemples; i++) {
+      // Generate random position
+      const x = Math.floor((Math.random() * 2 - 1) * range);
+      const z = Math.floor((Math.random() * 2 - 1) * range);
+      
+      // Only place in desert biomes
+      const biome = this.biomeManager.getBiomeAt(x, z);
+      if (biome && biome.id.includes('desert')) {
+        this.globalStructures.desertTemples.push({
+          x,
+          z,
+          generated: false
+        });
+      }
+    }
+  }
+  
+  /**
+   * Generate jungle temple positions throughout the world
+   * @private
+   */
+  generateJungleTemplePositions() {
+    // Jungle temples should only generate in jungle biomes
+    // Store them to generate when those chunks are loaded
+    const numTemples = 15; // Number of temples in the world
+    const range = 8000; // Range from spawn for temples
+    
+    for (let i = 0; i < numTemples; i++) {
+      // Generate random position
+      const x = Math.floor((Math.random() * 2 - 1) * range);
+      const z = Math.floor((Math.random() * 2 - 1) * range);
+      
+      // Only place in jungle biomes
+      const biome = this.biomeManager.getBiomeAt(x, z);
+      if (biome && biome.id.includes('jungle')) {
+        this.globalStructures.jungleTemples.push({
+          x,
+          z,
+          generated: false
+        });
+      }
+    }
+  }
+  
+  /**
+   * Generates a random number between 0 and 1 based on a seed
+   * @private
+   * @param {number} seed - Seed value
+   * @returns {number} - Random value between 0 and 1
+   */
+  randomFromSeed(seed) {
+    // Simple but deterministic random number generator
+    const x = Math.sin(seed) * 10000;
+    return x - Math.floor(x);
+  }
+
+  /**
    * Generate structures in a chunk
    * @private
    * @param {Object} chunkBlocks - Block data to modify
@@ -381,7 +786,10 @@ class WorldGenerator {
    * @param {number} chunkSize - Size of chunk in blocks
    */
   generateStructures(chunkBlocks, startX, startZ, chunkSize) {
-    // Determine if any structures should spawn in this chunk
+    // First check if any global structures should be placed in this chunk
+    this.generateGlobalStructures(chunkBlocks, startX, startZ, chunkSize);
+    
+    // Then determine if any biome-specific structures should spawn in this chunk
     const structures = this.biomeManager.getStructuresAt(startX + chunkSize/2, startZ + chunkSize/2, this.seed);
     
     if (structures && structures.length > 0) {
@@ -409,6 +817,139 @@ class WorldGenerator {
           
           // Register the structure placement to avoid too many structures close together
           this.registerStructurePlacement(structureX, structureZ, structure.type);
+        }
+      }
+    }
+  }
+  
+  /**
+   * Generate global structures like strongholds in a chunk
+   * @private
+   * @param {Object} chunkBlocks - Block data to modify
+   * @param {number} startX - Starting X coordinate
+   * @param {number} startZ - Starting Z coordinate
+   * @param {number} chunkSize - Size of chunk in blocks
+   */
+  generateGlobalStructures(chunkBlocks, startX, startZ, chunkSize) {
+    // Check if any strongholds should be in this chunk
+    if (this.globalStructures && this.globalStructures.strongholds) {
+      for (const stronghold of this.globalStructures.strongholds) {
+        // Skip if already generated
+        if (stronghold.generated) continue;
+        
+        // Check if the stronghold is within this chunk
+        if (stronghold.x >= startX && stronghold.x < startX + chunkSize &&
+            stronghold.z >= startZ && stronghold.z < startZ + chunkSize) {
+          
+          // Get the surface height at this position and go underground
+          const surfaceY = Math.floor(this.biomeManager.getBlendedHeight(stronghold.x, stronghold.z, this.seed));
+          const undergroundY = Math.max(10, surfaceY - 20); // Ensure it's underground but above bedrock
+          
+          // Use the structure generator to create the stronghold
+          this.generateStructureWithGenerator(
+            chunkBlocks,
+            { x: stronghold.x, y: undergroundY, z: stronghold.z },
+            'stronghold',
+            {}
+          );
+          
+          // Mark as generated and register it
+          stronghold.generated = true;
+          this.registerStructurePlacement(stronghold.x, stronghold.z, 'stronghold');
+          
+          console.log(`Generated stronghold at ${stronghold.x}, ${undergroundY}, ${stronghold.z}`);
+        }
+      }
+    }
+    
+    // Check if any mineshafts should be in this chunk
+    if (this.globalStructures && this.globalStructures.mineshafts) {
+      for (const mineshaft of this.globalStructures.mineshafts) {
+        // Skip if already generated
+        if (mineshaft.generated) continue;
+        
+        // Check if the mineshaft is within this chunk
+        if (mineshaft.x >= startX && mineshaft.x < startX + chunkSize &&
+            mineshaft.z >= startZ && mineshaft.z < startZ + chunkSize) {
+          
+          // Get the surface height at this position and go deeper underground
+          const surfaceY = Math.floor(this.biomeManager.getBlendedHeight(mineshaft.x, mineshaft.z, this.seed));
+          // Mineshafts typically spawn between y=10 and y=40
+          const undergroundY = Math.min(Math.max(10, surfaceY - 40), 40);
+          
+          // Use the structure generator to create the mineshaft
+          this.generateStructureWithGenerator(
+            chunkBlocks,
+            { x: mineshaft.x, y: undergroundY, z: mineshaft.z },
+            'mineshaft',
+            {}
+          );
+          
+          // Mark as generated and register it
+          mineshaft.generated = true;
+          this.registerStructurePlacement(mineshaft.x, mineshaft.z, 'mineshaft');
+          
+          console.log(`Generated mineshaft at ${mineshaft.x}, ${undergroundY}, ${mineshaft.z}`);
+        }
+      }
+    }
+    
+    // Check if any desert temples should be in this chunk
+    if (this.globalStructures && this.globalStructures.desertTemples) {
+      for (const temple of this.globalStructures.desertTemples) {
+        // Skip if already generated
+        if (temple.generated) continue;
+        
+        // Check if the temple is within this chunk
+        if (temple.x >= startX && temple.x < startX + chunkSize &&
+            temple.z >= startZ && temple.z < startZ + chunkSize) {
+          
+          // Get the surface height at this position
+          const surfaceY = Math.floor(this.biomeManager.getBlendedHeight(temple.x, temple.z, this.seed));
+          
+          // Use the structure generator to create the desert temple
+          this.generateStructureWithGenerator(
+            chunkBlocks,
+            { x: temple.x, y: surfaceY, z: temple.z },
+            'desert_temple',
+            {}
+          );
+          
+          // Mark as generated and register it
+          temple.generated = true;
+          this.registerStructurePlacement(temple.x, temple.z, 'desert_temple');
+          
+          console.log(`Generated desert temple at ${temple.x}, ${surfaceY}, ${temple.z}`);
+        }
+      }
+    }
+    
+    // Check if any jungle temples should be in this chunk
+    if (this.globalStructures && this.globalStructures.jungleTemples) {
+      for (const temple of this.globalStructures.jungleTemples) {
+        // Skip if already generated
+        if (temple.generated) continue;
+        
+        // Check if the temple is within this chunk
+        if (temple.x >= startX && temple.x < startX + chunkSize &&
+            temple.z >= startZ && temple.z < startZ + chunkSize) {
+          
+          // Get the surface height at this position
+          const surfaceY = Math.floor(this.biomeManager.getBlendedHeight(temple.x, temple.z, this.seed));
+          
+          // Use the structure generator to create the jungle temple
+          this.generateStructureWithGenerator(
+            chunkBlocks,
+            { x: temple.x, y: surfaceY, z: temple.z },
+            'jungle_temple',
+            {}
+          );
+          
+          // Mark as generated and register it
+          temple.generated = true;
+          this.registerStructurePlacement(temple.x, temple.z, 'jungle_temple');
+          
+          console.log(`Generated jungle temple at ${temple.x}, ${surfaceY}, ${temple.z}`);
         }
       }
     }
@@ -505,45 +1046,30 @@ class WorldGenerator {
    * @returns {number} - Minimum distance in blocks
    */
   getStructureMinDistance(structureType) {
-    // Different structure types have different spacing requirements
-    switch (structureType) {
-      case 'village':
-        return 80;
-      case 'desert_pyramid':
-      case 'jungle_temple':
-      case 'witch_hut':
-      case 'ocean_monument':
-        return 64;
-      case 'stronghold':
-        return 128;
-      case 'mineshaft':
-        return 32;
-      case 'small_ruin':
-        return 24;
-      case 'boulder_pile':
-      case 'desert_well':
-      case 'fallen_tree':
-        return 16;
-      default:
-        return 24;
-    }
+    // Define minimum distances for different structure types
+    const distanceMap = {
+      'village': 512,
+      'stronghold': 1024,
+      'mineshaft': 256,
+      'desert_temple': 512,
+      'jungle_temple': 512,
+      'dungeon': 64,
+      'small_ruin': 128
+      // Add other structures as needed
+    };
+    
+    return distanceMap[structureType] || 64; // Default to 64 blocks
   }
   
   /**
-   * Check if a structure type is significant enough to prevent other structures nearby
+   * Check if a structure is significant enough to prevent other structures nearby
    * @private
    * @param {string} structureType - Type of structure
-   * @returns {boolean} - Whether it's a significant structure
+   * @returns {boolean} - Whether the structure is significant
    */
   isSignificantStructure(structureType) {
-    return [
-      'village',
-      'desert_pyramid',
-      'jungle_temple',
-      'witch_hut',
-      'stronghold',
-      'ocean_monument'
-    ].includes(structureType);
+    // List of significant structures that should not be close to other structures
+    return ['village', 'stronghold', 'mineshaft', 'desert_temple', 'jungle_temple'].includes(structureType);
   }
 
   /**
@@ -567,30 +1093,46 @@ class WorldGenerator {
   }
 
   /**
-   * Generate an entire world of specified size
-   * @param {number} sizeX - World size in X direction (blocks)
-   * @param {number} sizeZ - World size in Z direction (blocks)
-   * @returns {Object} - Complete world data
+   * Generate a square region of world blocks
+   * @param {number} width - Width of the area to generate (centered at origin)
+   * @param {number} depth - Depth of the area to generate (centered at origin)
+   * @returns {Object} - All blocks in the generated area
    */
-  generateWorld(sizeX, sizeZ) {
-    const worldBlocks = {};
+  generateWorld(width, depth) {
+    const halfWidth = Math.floor(width / 2);
+    const halfDepth = Math.floor(depth / 2);
+    
+    const allBlocks = {};
+    
+    // Get chunk size from settings
     const chunkSize = this.generationSettings.chunkSize;
     
-    // Calculate number of chunks needed
-    const chunksX = Math.ceil(sizeX / chunkSize);
-    const chunksZ = Math.ceil(sizeZ / chunkSize);
+    // Calculate chunk range to cover the requested area
+    const minChunkX = Math.floor((-halfWidth) / chunkSize);
+    const maxChunkX = Math.floor((halfWidth) / chunkSize);
+    const minChunkZ = Math.floor((-halfDepth) / chunkSize);
+    const maxChunkZ = Math.floor((halfDepth) / chunkSize);
     
-    // Generate all chunks
-    for (let cx = 0; cx < chunksX; cx++) {
-      for (let cz = 0; cz < chunksZ; cz++) {
-        const chunkData = this.generateChunk(cx - Math.floor(chunksX/2), cz - Math.floor(chunksZ/2));
+    // Generate all chunks in range
+    for (let chunkX = minChunkX; chunkX <= maxChunkX; chunkX++) {
+      for (let chunkZ = minChunkZ; chunkZ <= maxChunkZ; chunkZ++) {
+        const chunkBlocks = this.generateChunk(chunkX, chunkZ);
         
-        // Add chunk data to world
-        Object.assign(worldBlocks, chunkData);
+        // Add chunk blocks to all blocks
+        Object.assign(allBlocks, chunkBlocks);
       }
     }
     
-    return worldBlocks;
+    // Process any entity spawns that were queued during generation
+    if (this.pendingEntitySpawns && this.pendingEntitySpawns.length > 0) {
+      console.log(`Generated ${this.pendingEntitySpawns.length} entities during world generation`);
+      
+      // In a real implementation, these would be added to the world
+      // For now, just clear the pending spawns
+      this.pendingEntitySpawns = [];
+    }
+    
+    return allBlocks;
   }
 
   /**

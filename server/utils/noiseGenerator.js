@@ -372,70 +372,128 @@ class DomainWarpingNoise {
 }
 
 /**
- * Create a set of noise generators for terrain generation
- * @param {number} seed - Seed for all noise generators
- * @returns {Object} - Object containing all noise generators
+ * Create noise generators for terrain generation
+ * @param {number} seed - Seed for the noise generators
+ * @returns {Object} - Terrain noise generators
  */
 function createTerrainNoiseGenerators(seed = 1234) {
   return {
-    // Terrain base
-    heightNoise: new FBMNoise({ 
-      seed, 
-      octaves: 4, 
-      persistence: 0.5, 
-      lacunarity: 2.0, 
-      scale: 0.01 
+    // Base terrain
+    terrainBase: new FBMNoise({
+      seed: seed + 1,
+      octaves: 6,
+      persistence: 0.5,
+      lacunarity: 2.0,
+      scale: 0.01
     }),
     
-    // Terrain details
-    detailNoise: new FBMNoise({ 
-      seed: seed + 1000, 
-      octaves: 2, 
-      persistence: 0.5, 
-      lacunarity: 2.0, 
-      scale: 0.05 
+    // Terrain details (hills, etc.)
+    terrainDetail: new FBMNoise({
+      seed: seed + 2,
+      octaves: 3,
+      persistence: 0.3,
+      lacunarity: 2.0,
+      scale: 0.05
     }),
-    
-    // Biome-specific noise
-    // Plains
-    flatness: new FBMNoise({ seed: seed + 2000, octaves: 2, scale: 0.02 }),
-    
-    // Desert
-    dunes: new FBMNoise({ seed: seed + 3000, octaves: 2, scale: 0.03 }),
-    redSand: new FBMNoise({ seed: seed + 3100, octaves: 2, scale: 0.2 }),
-    
-    // Forest
-    forest: new FBMNoise({ seed: seed + 4000, octaves: 3, scale: 0.04 }),
-    largeHills: new FBMNoise({ seed: seed + 4100, octaves: 2, scale: 0.015 }),
-    forestDensity: new FBMNoise({ seed: seed + 4200, octaves: 3, scale: 0.1 }),
-    mossy: new FBMNoise({ seed: seed + 4300, octaves: 2, scale: 0.5 }),
     
     // Mountains
-    base: new FBMNoise({ seed: seed + 5000, octaves: 4, scale: 0.01 }),
-    ridge: new FBMNoise({ seed: seed + 5100, octaves: 3, scale: 0.02 }),
-    peak: new FBMNoise({ seed: seed + 5200, octaves: 2, scale: 0.005 }),
-    steepness: new FBMNoise({ seed: seed + 5300, octaves: 2, scale: 0.03 }),
-    stoneType: new FBMNoise({ seed: seed + 5400, octaves: 3, scale: 0.1 }),
-    transition: new FBMNoise({ seed: seed + 5500, octaves: 2, scale: 0.2 }),
+    mountainNoise: new FBMNoise({
+      seed: seed + 3,
+      octaves: 4,
+      persistence: 0.5,
+      lacunarity: 2.0,
+      scale: 0.005
+    }),
     
-    // Ocean
-    oceanFloor: new FBMNoise({ seed: seed + 6000, octaves: 4, scale: 0.01 }),
-    oceanDetail: new FBMNoise({ seed: seed + 6100, octaves: 2, scale: 0.05 }),
-    oceanTrench: new FBMNoise({ seed: seed + 6200, octaves: 2, scale: 0.002 }),
-    oceanRidge: new FBMNoise({ seed: seed + 6300, octaves: 3, scale: 0.01 }),
-    oceanSurface: new FBMNoise({ seed: seed + 6400, octaves: 3, scale: 0.1 }),
-    oceanSubSurface: new FBMNoise({ seed: seed + 6500, octaves: 3, scale: 0.2 }),
-    deepOcean: new FBMNoise({ seed: seed + 6600, octaves: 3, scale: 0.3 }),
+    // Rivers
+    riverNoise: new FBMNoise({
+      seed: seed + 4,
+      octaves: 3,
+      persistence: 0.4,
+      lacunarity: 2.0,
+      scale: 0.007
+    }),
     
-    // General use
-    ore: new FBMNoise({ seed: seed + 7000, octaves: 3, scale: 0.5 }),
-    cave: new FBMNoise({ seed: seed + 7100, octaves: 3, scale: 0.03 }),
-    vegetation: new FBMNoise({ seed: seed + 7200, octaves: 3, scale: 0.1 }),
-    stone: new FBMNoise({ seed: seed + 7300, octaves: 2, scale: 0.2 }),
-    coarseDirt: new FBMNoise({ seed: seed + 7400, octaves: 2, scale: 0.4 }),
+    // Caves
+    caveNoise: new FBMNoise({
+      seed: seed + 5,
+      octaves: 3,
+      persistence: 0.5,
+      lacunarity: 2.0,
+      scale: 0.03
+    }),
     
-    // Advanced noise for special features
-    cellular: new WorleyNoise({ seed: seed + 8000, scale: 0.05, points: 3 })
+    // Cave size/shape variation
+    caveShapeNoise: new FBMNoise({
+      seed: seed + 6,
+      octaves: 2,
+      persistence: 0.5,
+      lacunarity: 2.0,
+      scale: 0.05
+    }),
+    
+    // Erosion (for terrain features)
+    erosionNoise: new FBMNoise({
+      seed: seed + 7,
+      octaves: 3,
+      persistence: 0.4,
+      lacunarity: 2.0,
+      scale: 0.02
+    }),
+    
+    // Ore distribution
+    oreNoise: new FBMNoise({
+      seed: seed + 8,
+      octaves: 2,
+      persistence: 0.5,
+      lacunarity: 2.0,
+      scale: 0.1
+    }),
+    
+    // Cave biome mask (for determining where cave biomes appear)
+    caveMaskNoise: new FBMNoise({
+      seed: seed + 9,
+      octaves: 4,
+      persistence: 0.5,
+      lacunarity: 2.0,
+      scale: 0.01
+    }),
+    
+    // Specific noise for lush caves
+    lushCavesNoise: new FBMNoise({
+      seed: seed + 10,
+      octaves: 3,
+      persistence: 0.4,
+      lacunarity: 2.0,
+      scale: 0.02
+    }),
+    
+    // Cave height variation
+    caveHeightNoise: new FBMNoise({
+      seed: seed + 11,
+      octaves: 2,
+      persistence: 0.3,
+      lacunarity: 2.0,
+      scale: 0.02
+    }),
+    
+    // Moss growth in caves
+    mossNoise: new FBMNoise({
+      seed: seed + 12,
+      octaves: 3,
+      persistence: 0.5,
+      lacunarity: 2.0,
+      scale: 0.05
+    }),
+    
+    // Water features in caves
+    waterPoolsNoise: new FBMNoise({
+      seed: seed + 13,
+      octaves: 2,
+      persistence: 0.4,
+      lacunarity: 2.0,
+      scale: 0.03
+    })
   };
 }
 

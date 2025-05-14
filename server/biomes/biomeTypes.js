@@ -538,6 +538,51 @@ const savanna = new Biome({
   ambientSounds: ['savanna_wind', 'distant_animals']
 });
 
+// Jungle biome - dense tropical forest
+const jungle = new Biome({
+  id: 'jungle',
+  name: 'Jungle',
+  color: '#3B8526', // Deep green
+  temperatureRange: [0.7, 1.0], // Hot
+  precipitationRange: [0.8, 1.0], // Very wet
+  continentalnessRange: [0.3, 0.7],
+  erosionRange: [0.3, 0.7],
+  weirdnessRange: [-0.4, 0.4],
+  weight: 0.5,
+  baseHeight: 70,
+  heightVariation: 12, // More varied terrain
+  topBlock: { id: 'grass_block', metadata: 0 },
+  fillerBlock: { id: 'dirt', metadata: 0 },
+  stoneBlock: { id: 'stone', metadata: 0 },
+  treeDensity: 0.8, // Extremely dense trees
+  grassDensity: 0.6,
+  flowerDensity: 0.3,
+  features: [
+    { type: 'tree', id: 'jungle', chance: 0.5, minHeight: 8, maxHeight: 15 },
+    { type: 'tree', id: 'jungle_large', chance: 0.2, minHeight: 15, maxHeight: 25 },
+    { type: 'bamboo', chance: 0.1, minHeight: 8, maxHeight: 12 },
+    { type: 'vines', chance: 0.4 },
+    { type: 'cocoa_bean', chance: 0.05 },
+    { type: 'melon', chance: 0.01 },
+    { type: 'grass', chance: 0.5 },
+    { type: 'fern', chance: 0.2 },
+    { type: 'flower', id: 'blue_orchid', chance: 0.05 },
+    { type: 'flower', id: 'allium', chance: 0.05 }
+  ],
+  structures: [
+    { type: 'jungle_temple', chance: 0.0001 }
+  ],
+  spawnRates: {
+    passive: 0.7,
+    neutral: 0.6,
+    hostile: 1.0
+  },
+  rainChance: 0.7, // Frequent rain
+  fogColor: '#64A23D', // Green-tinted fog
+  fogDensity: 0.05, // Very foggy
+  ambientSounds: ['jungle_ambient', 'birds_exotic', 'insects']
+});
+
 // Export all biomes for easy access
 module.exports = {
   plains,
@@ -547,6 +592,7 @@ module.exports = {
   ocean,
   taiga,
   savanna,
+  jungle,
   BiomeTemperature,
   BiomeHumidity,
   BiomeTerrain,

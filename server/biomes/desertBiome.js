@@ -225,7 +225,7 @@ class DesertBiome extends Biome {
   }
 
   /**
-   * Get structures to place at specified coordinates
+   * Get structures to generate at the specified coordinates
    * @param {number} x - X coordinate
    * @param {number} z - Z coordinate
    * @param {Function} random - Seeded random function
@@ -237,14 +237,25 @@ class DesertBiome extends Biome {
     // Desert wells - simple water source
     if (random() < 0.01) {
       structures.push({
-        type: 'desert_well'
+        type: 'structure',
+        id: 'desert_well'
       });
     }
     
-    // Desert pyramids - rare structure with loot
+    // Desert temples - rare structure with loot and traps
     if (random() < 0.005) {
       structures.push({
-        type: 'desert_pyramid'
+        type: 'structure',
+        id: 'desert_temple'
+      });
+    }
+    
+    // Desert villages - very rare
+    if (random() < 0.001) {
+      structures.push({
+        type: 'structure',
+        id: 'village',
+        variant: 'desert'
       });
     }
     

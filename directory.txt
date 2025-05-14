@@ -5,6 +5,12 @@
 - server/server.js - Main server implementation, handles socket connections, game state, etc.
 - server/saveSystem.js - Handles saving and loading game data
 
+### Archaeology
+- server/archaeology/archaeologyManager.js - Manages archaeology mechanics and loot generation
+- server/archaeology/brushItem.js - Implementation of the brush tool for excavation
+- server/archaeology/suspiciousSandBlock.js - Implementation of suspicious sand blocks
+- server/archaeology/suspiciousGravelBlock.js - Implementation of suspicious gravel blocks
+
 ### Mobs
 - server/mobs/mobManager.js - Manages mob spawning, updates, and interactions
 - server/mobs/mobBase.js - Base class for all mobs with common functionality
@@ -60,6 +66,7 @@
 - server/blocks/soulFireTorch.js - Implementation of soul fire torches
 - server/blocks/sporeBlossomBlock.js - Implementation of spore blossom with particle effects
 - server/blocks/tuffBlock.js - Implementation of tuff found near geodes and in dripstone caves
+- server/blocks/sculkSensorBlock.js - Implementation of sculk sensor with vibration detection
 
 ### Biomes
 - server/biomes/baseBiome.js - Base class for all biomes
@@ -73,6 +80,7 @@
 - server/biomes/mountainGoatBiome.js - Implementation of mountain goat biome variant
 - server/biomes/oceanBiome.js - Implementation of ocean biomes
 - server/biomes/plainsBiome.js - Implementation of plains biome
+- server/biomes/deepDarkBiome.js - Implementation of deep dark biome for the Wild Update
 
 ### World
 - server/world/chunkLoader.js - Handles loading and unloading chunks as needed
@@ -92,6 +100,9 @@
 ### Particles
 - server/particles/particleSystem.js - Particle management system for visual effects
 
+### Weather
+- server/weather/weatherSystem.js - Weather system that manages weather states and transitions
+
 ### Tests
 - server/tests/axolotlTest.js - Tests for Axolotl implementation
 - server/tests/aquaticMobsTest.js - Tests for Squid and GlowSquid mobs
@@ -105,6 +116,11 @@
 - server/tests/powderSnowBlockTest.js - Tests for Powder Snow block
 - server/tests/sporeBlossomTest.js - Tests for Spore Blossom implementation
 - server/tests/tuffBlockTest.js - Tests for Tuff block
+- server/tests/archaeologyTest.js - Tests for archaeology system implementation
+- server/tests/weatherSystemTest.js - Tests for the Weather System implementation
+- server/tests/weatherLightningIntegrationTest.js - Integration tests for Weather System and Lightning Rod
+- server/tests/simpleLightningTest.js - Simple tests focusing on core functionality of lightning
+- server/tests/deepDarkBiomeTest.js - Tests for the Deep Dark biome implementation
 
 ## Client
 - public/index.html - Main client page

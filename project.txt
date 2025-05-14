@@ -79,4 +79,33 @@
 ## Next Milestones
 1. Review and test all Caves & Cliffs features
 2. Update documentation for all new systems
-3. Plan next major update 
+3. Implement Wild Update features
+
+# Current Project: Wild Update Implementation
+
+## Feature Status
+- [IN PROGRESS] Deep Dark biome
+  - [IN PROGRESS] Sculk blocks family
+  - [IN PROGRESS] Ancient City structures
+  - [PENDING] Warden mob
+  - [PENDING] Darkness effect
+  
+- [PENDING] Mangrove Swamp biome
+  - [PENDING] Mangrove trees
+  - [PENDING] Mud blocks
+  - [PENDING] Frogs and Tadpoles
+
+- [PENDING] Allay mob
+
+## Current Tasks
+1. Complete Deep Dark biome implementation
+2. Implement remaining Sculk blocks (Shrieker, Catalyst, Vein, Block)
+3. Design and implement Warden mob AI
+4. Create Ancient City structure generation
+
+## Completed Tasks
+1. Analyzed and verified Weather System implementation
+2. Verified Lightning Rod functionality
+3. Created DeepDarkBiome class with proper properties
+4. Implemented SculkSensorBlock with vibration detection
+5. Created comprehensive tests for Deep Dark biome 

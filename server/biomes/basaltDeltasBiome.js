@@ -1,5 +1,5 @@
 /**
- * BasaltDeltasBiome - Nether biome with basalt columns, blackstone, and magma
+ * BasaltDeltasBiome - Volcanic nether biome with basalt columns, blackstone, and magma blocks
  */
 
 const NetherBiome = require('./netherBiome');
@@ -15,39 +15,32 @@ class BasaltDeltasBiome extends NetherBiome {
       name: 'Basalt Deltas',
       temperature: 2.0,
       precipitation: 0,
-      continentalness: 0.2,
-      erosion: 0.8,
-      weirdness: 0.6,
-      fogColor: '#6A6A6A', // Gray ash-filled fog
-      fogDensity: 0.9,     // Dense fog
+      continentalness: 0.6,
+      erosion: 0.2,
+      weirdness: 0.8,
+      fogColor: '#6A6A6A',
+      fogDensity: 0.8,
       waterColor: '#FC4E03', // Lava color
-      grassColor: '#A0A0A0', // Gray
-      foliageColor: '#A0A0A0', // Gray
+      grassColor: '#5A5A5A',
+      foliageColor: '#5A5A5A',
       surfaceBlock: 'basalt',
       subsurfaceBlock: 'blackstone',
-      stoneBlock: 'netherrack',
+      stoneBlock: 'blackstone',
       liquidBlock: 'lava',
       minHeight: 0,
       maxHeight: 128,
       hasLavaOcean: true,
       lavaOceanLevel: 31,
       structures: {
-        netherFortress: { chance: 0.01, minDistance: 300, isNetherOnly: true }
+        netherFortress: { chance: 0.01, minDistance: 300, isNetherOnly: true },
+        ruinedPortal: { chance: 0.02, minDistance: 200, isNetherOnly: true }
       },
-      vegetationChance: 0.01, // Very little vegetation
-      vegetationTypes: [],     // No standard vegetation
+      vegetationChance: 0.01,
+      vegetationTypes: ['fire_coral'],
       hostileMobSpawnChance: 0.2,
       neutralMobSpawnChance: 0.05,
       ...options
     });
-    
-    // Set specific mob spawns for basalt deltas
-    this.mobSpawns = {
-      magma_cube: { weight: 25, minCount: 1, maxCount: 4 },
-      ghast: { weight: 15, minCount: 1, maxCount: 2 },
-      strider: { weight: 8, minCount: 1, maxCount: 3, spawnNearLava: true },
-      zombified_piglin: { weight: 5, minCount: 1, maxCount: 4 }
-    };
   }
   
   /**
@@ -61,81 +54,52 @@ class BasaltDeltasBiome extends NetherBiome {
    * @returns {Object} - Block type and properties
    */
   getBlockAt(x, y, z, noiseGenerators, seed, surfaceHeight) {
-    // First check standard nether conditions (ceiling, lava ocean, etc.)
+    // First check standard nether conditions
     const baseBlock = super.getBlockAt(x, y, z, noiseGenerators, seed, surfaceHeight);
-    if (baseBlock.type !== 'netherrack' && 
-        baseBlock.type !== this.surfaceBlock && 
-        baseBlock.type !== this.subsurfaceBlock) {
+    if (baseBlock.type !== 'basalt' && baseBlock.type !== 'blackstone') {
       return baseBlock;
     }
     
-    // Basalt Deltas specific features
+    // Basalt deltas specific features
     
-    // Surface blocks - mix of basalt and blackstone
-    if (y === surfaceHeight) {
-      // Use noise to determine surface block type
-      if (noiseGenerators && noiseGenerators.continentalness) {
-        const surfaceNoise = noiseGenerators.continentalness.getValue(x, 0, z);
-        if (surfaceNoise > 0.6) {
-          return { type: 'basalt' };
-        } else if (surfaceNoise > 0.3) {
-          return { type: 'blackstone' };
-        } else {
-          return { type: 'magma_block' };
-        }
-      }
-      return { type: 'basalt' };
-    }
-    
-    // Subsurface blocks - mainly blackstone with occasional basalt
-    if (y < surfaceHeight && y >= surfaceHeight - 3) {
-      // Add occasional magma blocks
-      if (noiseGenerators && noiseGenerators.erosion) {
-        const magmaNoise = noiseGenerators.erosion.getValue(x, y, z);
-        if (magmaNoise > 0.8) {
-          return { type: 'magma_block' };
-        } else if (magmaNoise > 0.4) {
-          return { type: 'blackstone' };
-        }
-      }
-      return { type: this.subsurfaceBlock };
-    }
-    
-    // Basalt columns - tall vertical structures
-    if (y <= surfaceHeight + 15 && y >= surfaceHeight) {
-      if (noiseGenerators && noiseGenerators.weirdness) {
-        const columnNoise = noiseGenerators.weirdness.getValue(x * 0.1, 0, z * 0.1);
-        if (columnNoise > 0.9) {
-          // Create vertical basalt columns
-          // Check if we're in a valid position for a column
-          const columnX = Math.floor(x / 4) * 4 + 2;
-          const columnZ = Math.floor(z / 4) * 4 + 2;
-          const distance = Math.sqrt(Math.pow(x - columnX, 2) + Math.pow(z - columnZ, 2));
-          
-          if (distance < 0.8) {
-            // Determine column height using the y-coordinate's noise
-            const heightNoise = noiseGenerators.weirdness.getValue(columnX, 0, columnZ);
-            const maxHeight = surfaceHeight + 5 + Math.floor(heightNoise * 10);
-            
-            if (y <= maxHeight) {
-              return { type: 'basalt' };
-            }
+    // Generate basalt columns
+    if (y <= surfaceHeight && y > this.lavaOceanLevel) {
+      if (noiseGenerators && noiseGenerators.caveNoise) {
+        const columnNoise = noiseGenerators.caveNoise.getValue(x * 0.3, 0, z * 0.3);
+        if (columnNoise > 0.75) {
+          // Generate basalt columns that extend upward
+          const heightNoise = noiseGenerators.caveNoise.getValue(x * 0.1, y * 0.1, z * 0.1);
+          const columnHeight = Math.floor(10 + heightNoise * 15);
+          if (y <= surfaceHeight + columnHeight) {
+            return { type: 'basalt' };
           }
         }
       }
     }
     
-    // Lava pools on the surface
-    if (y === surfaceHeight) {
+    // Add magma blocks near lava level
+    if (y <= this.lavaOceanLevel + 2 && y > this.lavaOceanLevel) {
       if (noiseGenerators && noiseGenerators.caveNoise) {
-        const lavaNoise = noiseGenerators.caveNoise.getValue(x * 0.2, 0, z * 0.2);
-        if (lavaNoise > 0.92) {
-          return { type: 'lava' };
+        const magmaNoise = noiseGenerators.caveNoise.getValue(x * 0.4, y * 0.4, z * 0.4);
+        if (magmaNoise > 0.7) {
+          return { type: 'magma_block' };
         }
       }
     }
     
-    return baseBlock.type === 'netherrack' ? { type: 'netherrack' } : baseBlock;
+    // Add blackstone patches
+    if (y <= surfaceHeight && y > this.lavaOceanLevel) {
+      if (noiseGenerators && noiseGenerators.erosion) {
+        const blackstoneNoise = noiseGenerators.erosion.getValue(x * 0.2, y * 0.2, z * 0.2);
+        if (blackstoneNoise > 0.65) {
+          // Use gilded blackstone rarely
+          const isGilded = Math.random() < 0.05;
+          return { type: isGilded ? 'gilded_blackstone' : 'blackstone' };
+        }
+      }
+    }
+    
+    return baseBlock;
   }
   
   /**
@@ -150,151 +114,32 @@ class BasaltDeltasBiome extends NetherBiome {
   getFeaturesAt(x, y, z, noiseGenerators, seed) {
     const features = super.getFeaturesAt(x, y, z, noiseGenerators, seed);
     
-    // Add specific features for basalt deltas
+    // Simple RNG based on position and seed
     const rng = this.getPositionRNG(x, y, z, seed);
     
-    // Only add features at the surface level
-    if (y !== Math.floor(this.getTerrainHeight(x, z, noiseGenerators, seed))) {
-      return features;
-    }
-    
-    // Small obsidian deposits
-    if (rng() < 0.02) {
-      features.push({ type: 'obsidian', x, y, z });
-    }
-    
-    // Magma blocks
-    if (rng() < 0.08) {
+    // Add magma blocks with higher frequency
+    if (y <= this.lavaOceanLevel + 5 && y >= this.lavaOceanLevel && rng() < 0.3) {
       features.push({ type: 'magma_block', x, y, z });
     }
     
-    // Gilded blackstone (rare)
-    if (rng() < 0.005) {
-      features.push({ type: 'gilded_blackstone', x, y, z });
-    }
-    
-    // Lava bubbles (particle effect feature)
-    if (rng() < 0.1) {
-      features.push({ 
-        type: 'particle_emitter', 
-        particleType: 'lava',
-        rate: 0.02,
-        x, y, z 
-      });
-    }
-    
-    // Ash particles (particle effect feature)
-    if (rng() < 0.2) {
-      features.push({ 
-        type: 'particle_emitter', 
-        particleType: 'ash',
-        rate: 0.05,
-        x, y, z 
-      });
+    // Add occasional polished basalt as decoration
+    if (y > this.lavaOceanLevel && rng() < 0.02) {
+      features.push({ type: 'polished_basalt', x, y, z });
     }
     
     return features;
   }
   
   /**
-   * Generate a basalt column structure
-   * @param {number} x - X coordinate of the base
-   * @param {number} y - Y coordinate of the base
-   * @param {number} z - Z coordinate of the base
-   * @param {Object} random - Random number generator
-   * @returns {Object} Structure definition with blocks
-   */
-  generateBasaltColumn(x, y, z, random) {
-    const structure = {
-      blocks: {},
-      origin: { x, y, z }
-    };
-    
-    // Get a consistent RNG based on the coordinates
-    const rng = this.getPositionRNG(x, y, z, random);
-    
-    // Column dimensions
-    const height = 4 + Math.floor(rng() * 12); // 4-15 blocks tall
-    const radius = rng() < 0.3 ? 1 : 0; // Occasionally make thicker columns
-    
-    // Generate column
-    for (let dy = 0; dy < height; dy++) {
-      if (radius === 0) {
-        // Single column
-        structure.blocks[`${x},${y + dy},${z}`] = { type: 'basalt' };
-      } else {
-        // Thicker column
-        for (let dx = -radius; dx <= radius; dx++) {
-          for (let dz = -radius; dz <= radius; dz++) {
-            // Skip corners for a more natural look
-            if (Math.abs(dx) === radius && Math.abs(dz) === radius) {
-              if (rng() < 0.5) continue;
-            }
-            structure.blocks[`${x + dx},${y + dy},${z + dz}`] = { type: 'basalt' };
-          }
-        }
-      }
-    }
-    
-    // Occasionally add magma block at the base
-    if (rng() < 0.3) {
-      structure.blocks[`${x},${y - 1},${z}`] = { type: 'magma_block' };
-    }
-    
-    return structure;
-  }
-  
-  /**
-   * Get terrain height at a specific position
-   * Overridden to create more varied terrain with deltas and basins
+   * Get structures to generate at this position
    * @param {number} x - X coordinate
    * @param {number} z - Z coordinate
    * @param {Object} noiseGenerators - Noise generators to use
-   * @param {number} seed - World seed value
-   * @returns {number} - Height of the terrain at this position
+   * @param {number} seed - World seed
+   * @returns {Array} - List of structures to generate
    */
-  getTerrainHeight(x, z, noiseGenerators, seed) {
-    // First get the base height from the parent method
-    const baseHeight = super.getTerrainHeight(x, z, noiseGenerators, seed);
-    
-    // Add additional delta/basin variation for basalt deltas biome
-    if (noiseGenerators && noiseGenerators.weirdness) {
-      const deltaNoise = noiseGenerators.weirdness.getValue(x * 0.05, 0, z * 0.05);
-      
-      // Sharp peaks and valleys
-      const deltaVariation = Math.pow(Math.abs(deltaNoise), 0.5) * 12;
-      
-      if (deltaNoise > 0) {
-        // Raised deltas
-        return baseHeight + deltaVariation;
-      } else {
-        // Lowered basins, but not below lava level
-        return Math.max(this.lavaOceanLevel + 1, baseHeight - deltaVariation);
-      }
-    }
-    
-    return baseHeight;
-  }
-  
-  /**
-   * Get a fitness score for how well this biome matches climate parameters
-   * @param {Object} climate - Climate parameters
-   * @returns {number} - Fitness score (higher is better)
-   */
-  getFitnessScore(climate) {
-    let score = super.getFitnessScore(climate);
-    
-    // Basalt deltas are more likely in areas with high erosion
-    if (climate.erosion > 0.7) {
-      score += 150;
-    }
-    
-    // Basalt deltas are more likely in areas with high weirdness
-    if (climate.weirdness > 0.5) {
-      score += 100;
-    }
-    
-    return score;
+  getStructuresAt(x, z, noiseGenerators, seed) {
+    return super.getStructuresAt(x, z, noiseGenerators, seed);
   }
 }
 

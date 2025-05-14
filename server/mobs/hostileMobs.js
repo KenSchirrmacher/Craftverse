@@ -677,10 +677,251 @@ class ElderGuardian extends Guardian {
   }
 }
 
+// Silverfish - small hostile mob that hides in blocks and calls for allies
+class Silverfish extends MobBase {
+  constructor(position) {
+    super('silverfish', position, 8, 0.7); // type, position, health, speed (faster than other mobs)
+    this.attackDamage = 1;
+    this.attackRange = 1;
+    this.aggroRange = 12;
+    this.canHideInBlock = true;
+    this.isHiding = false;
+    this.hiddenBlock = null;
+    this.lastCalledAllies = 0;
+    this.callingCooldown = 5000; // 5 seconds cooldown between calling allies
+  }
+
+  update(world, players, mobs, deltaTime) {
+    if (this.isHiding) {
+      // Check for nearby players while hiding
+      for (const playerId in players) {
+        const player = players[playerId];
+        const distance = this.distanceTo(player.position);
+        
+        if (distance < 3) {
+          this.emerge(world);
+          break;
+        }
+      }
+      return; // Skip normal update logic while hiding
+    }
+
+    super.update(world, players, mobs, deltaTime);
+
+    // Check for nearby players to target
+    if (this.state === 'idle' && Math.random() < 0.15) { // More aggressive detection rate
+      let closestPlayer = null;
+      let shortestDistance = this.aggroRange;
+      
+      for (const playerId in players) {
+        const player = players[playerId];
+        const distance = this.distanceTo(player.position);
+        
+        if (distance < shortestDistance) {
+          shortestDistance = distance;
+          closestPlayer = player;
+        }
+      }
+      
+      if (closestPlayer) {
+        this.targetEntity = closestPlayer;
+        this.state = 'follow';
+      }
+    }
+
+    // If damaged, try to call for allies
+    if (this.lastDamaged && this.lastDamaged + 2000 > Date.now() && 
+        this.lastCalledAllies + this.callingCooldown < Date.now()) {
+      this.callAllies(world, mobs);
+      this.lastCalledAllies = Date.now();
+    }
+
+    // Check for suitable blocks to hide in when not in combat
+    if (this.state === 'idle' && this.canHideInBlock && Math.random() < 0.005) {
+      this.tryHideInBlock(world);
+    }
+  }
+
+  tryHideInBlock(world) {
+    // Check current block position
+    const blockX = Math.floor(this.position.x);
+    const blockY = Math.floor(this.position.y);
+    const blockZ = Math.floor(this.position.z);
+    
+    // Check for valid blocks to hide in
+    const validBlocks = ['stone', 'cobblestone', 'stone_bricks', 'infested_stone'];
+    
+    // Look for a suitable block in nearby positions
+    for (let x = -1; x <= 1; x++) {
+      for (let y = -1; y <= 1; y++) {
+        for (let z = -1; z <= 1; z++) {
+          const block = world.getBlockAt(blockX + x, blockY + y, blockZ + z);
+          
+          if (block && validBlocks.includes(block.type)) {
+            // Found a suitable block
+            this.hide(world, {
+              x: blockX + x,
+              y: blockY + y,
+              z: blockZ + z
+            }, block.type);
+            return;
+          }
+        }
+      }
+    }
+  }
+
+  hide(world, blockPos, blockType) {
+    // Replace block with infested version
+    const infestedVersion = 'infested_stone';
+    world.setBlock(blockPos.x, blockPos.y, blockPos.z, infestedVersion);
+    
+    // Store the original block type for later
+    this.hiddenBlock = {
+      position: blockPos,
+      type: blockType
+    };
+    
+    // Set mob to hiding state
+    this.isHiding = true;
+    this.position = { ...blockPos };
+    
+    // Notify clients that the mob is no longer visible
+    return {
+      mobId: this.id,
+      action: 'hide',
+      blockPosition: blockPos
+    };
+  }
+
+  emerge(world) {
+    if (!this.isHiding || !this.hiddenBlock) return;
+    
+    // Restore original position
+    this.position = { 
+      x: this.hiddenBlock.position.x + 0.5, 
+      y: this.hiddenBlock.position.y, 
+      z: this.hiddenBlock.position.z + 0.5 
+    };
+    
+    // Restore block to its original type
+    world.setBlock(
+      this.hiddenBlock.position.x,
+      this.hiddenBlock.position.y,
+      this.hiddenBlock.position.z,
+      this.hiddenBlock.type
+    );
+    
+    // Reset hiding state
+    this.isHiding = false;
+    this.hiddenBlock = null;
+    
+    // Notify clients that the mob is visible again
+    return {
+      mobId: this.id,
+      action: 'emerge',
+      position: this.position
+    };
+  }
+
+  callAllies(world, mobs) {
+    // Find nearby silverfish
+    const allyRange = 8;
+    const allies = [];
+    
+    for (const mobId in mobs) {
+      const mob = mobs[mobId];
+      
+      if (mob.type === 'silverfish' && mob.id !== this.id) {
+        const distance = this.distanceTo(mob.position);
+        
+        if (distance < allyRange) {
+          allies.push(mob);
+        }
+      }
+    }
+    
+    // Alert allies to the player
+    for (const ally of allies) {
+      if (ally.state === 'idle' || ally.isHiding) {
+        if (ally.isHiding) {
+          ally.emerge(world);
+        }
+        
+        ally.targetEntity = this.targetEntity;
+        ally.state = 'follow';
+      }
+    }
+    
+    // Notify clients of calling behavior
+    return {
+      mobId: this.id,
+      action: 'call_allies',
+      position: this.position,
+      alliedIds: allies.map(ally => ally.id)
+    };
+  }
+
+  // Called when a block with a silverfish inside is broken
+  static emergeFromBlock(world, blockPos) {
+    // Create a new silverfish
+    const silverfish = new Silverfish({
+      x: blockPos.x + 0.5,
+      y: blockPos.y,
+      z: blockPos.z + 0.5
+    });
+    
+    // Set to aggro state immediately
+    silverfish.state = 'follow';
+    
+    return silverfish;
+  }
+
+  takeDamage(amount, attacker) {
+    this.lastDamaged = Date.now();
+    
+    // If hiding, emerge first
+    if (this.isHiding) {
+      this.emerge(world);
+    }
+    
+    return super.takeDamage(amount, attacker);
+  }
+
+  getDrops() {
+    // Silverfish don't drop anything in vanilla
+    return [];
+  }
+
+  isHostile() {
+    return true;
+  }
+
+  serialize() {
+    return {
+      ...super.serialize(),
+      isHiding: this.isHiding,
+      hiddenBlock: this.hiddenBlock ? {
+        x: this.hiddenBlock.position.x,
+        y: this.hiddenBlock.position.y,
+        z: this.hiddenBlock.position.z,
+        type: this.hiddenBlock.type
+      } : null
+    };
+  }
+
+  deserialize(data) {
+    super.deserialize(data);
+    this.isHiding = data.isHiding || false;
+    this.hiddenBlock = data.hiddenBlock || null;
+  }
+}
+
 module.exports = {
   Zombie,
   Skeleton,
   Creeper,
   Guardian,
-  ElderGuardian
+  ElderGuardian,
+  Silverfish
 }; 

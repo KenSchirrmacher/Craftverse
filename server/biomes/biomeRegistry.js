@@ -7,12 +7,15 @@ const PlainsBiome = require('./plainsBiome');
 const DesertBiome = require('./desertBiome');
 const ForestBiome = require('./forestBiome');
 const MountainsBiome = require('./mountainsBiome');
+const MountainGoatBiome = require('./mountainGoatBiome');
 const OceanBiome = require('./oceanBiome');
+const JungleBiome = require('./jungleBiome');
 const NetherWastesBiome = require('./netherWastesBiome');
 const SoulSandValleyBiome = require('./soulSandValleyBiome');
 const CrimsonForestBiome = require('./crimsonForestBiome');
 const WarpedForestBiome = require('./warpedForestBiome');
 const BasaltDeltasBiome = require('./basaltDeltasBiome');
+const LushCavesBiome = require('./lushCavesBiome');
 
 class BiomeRegistry {
   /**
@@ -38,6 +41,8 @@ class BiomeRegistry {
     const desert = new DesertBiome();
     const forest = new ForestBiome();
     const mountains = new MountainsBiome();
+    const mountainGoat = new MountainGoatBiome();
+    const jungle = new JungleBiome();
     
     // Register ocean variants
     const ocean = new OceanBiome();
@@ -52,11 +57,16 @@ class BiomeRegistry {
     const warpedForest = new WarpedForestBiome();
     const basaltDeltas = new BasaltDeltasBiome();
     
+    // Register cave biomes
+    const lushCaves = new LushCavesBiome();
+    
     // Register all overworld biomes
     this.registerBiome(plains);
     this.registerBiome(desert);
     this.registerBiome(forest);
     this.registerBiome(mountains);
+    this.registerBiome(mountainGoat);
+    this.registerBiome(jungle);
     this.registerBiome(ocean);
     this.registerBiome(deepOcean);
     this.registerBiome(frozenOcean);
@@ -68,6 +78,9 @@ class BiomeRegistry {
     this.registerBiome(crimsonForest);
     this.registerBiome(warpedForest);
     this.registerBiome(basaltDeltas);
+    
+    // Register all cave biomes
+    this.registerBiome(lushCaves);
     
     // Set plains as the default overworld biome
     this.defaultBiome = plains;
@@ -345,6 +358,38 @@ class BiomeRegistry {
     
     // Return the biome with the highest score
     return biomeScores[0].biome;
+  }
+
+  /**
+   * Get all biomes of a specific type (desert, jungle, etc.)
+   * @param {string} type - The type of biome to retrieve
+   * @returns {Array<Biome>} - Array of matching biomes
+   */
+  static getBiomesOfType(type) {
+    // Create an instance of BiomeRegistry to access registered biomes
+    const registry = new BiomeRegistry();
+    const allBiomes = registry.getAllBiomes();
+    
+    // Filter biomes based on the requested type
+    switch (type) {
+      case 'desert':
+        return allBiomes.filter(biome => biome.id.includes('desert'));
+        
+      case 'jungle':
+        return allBiomes.filter(biome => biome.id.includes('jungle'));
+        
+      case 'ocean':
+        return allBiomes.filter(biome => biome.id.includes('ocean'));
+        
+      case 'forest':
+        return allBiomes.filter(biome => biome.id.includes('forest') && !biome.id.includes('jungle'));
+        
+      case 'mountain':
+        return allBiomes.filter(biome => biome.id.includes('mountain'));
+        
+      default:
+        return [];
+    }
   }
 }
 

@@ -4,6 +4,22 @@
 
 // Import blocks
 const SporeBlossomBlock = require('./sporeBlossomBlock');
+const SculkSensorBlock = require('./sculkSensorBlock');
+const LightningRodBlock = require('./lightningRodBlock');
+const SuspiciousSandBlock = require('../archaeology/suspiciousSandBlock');
+const SuspiciousGravelBlock = require('../archaeology/suspiciousGravelBlock');
+const Block = require('./block');
+const PointedDripstoneBlock = require('./pointedDripstoneBlock');
+const DripstoneBlock = require('./dripstoneBlock');
+const AmethystBlock = require('./amethystBlock');
+const AmethystCluster = require('./amethystCluster');
+const BuddingAmethyst = require('./buddingAmethyst');
+const SmallAmethystBud = require('./smallAmethystBud');
+const MediumAmethystBud = require('./mediumAmethystBud');
+const LargeAmethystBud = require('./largeAmethystBud');
+const DeepslateBricksBlock = require('./deepslateBricksBlock');
+const DeepslateChiseledBlock = require('./deepslateChiseledBlock');
+const DeepslateTilesBlock = require('./deepslateTilesBlock');
 
 class BlockRegistry {
   /**
@@ -100,6 +116,29 @@ class BlockRegistry {
   registerDefaultBlocks() {
     // Register Caves & Cliffs blocks
     this.registerBlock(new SporeBlossomBlock());
+    this.registerBlock(new SculkSensorBlock());
+    this.registerBlock(new LightningRodBlock());
+    
+    // Register archaeology blocks
+    this.registerBlock(new SuspiciousSandBlock());
+    this.registerBlock(new SuspiciousGravelBlock());
+    
+    // Register dripstone blocks
+    this.registerBlock(new PointedDripstoneBlock());
+    this.registerBlock(new DripstoneBlock());
+    
+    // Register amethyst blocks
+    this.registerBlock(new AmethystBlock());
+    this.registerBlock(new AmethystCluster());
+    this.registerBlock(new BuddingAmethyst());
+    this.registerBlock(new SmallAmethystBud());
+    this.registerBlock(new MediumAmethystBud());
+    this.registerBlock(new LargeAmethystBud());
+    
+    // Register deepslate blocks
+    this.registerBlock(new DeepslateBricksBlock());
+    this.registerBlock(new DeepslateChiseledBlock());
+    this.registerBlock(new DeepslateTilesBlock());
     
     // Future: Register vanilla blocks (stone, dirt, etc.)
     // this.registerBlock(new StoneBlock());
