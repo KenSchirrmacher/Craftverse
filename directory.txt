@@ -22,6 +22,7 @@
 - server/mobs/axolotl.js - Implementation of Axolotl mob for Caves & Cliffs update
 - server/mobs/villagerNPC.js - Implementation of Villager NPCs with professions and trading
 - server/mobs/zombieVillager.js - Implementation of Zombie Villagers with curing mechanics
+- server/mobs/warden.js - Implementation of Warden mob with vibration-based sensing AI
 
 ### Items
 - server/items/item.js - Base Item class for all in-game items with core functionality
@@ -130,6 +131,8 @@
 - server/tests/sculkCatalystTest.js - Tests for SculkCatalystBlock implementation
 - server/tests/sculkSensorTest.js - Tests for SculkSensorBlock vibration detection
 - server/tests/sculkShriekerTest.js - Tests for SculkShriekerBlock warning and Warden summoning
+- server/tests/wardenTest.js - Tests for the Warden mob implementation and vibration sensing behavior
+- server/tests/runWardenTest.js - Test runner for the Warden tests
 
 ## Client
 - public/index.html - Main client page

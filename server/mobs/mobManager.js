@@ -6,6 +6,7 @@ const netherMobs = require('./netherMobs');
 const aquaticMobs = require('./aquaticMobs');
 const VillagerNPC = require('./villagerNPC');
 const ZombieVillager = require('./zombieVillager');
+const Warden = require('./warden');
 
 class MobManager {
   constructor() {
@@ -45,6 +46,7 @@ class MobManager {
       'guardian': hostileMobs.Guardian,
       'elder_guardian': hostileMobs.ElderGuardian,
       'silverfish': hostileMobs.Silverfish,
+      'warden': Warden,
       
       // Nether mobs
       'piglin': netherMobs.Piglin,

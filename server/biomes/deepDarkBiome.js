@@ -62,7 +62,8 @@ class DeepDarkBiome extends Biome {
         // Very limited mob spawning in the Deep Dark
         monster: [
           { type: 'enderman', weight: 10, minCount: 1, maxCount: 2 },
-          { type: 'creeper', weight: 5, minCount: 1, maxCount: 1 }
+          { type: 'creeper', weight: 5, minCount: 1, maxCount: 1 },
+          { type: 'warden', weight: 1, minCount: 1, maxCount: 1 } // Very rare warden spawn
         ],
         creature: [], // No passive creatures spawn naturally
         ambient: [], // No ambient creatures
