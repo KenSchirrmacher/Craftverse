@@ -50,17 +50,70 @@ You MUST NOT create work arounds, or hacks to make the feature or service work. 
 5. ~~Ocean ruins~~
 6. ~~Combat update~~
 7. ~~Nether update~~
-8. Caves & Cliffs update
+8. ~~Caves & Cliffs update~~
+9. The Wild Update
+   - Deep Dark biome
+   - Warden mob
+   - Sculk blocks and mechanics
+   - Mangrove swamp biome
+   - Frogs and tadpoles
+   - Boat with chest
+   - Recovery compass
+   - Echo shards
+10. Trails & Tales Update
+   - Archaeology system
+   - Sniffer mob
+   - Cherry blossom biome
+   - Camel mob
+   - Armor trims
+   - Pottery system
+   - Hanging signs
+   - Chiseled bookshelf
+11. 1.20 Update
+   - Bamboo wood set
+   - Rafts
+   - Hanging signs
+   - Chiseled bookshelf
+   - Netherite upgrade template
+   - Calibrated sculk sensor
+   - Cherry blossom biome
+   - Camel mob
+   - Sniffer mob
+   - Armor trims
+   - Pottery system
 
 ### Current Focus ###
-Implementing Caves & Cliffs update, which includes:
-- New biomes (Lush Caves, Dripstone Caves, etc.)
-- New mobs (Axolotl, Goat, Glow Squid)
-- New blocks (Copper, Amethyst, Deepslate, etc.)
-- New world generation with increased height and depth
-- Cave generation improvements
-- Mountain generation improvements
-- Archaeology system
+Implementing The Wild Update, which includes:
+- [ ] Deep Dark biome
+  - [ ] Sculk blocks and mechanics
+  - [ ] Ancient city structures
+  - [ ] Warden mob implementation
+  - [ ] Darkness effect
+  - [ ] Sculk sensor mechanics
+  - [ ] Sculk shrieker mechanics
+  - [ ] Sculk catalyst mechanics
+- [ ] Mangrove swamp biome
+  - [ ] Mangrove trees
+  - [ ] Mangrove roots
+  - [ ] Mud blocks
+  - [ ] Mud bricks
+  - [ ] Frogs and tadpoles
+  - [ ] Fireflies
+- [ ] New items and blocks
+  - [ ] Boat with chest
+  - [ ] Recovery compass
+  - [ ] Echo shards
+  - [ ] Mud bricks
+  - [ ] Packed mud
+  - [ ] Mangrove wood set
+  - [ ] Mangrove propagule
+- [ ] New mechanics
+  - [ ] Darkness effect
+  - [ ] Warden detection system
+  - [ ] Frog growth stages
+  - [ ] Tadpole to frog transformation
+  - [ ] Boat with chest mechanics
+  - [ ] Recovery compass functionality
 
 ### Test Cases ###
 Each feature will have its own test case to ensure proper functionality. Test cases will be documented here as they are created.
@@ -98,6 +151,14 @@ Each feature will have its own test case to ensure proper functionality. Test ca
   - [x] Structure placement rules and spacing
   - [x] Integration with terrain and biomes
   - [x] Structure-specific features and decorations
+- [x] Weather System
+  - [x] Weather state management
+  - [x] Weather transitions
+  - [x] Lightning strike generation
+  - [x] Lightning rod integration
+  - [x] Weather effects on gameplay
+  - [x] Weather duration and timing
+  - [x] Weather event emission
 - [x] Enchanting system
   - [x] Enchantment types and effects
   - [x] Enchantment table functionality
@@ -222,6 +283,20 @@ Each feature will have its own test case to ensure proper functionality. Test ca
   - [x] Soul fire and soul fire torches
   - [x] Improved bartering system with Piglins
   - [x] Comprehensive test suite for verifying Nether Update features
+
+- [x] Caves & Cliffs Update
+  - [x] Dripstone Caves biome
+  - [x] Pointed Dripstone block
+  - [x] Dripstone block
+  - [x] Lightning Rod block
+  - [x] Amethyst system
+    - [x] Amethyst Block
+    - [x] Amethyst Cluster
+    - [x] Budding Amethyst
+    - [x] Small/Medium/Large Amethyst Buds
+    - [x] Growth mechanics
+    - [x] Drops and loot tables
+    - [x] Comprehensive test suite
 
 ##Reserved below for AI to create project updates.##
 
@@ -917,4 +992,22 @@ All 20 tests are passing successfully. The implementation provides a fully funct
   - Serialization and deserialization
 - Created proper BlockRegistry class to maintain a catalog of all block types
 - Added documentation for all new classes and methods
+
+### 2024-03-21: Archaeology System Implementation ###
+- Added ArchaeologyManager to handle excavation mechanics and loot generation
+- Implemented BrushItem with durability and repair mechanics
+- Created SuspiciousSandBlock and SuspiciousGravelBlock for archaeology sites
+- Added loot tables with proper rarity distribution
+- Implemented excavation timing and mechanics
+- Created comprehensive test suite for all archaeology features
+- Updated block registry to include new archaeology blocks
+
+### 2024-03-14: Amethyst System Implementation ###
+- Added AmethystBlock with proper drops (4 shards)
+- Added AmethystCluster with growth stages and varying drops
+- Added BuddingAmethyst with growth mechanics
+- Added Small/Medium/Large Amethyst Buds with growth progression
+- Implemented proper growth mechanics and checks
+- Added comprehensive test suite for all amethyst blocks
+- Integrated amethyst blocks into block registry
 

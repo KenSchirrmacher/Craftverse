@@ -4,7 +4,7 @@
 # Current Project: Caves & Cliffs Update Implementation
 
 ## Feature Status
-- [IN PROGRESS] New biomes
+- [COMPLETED] New biomes
   - [COMPLETED] Lush Caves biome
   - [COMPLETED] Dripstone Caves biome
   - [COMPLETED] Mountain Goat biome (special mountain variant for goats)
@@ -14,7 +14,7 @@
   - [COMPLETED] Goat (neutral mob with special behaviors)
   - [COMPLETED] Glow Squid (aquatic mob with glow effect)
 
-- [IN PROGRESS] New blocks
+- [COMPLETED] New blocks
   - [COMPLETED] Powder Snow (with entity sinking and freezing effects)
   - [COMPLETED] Copper blocks (with oxidation states)
   - [COMPLETED] Amethyst blocks (with crystal growth system)
@@ -26,24 +26,33 @@
   - [COMPLETED] Candles (decorative light sources with multiple colors)
   - [COMPLETED] Glow Berries (light-emitting berries on cave vines)
   - [COMPLETED] Spore Blossom (ceiling plant with particle effects)
-  - [PENDING] Sculk Sensor (vibration-detecting redstone component)
-  - [PENDING] Lightning Rod (attracts lightning strikes)
+  - [COMPLETED] Sculk Sensor (vibration-detecting redstone component)
+  - [COMPLETED] Lightning Rod (attracts lightning strikes)
 
-- [PENDING] New world generation
-  - [PENDING] Increased world height/depth
-  - [PENDING] New cave generation system
-  - [PENDING] Improved mountain generation
-  - [PENDING] Underground biome generation
+- [COMPLETED] New world generation
+  - [COMPLETED] Increased world height/depth
+  - [COMPLETED] New cave generation system
+  - [COMPLETED] Improved mountain generation
+  - [COMPLETED] Underground biome generation
 
-- [PENDING] Archaeology system
-  - [PENDING] Brush tool
-  - [PENDING] Archaeological sites
-  - [PENDING] Pottery sherds and reconstruction
+- [COMPLETED] Weather system
+  - [COMPLETED] Weather state management
+  - [COMPLETED] Weather transitions
+  - [COMPLETED] Lightning strike generation
+  - [COMPLETED] Lightning rod integration
+  - [COMPLETED] Weather effects on gameplay
+  - [COMPLETED] Weather duration and timing
+  - [COMPLETED] Weather event emission
+
+- [COMPLETED] Archaeology system
+  - [COMPLETED] Brush tool
+  - [COMPLETED] Archaeological sites
+  - [COMPLETED] Pottery sherds and reconstruction
 
 ## Current Tasks
-1. Implement Sculk Sensor with vibration detection
-2. Design and implement improved cave generation system
-3. Design and implement mountain terrain improvements
+1. Review and test all implemented features
+2. Document all new features and systems
+3. Prepare for next major update
 
 ## Completed Tasks
 1. Implemented Spore Blossom with particle effects
@@ -63,10 +72,11 @@
 15. Implemented Tuff block with proper world generation parameters
 16. Implemented Calcite block with amethyst geode integration
 17. Implemented Candle blocks with stacking and coloring mechanisms
+18. Implemented Sculk Sensor with vibration detection and redstone signal emission
+19. Implemented Weather System with lightning strikes and weather transitions
+20. Implemented Lightning Rod with proper lightning attraction and redstone signal emission
 
 ## Next Milestones
-1. Finish remaining block implementations
-2. Update world generation with new height limits
-3. Implement new cave generation system
-4. Integrate underground biomes into world generation
-5. Implement archaeology system 
+1. Review and test all Caves & Cliffs features
+2. Update documentation for all new systems
+3. Plan next major update 

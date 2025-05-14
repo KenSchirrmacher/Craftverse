@@ -17,6 +17,7 @@ const DimensionManager = require('./world/dimensionManager');
 const NetherDimension = require('./world/netherDimension');
 const VillageReputationManager = require('./world/villageReputationManager');
 const CombatManager = require('./combat/combatManager');
+const WeatherSystem = require('./weather/weatherSystem');
 
 const app = express();
 const httpServer = createServer(app);
@@ -151,6 +152,21 @@ const worldGenerator = new WorldGenerator({
 mobManager.setBiomeManager(worldGenerator.biomeManager);
 mobManager.setWorldSeed(worldSeed);
 
+// Create "world" object that will be used by various systems
+const world = {
+  getBlock: (x, y, z) => {
+    const posKey = `${x},${y},${z}`;
+    return blocks[posKey];
+  },
+  getMaxHeight: () => 256,
+  getMinHeight: () => 0,
+  seed: worldSeed,
+  generator: worldGenerator
+};
+
+// Initialize weather system with world reference
+weatherSystem.world = world;
+
 // Weather state
 let isRaining = false;
 let moonPhase = 0;
@@ -188,6 +204,19 @@ global.portalManager.on('portalCreated', (portalData) => {
 const netherDimension = new NetherDimension({ 
   seed: worldSeed,
   server: io 
+});
+
+// Initialize weather system
+const weatherSystem = new WeatherSystem();
+
+// Listen for weather change events
+weatherSystem.on('weatherChange', (data) => {
+  console.log(`Weather changed to: ${data.weather}, duration: ${data.duration} ticks`);
+});
+
+// Listen for lightning strike events
+weatherSystem.on('lightningStrike', (strike) => {
+  console.log(`Lightning strike at: ${strike.x}, ${strike.y}, ${strike.z}`);
 });
 
 // Initialize dimension manager and register dimensions
@@ -266,12 +295,24 @@ function gameLoop() {
     console.log(`Moon phase changed to: ${moonPhase}`);
   }
   
-  // Update weather occasionally
-  if (Math.random() < 0.0001 * deltaTicks) {
-    isRaining = !isRaining;
-    mobManager.setWeather(isRaining);
-    io.emit('weatherUpdate', { isRaining });
-    console.log(`Weather changed: ${isRaining ? 'Raining' : 'Clear'}`);
+  // Update weather with our new WeatherSystem
+  weatherSystem.update(deltaTicks);
+  // Update mob manager with current weather state
+  mobManager.setWeather(weatherSystem.currentWeather !== 'clear');
+  // Broadcast weather updates to clients
+  io.emit('weatherUpdate', { 
+    weather: weatherSystem.currentWeather,
+    isRaining: weatherSystem.currentWeather !== 'clear',
+    isThundering: weatherSystem.currentWeather === 'thunder'
+  });
+  
+  // Process any lightning strikes
+  for (const strike of weatherSystem.lightningStrikes) {
+    // Check if any lightning rods should attract this strike
+    checkLightningRodAttractions(strike);
+    
+    // Notify clients about the lightning strike
+    io.emit('lightningStrike', strike);
   }
   
   // Update mobs
@@ -1565,4 +1606,58 @@ function damageEntity(entity, amount, damageSource) {
   }
   
   // ... continue with damage application using finalAmount instead of amount ...
+}
+
+// Check if any lightning rods attract a lightning strike
+function checkLightningRodAttractions(strike) {
+  const maxDistance = 128; // Maximum attraction distance
+  
+  // Check all blocks to find lightning rods
+  // In a real implementation, we would use a spatial partitioning system
+  // to only check nearby blocks, not the entire world
+  for (const posKey in blocks) {
+    const block = blocks[posKey];
+    
+    // Skip if not a lightning rod
+    if (!block || block.type !== 'lightning_rod') continue;
+    
+    // Parse position from posKey
+    const [x, y, z] = posKey.split(',').map(Number);
+    
+    // Calculate distance to strike
+    const dx = strike.x - x;
+    const dy = strike.y - y;
+    const dz = strike.z - z;
+    const distance = Math.sqrt(dx*dx + dy*dy + dz*dz);
+    
+    // Skip if too far
+    if (distance > maxDistance) continue;
+    
+    // Lightning rod attracts the strike
+    console.log(`Lightning rod at ${posKey} attracted lightning strike`);
+    
+    // Create a new strike at the lightning rod position
+    const rodStrike = {
+      x,
+      y: y + 1,
+      z,
+      time: Date.now(),
+      power: 15,
+      isAttracted: true
+    };
+    
+    // Emit event for this attracted strike
+    io.emit('lightningStrike', rodStrike);
+    
+    // Activate lightning rod (in a real implementation, we would modify the block state)
+    if (block.onLightningStrike) {
+      block.onLightningStrike(rodStrike);
+    }
+    
+    // A single lightning strike might be attracted by multiple rods,
+    // but we'll just use the first one we find for simplicity
+    return true;
+  }
+  
+  return false;
 }
