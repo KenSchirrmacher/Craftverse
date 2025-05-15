@@ -50,7 +50,8 @@
   - [COMPLETED] Pottery sherds and reconstruction
 
 ## Current Tasks
-1. No active Caves & Cliffs tasks remaining
+1. ~~Implement Echo Shards as chest loot in Ancient Cities~~
+2. Implement Fireflies for the Mangrove Swamp biome
 
 ## Completed Tasks
 1. Analyzed and verified Weather System implementation
@@ -78,6 +79,14 @@
 23. Added comprehensive tests for Frog and Tadpole mobs
 24. Implemented Allay mob with all features including flying, item collection, note block interaction, and duplication
 25. Created comprehensive tests for Allay behavior and mechanics
+26. Implemented Boat with Chest with inventory support, all wood types, and proper mechanics
+27. Created comprehensive tests for Boat with Chest behavior, inventory, and drops
+28. Implemented Recovery Compass that points to player's last death location
+29. Implemented Echo Shards as crafting material for Recovery Compass
+30. Created crafting system with support for the Recovery Compass recipe
+31. Added comprehensive tests for Recovery Compass and Echo Shards functionality
+32. Added Echo Shards as loot in Ancient City treasure chests
+33. Created comprehensive tests for Echo Shards loot generation in Ancient Cities
 
 ## Next Milestones
 1. Review and test all Caves & Cliffs features
