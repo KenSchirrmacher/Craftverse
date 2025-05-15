@@ -9,24 +9,24 @@ const { v4: uuidv4 } = require('uuid');
 class ThrownPotion extends Entity {
   /**
    * Create a thrown potion entity
-   * @param {Object} world - World instance
+   * @param {string} id - Entity ID
    * @param {Object} options - Configuration options
    */
-  constructor(world, options = {}) {
-    const id = options.id || uuidv4();
+  constructor(id, options = {}) {
+    const world = options.world || null;
+    const entityId = id || uuidv4();
     
     // Initialize with entity properties
     super(world, {
-      id,
+      id: entityId,
       type: 'thrown_potion',
-      position: options.position || new Vector3(0, 0, 0),
-      velocity: options.velocity || new Vector3(0, 0, 0),
-      boundingBox: new AABB(
-        new Vector3(-0.125, -0.125, -0.125),
-        new Vector3(0.125, 0.125, 0.125)
-      ),
+      position: options.position || { x: 0, y: 0, z: 0 },
+      velocity: options.velocity || { x: 0, y: 0, z: 0 },
+      width: 0.25,
+      height: 0.25,
       gravity: 0.05,
-      drag: 0.01
+      drag: 0.01,
+      ...options
     });
     
     // Potion specific properties
@@ -364,6 +364,19 @@ class ThrownPotion extends Entity {
       lifetime: this.lifetime,
       lingeringTick: this.lingeringTick
     };
+  }
+  
+  /**
+   * Deserialize potion data
+   */
+  deserialize(data) {
+    super.deserialize(data);
+    
+    if (data.potionType) this.potionType = data.potionType;
+    if (data.isSplash !== undefined) this.isSplash = data.isSplash;
+    if (data.isLingering !== undefined) this.isLingering = data.isLingering;
+    if (data.color) this.color = data.color;
+    if (data.hasBroken !== undefined) this.hasBroken = data.hasBroken;
   }
 }
 

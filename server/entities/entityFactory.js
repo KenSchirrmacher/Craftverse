@@ -1,5 +1,15 @@
 const ThrownPotion = require('./thrownPotion');
 const AreaEffectCloud = require('./areaEffectCloud');
+const Boat = require('./boat');
+const { v4: uuidv4 } = require('uuid');
+
+/**
+ * Generate a unique ID for an entity
+ * @returns {string} Unique ID
+ */
+function generateId() {
+  return uuidv4();
+}
 
 /**
  * Create an entity based on type and options
@@ -22,10 +32,15 @@ function createEntity(type, id = null, options = {}) {
     case 'area_effect_cloud':
       return new AreaEffectCloud(entityId, options);
     
+    case 'boat':
+      return new Boat(options.world, { id: entityId, ...options });
+    
     // ... other entity types ...
     
     default:
       console.warn(`Unknown entity type: ${type}`);
       return new Entity(entityId, { type: 'unknown', ...options });
   }
-} 
+}
+
+module.exports = createEntity; 

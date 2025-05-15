@@ -104,6 +104,11 @@ Implementing The Wild Update, which includes:
   - [x] Mud bricks
   - [x] Frogs and tadpoles
   - [ ] Fireflies
+- [x] Boat with chest
+  - [x] Inventory storage functionality
+  - [x] Different wood type variants
+  - [x] Proper breaking and drops handling
+  - [x] Serialization and persistence
 
 ### Test Cases ###
 Each feature will have its own test case to ensure proper functionality. Test cases will be documented here as they are created.

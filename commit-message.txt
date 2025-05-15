@@ -18,4 +18,21 @@ Begin Wild Update implementation with Deep Dark biome
 - Created tests for the Deep Dark biome functionality
 - Updated project documentation with new Wild Update tasks
 - Verified Weather System and Lightning Rod implementation is complete
-- Updated directory.txt with new files and components 
+- Updated directory.txt with new files and components
+
+feat(wild-update): Implement Boat with Chest feature
+
+This commit adds the Boat with Chest feature from the Wild Update:
+
+- Fix entity ID preservation in Entity.deserialize
+- Update Boat entity to support inventory storage for chest boats
+- Improve Boat serialization and deserialization for proper persistence
+- Ensure proper item drops when breaking boats with chests
+- Fix boat breaking mechanics to drop both the boat and its contents
+- Create comprehensive tests for all Boat with Chest functionality
+
+This implementation allows players to store items in boats with chests (27 slots),
+supports all wood types, and correctly handles serialization, breaking, and drops.
+All tests are now passing for this feature.
+
+Part of: The Wild Update implementation 

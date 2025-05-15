@@ -115,12 +115,12 @@
 - [COMPLETED] Transport
   - [COMPLETED] Boat with Chest
 
-- [TO DO] Gear
-  - [TO DO] Recovery Compass
-  - [TO DO] Echo Shards
+- [COMPLETED] Gear
+  - [COMPLETED] Recovery Compass
+  - [COMPLETED] Echo Shards
 
 ## Current Tasks
-1. Implement Recovery Compass
+1. Implement Echo Shards as chest loot in Ancient Cities
 
 ## Completed Tasks
 1. Analyzed and verified Weather System implementation
@@ -150,3 +150,7 @@
 25. Created comprehensive tests for Allay behavior and mechanics
 26. Implemented Boat with Chest with inventory support, all wood types, and proper mechanics
 27. Created comprehensive tests for Boat with Chest behavior, inventory, and drops
+28. Implemented Recovery Compass that points to player's last death location
+29. Implemented Echo Shards as crafting material for Recovery Compass
+30. Created crafting system with support for the Recovery Compass recipe
+31. Added comprehensive tests for Recovery Compass and Echo Shards functionality

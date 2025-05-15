@@ -1,4 +1,4 @@
-// Mob Manager - handles spawning, updating, and interactions with all mobsconst passiveMobs = require('./passiveMobs');const neutralMobs = require('./neutralMobs');const hostileMobs = require('./hostileMobs');const netherMobs = require('./netherMobs');const aquaticMobs = require('./aquaticMobs');const VillagerNPC = require('./villagerNPC');const ZombieVillager = require('./zombieVillager');const Warden = require('./warden');const { Frog, Tadpole } = require('./frogAndTadpole');
+// Mob Manager - handles spawning, updating, and interactions with all mobsconst passiveMobs = require('./passiveMobs');const neutralMobs = require('./neutralMobs');const hostileMobs = require('./hostileMobs');const netherMobs = require('./netherMobs');const aquaticMobs = require('./aquaticMobs');const VillagerNPC = require('./villagerNPC');const ZombieVillager = require('./zombieVillager');const Warden = require('./warden');const { Frog, Tadpole } = require('./frogAndTadpole');const Allay = require('./allay');
 
 class MobManager {
   constructor() {
@@ -26,6 +26,7 @@ class MobManager {
       'glow_squid': aquaticMobs.GlowSquid,
       'frog': Frog,
       'tadpole': Tadpole,
+      'allay': Allay,
       
       // Neutral mobs
       'wolf': neutralMobs.Wolf,
@@ -335,7 +336,7 @@ class MobManager {
   // Original method kept for backwards compatibility
   selectMobType(category) {
     const mobTypes = {
-      passive: ['sheep', 'cow', 'pig', 'chicken', 'frog', 'tadpole'],
+      passive: ['sheep', 'cow', 'pig', 'chicken', 'frog', 'tadpole', 'allay'],
       neutral: ['wolf', 'spider', 'enderman', 'goat'],
       hostile: ['zombie', 'skeleton', 'creeper'],
       villager: ['villager']

@@ -20,6 +20,7 @@ const CombatManager = require('./combat/combatManager');
 const WeatherSystem = require('./weather/weatherSystem');
 const BlockRegistry = require('./blocks/blockRegistry');
 const ItemRegistry = require('./items/itemRegistry');
+const CraftingManager = require('./crafting/craftingManager');
 
 const app = express();
 const httpServer = createServer(app);
@@ -237,6 +238,10 @@ global.dimensionManager.registerDimension('nether', netherDimension);
 const saveSystem = new SaveSystem('saves');
 const potionRegistry = new PotionRegistry();
 global.villageReputationManager = new VillageReputationManager();
+
+// Initialize managers
+global.craftingManager = new CraftingManager();
+global.craftingManager.registerDefaultRecipes();
 
 // Generate initial world
 function generateWorld() {
@@ -608,6 +613,15 @@ io.on('connection', (socket) => {
     // Check for death
     if (target.health <= 0) {
       target.health = 0;
+      
+      // Store the death location for recovery compass
+      target.lastDeathLocation = { 
+        x: target.position.x, 
+        y: target.position.y, 
+        z: target.position.z,
+        dimension: target.dimension || 'overworld' // Track dimension for cross-dimension support
+      };
+
       io.emit('playerDeath', { playerId: target.id });
     }
 
@@ -640,6 +654,8 @@ io.on('connection', (socket) => {
     player.health = 100;
     player.position = { x: 0, y: 1, z: 0 };
     player.rotation = { y: 0 };
+    
+    // Don't clear lastDeathLocation on respawn - needed for recovery compass
     
     io.emit('playerUpdate', player);
   });

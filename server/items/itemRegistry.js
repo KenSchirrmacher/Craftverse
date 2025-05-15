@@ -7,8 +7,12 @@ const Item = require('./item');
 const GlowBerryItem = require('./glowBerryItem');
 const FlintAndSteelItem = require('./flintAndSteelItem');
 const ShieldItem = require('./shieldItem');
-const InkSacItem = require('./inkSacItem');
+const { InkSacItem, GlowInkSacItem } = require('./inkSacItem');
+const BoatItem = require('./boatItem');
 const PotionRegistry = require('./potionRegistry');
+const RecoveryCompassItem = require('./recoveryCompassItem');
+const EchoShardItem = require('./echoShardItem');
+const CompassItem = require('./compassItem');
 
 class ItemRegistry {
   /**
@@ -120,14 +124,54 @@ class ItemRegistry {
     // Register tool items
     this.registerItem(new FlintAndSteelItem());
     this.registerItem(new ShieldItem());
+    this.registerItem(new CompassItem());
     
     // Register drop items
     this.registerItem(new InkSacItem());
+    this.registerItem(new GlowInkSacItem());
+    
+    // Register boat items
+    this.registerBoatItems();
+    
+    // Register Wild Update items
+    this.registerWildUpdateItems();
     
     // Future: Register more items (stone, dirt, etc.)
     
     // Register potion items
     this.potionRegistry.registerDefaultPotions();
+  }
+  
+  /**
+   * Register all boat variants
+   * @private
+   */
+  registerBoatItems() {
+    const woodTypes = [
+      'oak', 'spruce', 'birch', 'jungle', 'acacia', 'dark_oak', 'mangrove'
+    ];
+    
+    // Register regular boats
+    for (const woodType of woodTypes) {
+      this.registerItem(new BoatItem({ woodType, hasChest: false }));
+    }
+    
+    // Register boats with chests (Wild Update feature)
+    for (const woodType of woodTypes) {
+      this.registerItem(new BoatItem({ woodType, hasChest: true }));
+    }
+  }
+  
+  /**
+   * Register Wild Update items
+   * @private
+   */
+  registerWildUpdateItems() {
+    // Register Echo Shards
+    this.registerItem(new EchoShardItem());
+    
+    // Register Recovery Compass
+    this.registerItem(new RecoveryCompassItem());
   }
   
   /**

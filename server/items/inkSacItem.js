@@ -3,7 +3,7 @@
  * Regular ink sacs from squids and glow ink sacs from glow squids
  */
 
-const Item = require('./itemBase');
+const Item = require('./item');
 
 class InkSacItem extends Item {
   /**
