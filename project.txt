@@ -112,11 +112,15 @@
 
 - [COMPLETED] Allay mob
 
-- [IN PROGRESS] Transport
-  - [TO DO] Boat with Chest
+- [COMPLETED] Transport
+  - [COMPLETED] Boat with Chest
+
+- [TO DO] Gear
+  - [TO DO] Recovery Compass
+  - [TO DO] Echo Shards
 
 ## Current Tasks
-1. Implement Boat with Chest
+1. Implement Recovery Compass
 
 ## Completed Tasks
 1. Analyzed and verified Weather System implementation
@@ -144,3 +148,5 @@
 23. Added comprehensive tests for Frog and Tadpole mobs
 24. Implemented Allay mob with all features including flying, item collection, note block interaction, and duplication
 25. Created comprehensive tests for Allay behavior and mechanics
+26. Implemented Boat with Chest with inventory support, all wood types, and proper mechanics
+27. Created comprehensive tests for Boat with Chest behavior, inventory, and drops

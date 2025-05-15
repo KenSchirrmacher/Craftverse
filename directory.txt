@@ -20,9 +20,22 @@
 - server/mobs/netherMobs.js - Implementation of nether-specific mobs (Piglin, Hoglin, etc.)
 - server/mobs/aquaticMobs.js - Implementation of aquatic mobs (Squid, GlowSquid, etc.)
 - server/mobs/axolotl.js - Implementation of Axolotl mob for Caves & Cliffs update
+- server/mobs/frogAndTadpole.js - Implementation of Frog and Tadpole mobs for the Wild Update
 - server/mobs/villagerNPC.js - Implementation of Villager NPCs with professions and trading
 - server/mobs/zombieVillager.js - Implementation of Zombie Villagers with curing mechanics
 - server/mobs/warden.js - Implementation of Warden mob with vibration-based sensing AI
+- server/mobs/allay.js - Implementation of Allay mob with flying, item collection, and note block interaction
+
+### Entities
+- server/entities/entity.js - Base class for all entities in the game. Provides common functionality like physics, collision detection, serialization, and event handling.
+- server/entities/entityManager.js - Manages all entities in the game world, handles spawning, removal, and updates.
+- server/entities/entityFactory.js - Factory for creating different entity types.
+- server/entities/boat.js - Implementation of the boat entity, including boats with chests for the Wild Update.
+- server/entities/thrownPotion.js - Implementation of thrown potion entities.
+- server/entities/areaEffectCloud.js - Implementation of area effect clouds from potions.
+- server/entities/endCrystal.js - Implementation of end crystals for the Ender Dragon fight.
+- server/entities/enderDragon.js - Implementation of the Ender Dragon boss.
+- server/entities/statusEffectManager.js - Manages status effects on entities.
 
 ### Items
 - server/items/item.js - Base class for all items in the game. Provides common functionality like durability, use actions, serialization, and event handling.
@@ -38,6 +51,7 @@
 - server/items/shieldItem.js - Implementation of shield items with durability and banner patterns
 - server/items/specialArrows.js - Implementation of special arrow types like tipped arrows
 - server/items/itemRegistry.js - Central registry for all items in the game
+- server/items/boatItem.js - Implementation of boat items, including boats with chests for the Wild Update
 
 ### Blocks
 - server/blocks/amethystBlock.js - Implementation of amethyst block and amethyst cluster growth
@@ -138,6 +152,12 @@
 - server/tests/runWardenTest.js - Test runner for the Warden tests
 - server/tests/ancientCityTest.js - Tests for Ancient City structure generation
 - server/tests/runAncientCityTest.js - Test runner for Ancient City tests
+- server/tests/frogAndTadpoleTest.js - Tests for Frog and Tadpole mobs implementation
+- server/tests/runFrogAndTadpoleTest.js - Test runner for Frog and Tadpole tests
+- server/tests/allayTest.js - Tests for Allay mob implementation with item collection and note block behaviors
+- server/tests/runAllayTest.js - Test runner for Allay tests
+- server/tests/boatWithChestTest.js - Tests for Boat with Chest implementation, inventory system, and item drop mechanics
+- server/tests/runBoatWithChestTest.js - Test runner for Boat with Chest tests
 
 ## Client
 - public/index.html - Main client page
