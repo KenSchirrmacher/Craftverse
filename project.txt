@@ -58,23 +58,25 @@
 1. Implemented Spore Blossom with particle effects
 2. Implemented Glow Berries with light-emitting cave vines
 3. Created base Item class as foundation for all game items
-4. Implemented PowderSnow block with entity sinking mechanics and freezing damage
-5. Implemented Goat mob with ramming behavior and powder snow interaction
-6. Implemented Axolotl mob with hunting and play-dead mechanics
-7. Created MountainGoat biome with increased goat spawns and powder snow patches
-8. Implemented copper block with oxidation states
-9. Implemented amethyst blocks with crystal growth mechanics
-10. Implemented deepslate blocks for deep underground areas
-11. Added dripstone cave generation with pointed dripstone blocks
-12. Added lush caves with clay pools, dripleaf plants, and moss blocks
-13. Implemented Squid and GlowSquid mobs with proper aquatic behavior
-14. Implemented Deepslate variants (natural, cobbled, bricks, tiles, etc.)
-15. Implemented Tuff block with proper world generation parameters
-16. Implemented Calcite block with amethyst geode integration
-17. Implemented Candle blocks with stacking and coloring mechanisms
-18. Implemented Sculk Sensor with vibration detection and redstone signal emission
-19. Implemented Weather System with lightning strikes and weather transitions
-20. Implemented Lightning Rod with proper lightning attraction and redstone signal emission
+4. Created ItemRegistry to properly manage game items
+5. Implemented PowderSnow block with entity sinking mechanics and freezing damage
+6. Implemented Goat mob with ramming behavior and powder snow interaction
+7. Implemented Axolotl mob with hunting and play-dead mechanics
+8. Created MountainGoat biome with increased goat spawns and powder snow patches
+9. Implemented copper block with oxidation states
+10. Implemented amethyst blocks with crystal growth mechanics
+11. Implemented deepslate blocks for deep underground areas
+12. Added dripstone cave generation with pointed dripstone blocks
+13. Added lush caves with clay pools, dripleaf plants, and moss blocks
+14. Implemented Squid and GlowSquid mobs with proper aquatic behavior
+15. Implemented Deepslate variants (natural, cobbled, bricks, tiles, etc.)
+16. Implemented Tuff block with proper world generation parameters
+17. Implemented Calcite block with amethyst geode integration
+18. Implemented Candle blocks with stacking and coloring mechanisms
+19. Implemented Sculk Sensor with vibration detection and redstone signal emission
+20. Implemented Weather System with lightning strikes and weather transitions
+21. Implemented Lightning Rod with proper lightning attraction and redstone signal emission
+22. Implemented comprehensive tests for Glow Berries and Cave Vines
 
 ## Next Milestones
 1. Review and test all Caves & Cliffs features
@@ -92,7 +94,7 @@
     - [COMPLETED] Sculk Sensor (vibration detector)
     - [COMPLETED] Sculk Shrieker (warden summoner)
   - [COMPLETED] Warden mob
-  - [PENDING] Ancient City structures
+  - [COMPLETED] Ancient City structures
   - [PENDING] Darkness effect
   
 - [PENDING] Mangrove Swamp biome
@@ -104,9 +106,8 @@
 
 ## Current Tasks
 1. Continue Deep Dark biome implementation
-2. Implement Ancient City structure generation
-3. Implement Darkness effect mechanics
-4. Begin work on Mangrove Swamp biome
+2. Implement Darkness effect mechanics
+3. Begin work on Mangrove Swamp biome
 
 ## Completed Tasks
 1. Analyzed and verified Weather System implementation
@@ -119,4 +120,6 @@
 8. Implemented SculkCatalystBlock for handling mob death events
 9. Implemented SculkShriekerBlock for warning and Warden summoning
 10. Added tests for all Sculk block types
-11. Implemented Warden mob with specialized vibration sensing AI 
+11. Implemented Warden mob with specialized vibration sensing AI
+12. Implemented Ancient City structure generation with proper layouts and features
+13. Created tests for Ancient City generation and validation 

@@ -25,9 +25,10 @@
 - server/mobs/warden.js - Implementation of Warden mob with vibration-based sensing AI
 
 ### Items
-- server/items/item.js - Base Item class for all in-game items with core functionality
+- server/items/item.js - Base class for all items in the game. Provides common functionality like durability, use actions, serialization, and event handling.
 - server/items/flintAndSteelItem.js - Implementation of flint and steel for lighting fires and portals
-- server/items/glowBerryItem.js - Implementation of glow berries for Caves & Cliffs update
+- server/items/foodItem.js - Base class for food items with hunger and saturation restoration
+- server/items/glowBerryItem.js - Implementation of the glow berry item that can be eaten as food and used to plant cave vines. Extends the base Item class.
 - server/items/inkSacItem.js - Implementation of ink sacs obtained from squids
 - server/items/netheriteItems.js - Implementation of netherite equipment and tools
 - server/items/potionItem.js - Implementation of potions with various effects
@@ -36,6 +37,7 @@
 - server/items/shield.js - Implementation of shield mechanics
 - server/items/shieldItem.js - Implementation of shield items with durability and banner patterns
 - server/items/specialArrows.js - Implementation of special arrow types like tipped arrows
+- server/items/itemRegistry.js - Central registry for all items in the game
 
 ### Blocks
 - server/blocks/amethystBlock.js - Implementation of amethyst block and amethyst cluster growth
@@ -45,7 +47,7 @@
 - server/blocks/buddingAmethyst.js - Implementation of budding amethyst block
 - server/blocks/calciteBlock.js - Implementation of calcite found in amethyst geodes
 - server/blocks/candleBlock.js - Implementation of candles with stacking and colored variants
-- server/blocks/caveVineBlock.js - Implementation of cave vines with glow berries
+- server/blocks/caveVineBlock.js - Implementation of cave vines that can grow and produce glow berries. Includes CaveVineBlock (base class), CaveVineHeadBlock (end segments where berries grow), and CaveVineBodyBlock (middle segments).
 - server/blocks/cavesCliffsBlocks.js - Implementation of various Caves & Cliffs blocks
 - server/blocks/chorusPlantBlock.js - Implementation of End chorus plants
 - server/blocks/deepslateVariants.js - Implementation of deepslate and its variants
@@ -101,6 +103,7 @@
 - server/utils/noiseGenerator.js - Noise generation for terrain
 - server/utils/structureGenerator.js - Handles generation of structures
 - server/utils/villageGenerator.js - Handles generation of villages
+- server/utils/structures/ancientCityGenerator.js - Handles generation of Ancient City structures in Deep Dark biomes
 
 ### Particles
 - server/particles/particleSystem.js - Particle management system for visual effects
@@ -114,7 +117,7 @@
 - server/tests/calciteBlockTest.js - Tests for Calcite block
 - server/tests/candleBlockTest.js - Tests for Candle blocks including colored variants and stacking
 - server/tests/deepslateVariantsTest.js - Tests for Deepslate variants
-- server/tests/glowBerryTest.js - Tests for Glow Berries and Cave Vines implementation
+- server/tests/glowBerryTest.js - Comprehensive tests for glow berries and cave vines implementation. Tests food functionality, planting mechanics, light emission, and serialization.
 - server/tests/goatTest.js - Tests for Goat implementation
 - server/tests/mountainGoatBiomeTest.js - Tests for Mountain Goat biome
 - server/tests/netherBlocksTest.js - Tests for Nether blocks
@@ -133,6 +136,8 @@
 - server/tests/sculkShriekerTest.js - Tests for SculkShriekerBlock warning and Warden summoning
 - server/tests/wardenTest.js - Tests for the Warden mob implementation and vibration sensing behavior
 - server/tests/runWardenTest.js - Test runner for the Warden tests
+- server/tests/ancientCityTest.js - Tests for Ancient City structure generation
+- server/tests/runAncientCityTest.js - Test runner for Ancient City tests
 
 ## Client
 - public/index.html - Main client page

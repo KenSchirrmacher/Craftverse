@@ -18,6 +18,8 @@ const NetherDimension = require('./world/netherDimension');
 const VillageReputationManager = require('./world/villageReputationManager');
 const CombatManager = require('./combat/combatManager');
 const WeatherSystem = require('./weather/weatherSystem');
+const BlockRegistry = require('./blocks/blockRegistry');
+const ItemRegistry = require('./items/itemRegistry');
 
 const app = express();
 const httpServer = createServer(app);
@@ -655,8 +657,8 @@ io.on('connection', (socket) => {
     // Get or create the brewing handler for this brewing stand
     let brewingHandler = brewingHandlers[posKey];
     if (!brewingHandler) {
-      const world = { server: { itemRegistry: { getPotionRegistry: () => potionRegistry } } };
-      brewingHandler = new BrewingHandler(world, position, potionRegistry);
+      const world = { server: { itemRegistry } };
+      brewingHandler = new BrewingHandler(world, position, itemRegistry.getPotionRegistry());
       brewingHandlers[posKey] = brewingHandler;
     }
     

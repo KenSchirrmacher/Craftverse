@@ -20,6 +20,7 @@ const LargeAmethystBud = require('./largeAmethystBud');
 const DeepslateBricksBlock = require('./deepslateBricksBlock');
 const DeepslateChiseledBlock = require('./deepslateChiseledBlock');
 const DeepslateTilesBlock = require('./deepslateTilesBlock');
+const { CaveVineHeadBlock, CaveVineBodyBlock } = require('./caveVineBlock');
 
 class BlockRegistry {
   /**
@@ -118,6 +119,8 @@ class BlockRegistry {
     this.registerBlock(new SporeBlossomBlock());
     this.registerBlock(new SculkSensorBlock());
     this.registerBlock(new LightningRodBlock());
+    this.registerBlock(new CaveVineHeadBlock());
+    this.registerBlock(new CaveVineBodyBlock());
     
     // Register archaeology blocks
     this.registerBlock(new SuspiciousSandBlock());

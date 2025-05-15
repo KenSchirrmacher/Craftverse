@@ -30,12 +30,12 @@ class GlowBerryItem extends Item {
     });
     
     // Food properties
-    this.foodValue = 2;
-    this.saturation = 0.4;
+    this.foodValue = options.foodValue !== undefined ? options.foodValue : 2;
+    this.saturation = options.saturation !== undefined ? options.saturation : 0.4;
     
     // Planting properties
-    this.isPlantable = true;
-    this.plantBlock = 'cave_vine_head';
+    this.isPlantable = options.isPlantable !== undefined ? options.isPlantable : true;
+    this.plantBlock = options.plantBlock || 'cave_vine_head';
   }
   
   /**
@@ -182,12 +182,7 @@ class GlowBerryItem extends Item {
    * @returns {GlowBerryItem} - Deserialized item
    */
   static fromJSON(data) {
-    return new GlowBerryItem({
-      id: data.id,
-      name: data.name,
-      foodValue: data.foodValue,
-      saturation: data.saturation
-    });
+    return new GlowBerryItem(data);
   }
 }
 
