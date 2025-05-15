@@ -50,33 +50,34 @@
   - [COMPLETED] Pottery sherds and reconstruction
 
 ## Current Tasks
-1. Review and test all implemented features
-2. Document all new features and systems
-3. Prepare for next major update
+1. No active Caves & Cliffs tasks remaining
 
 ## Completed Tasks
-1. Implemented Spore Blossom with particle effects
-2. Implemented Glow Berries with light-emitting cave vines
-3. Created base Item class as foundation for all game items
-4. Created ItemRegistry to properly manage game items
-5. Implemented PowderSnow block with entity sinking mechanics and freezing damage
-6. Implemented Goat mob with ramming behavior and powder snow interaction
-7. Implemented Axolotl mob with hunting and play-dead mechanics
-8. Created MountainGoat biome with increased goat spawns and powder snow patches
-9. Implemented copper block with oxidation states
-10. Implemented amethyst blocks with crystal growth mechanics
-11. Implemented deepslate blocks for deep underground areas
-12. Added dripstone cave generation with pointed dripstone blocks
-13. Added lush caves with clay pools, dripleaf plants, and moss blocks
-14. Implemented Squid and GlowSquid mobs with proper aquatic behavior
-15. Implemented Deepslate variants (natural, cobbled, bricks, tiles, etc.)
-16. Implemented Tuff block with proper world generation parameters
-17. Implemented Calcite block with amethyst geode integration
-18. Implemented Candle blocks with stacking and coloring mechanisms
-19. Implemented Sculk Sensor with vibration detection and redstone signal emission
-20. Implemented Weather System with lightning strikes and weather transitions
-21. Implemented Lightning Rod with proper lightning attraction and redstone signal emission
-22. Implemented comprehensive tests for Glow Berries and Cave Vines
+1. Analyzed and verified Weather System implementation
+2. Verified Lightning Rod functionality
+3. Created DeepDarkBiome class with proper properties
+4. Implemented SculkSensorBlock with vibration detection
+5. Created comprehensive tests for Deep Dark biome
+6. Implemented base SculkBlock with proper properties
+7. Implemented SculkVeinBlock with face-based spreading
+8. Implemented SculkCatalystBlock for handling mob death events
+9. Implemented SculkShriekerBlock for warning and Warden summoning
+10. Added tests for all Sculk block types
+11. Implemented Warden mob with specialized vibration sensing AI
+12. Implemented Ancient City structure generation with proper layouts and features
+13. Created tests for Ancient City generation and validation
+14. Implemented Darkness effect with proper intensity scaling and pulsing mechanics
+15. Integrated Darkness effect with the Deep Dark biome for players
+16. Added comprehensive tests for the Darkness effect and its interactions
+17. Implemented MangroveSwampBiome with proper terrain generation and biome properties
+18. Implemented Mud Block family (regular, packed, and bricks) with appropriate properties and effects
+19. Added tests for MangroveSwampBiome and all mud block types
+20. Implemented Mangrove tree blocks (logs, roots, leaves, propagules) with proper behaviors and interactions
+21. Added tests to verify Mangrove tree blocks work correctly
+22. Implemented Frog and Tadpole mobs with proper growth mechanics, behaviors, and variants
+23. Added comprehensive tests for Frog and Tadpole mobs
+24. Implemented Allay mob with all features including flying, item collection, note block interaction, and duplication
+25. Created comprehensive tests for Allay behavior and mechanics
 
 ## Next Milestones
 1. Review and test all Caves & Cliffs features
@@ -107,14 +108,15 @@
     - [COMPLETED] Regular Mud Block
     - [COMPLETED] Packed Mud Block
     - [COMPLETED] Mud Bricks Block
-  - [PENDING] Frogs and Tadpoles
+  - [COMPLETED] Frogs and Tadpoles
 
-- [PENDING] Allay mob
+- [COMPLETED] Allay mob
+
+- [IN PROGRESS] Transport
+  - [TO DO] Boat with Chest
 
 ## Current Tasks
-1. Continue implementation of Mangrove Swamp biome
-   - Implement Frog and Tadpole mobs
-2. Plan Allay mob implementation
+1. Implement Boat with Chest
 
 ## Completed Tasks
 1. Analyzed and verified Weather System implementation
@@ -137,4 +139,8 @@
 18. Implemented Mud Block family (regular, packed, and bricks) with appropriate properties and effects
 19. Added tests for MangroveSwampBiome and all mud block types
 20. Implemented Mangrove tree blocks (logs, roots, leaves, propagules) with proper behaviors and interactions
-21. Added tests to verify Mangrove tree blocks work correctly 
+21. Added tests to verify Mangrove tree blocks work correctly
+22. Implemented Frog and Tadpole mobs with proper growth mechanics, behaviors, and variants
+23. Added comprehensive tests for Frog and Tadpole mobs
+24. Implemented Allay mob with all features including flying, item collection, note block interaction, and duplication
+25. Created comprehensive tests for Allay behavior and mechanics
