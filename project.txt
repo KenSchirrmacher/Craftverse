@@ -86,7 +86,7 @@
 # Current Project: Wild Update Implementation
 
 ## Feature Status
-- [IN PROGRESS] Deep Dark biome
+- [COMPLETED] Deep Dark biome
   - [COMPLETED] Sculk blocks family
     - [COMPLETED] Sculk Block (base block)
     - [COMPLETED] Sculk Vein (spreading vein block)
@@ -95,19 +95,23 @@
     - [COMPLETED] Sculk Shrieker (warden summoner)
   - [COMPLETED] Warden mob
   - [COMPLETED] Ancient City structures
-  - [PENDING] Darkness effect
+  - [COMPLETED] Darkness effect
   
-- [PENDING] Mangrove Swamp biome
+- [COMPLETED] Mangrove Swamp biome
   - [PENDING] Mangrove trees
-  - [PENDING] Mud blocks
+  - [COMPLETED] Mud blocks
+    - [COMPLETED] Regular Mud Block
+    - [COMPLETED] Packed Mud Block
+    - [COMPLETED] Mud Bricks Block
   - [PENDING] Frogs and Tadpoles
 
 - [PENDING] Allay mob
 
 ## Current Tasks
-1. Continue Deep Dark biome implementation
-2. Implement Darkness effect mechanics
-3. Begin work on Mangrove Swamp biome
+1. Continue implementation of Mangrove Swamp biome
+   - Implement Mangrove trees
+   - Implement Frog and Tadpole mobs
+2. Plan Allay mob implementation
 
 ## Completed Tasks
 1. Analyzed and verified Weather System implementation
@@ -122,4 +126,10 @@
 10. Added tests for all Sculk block types
 11. Implemented Warden mob with specialized vibration sensing AI
 12. Implemented Ancient City structure generation with proper layouts and features
-13. Created tests for Ancient City generation and validation 
+13. Created tests for Ancient City generation and validation
+14. Implemented Darkness effect with proper intensity scaling and pulsing mechanics
+15. Integrated Darkness effect with the Deep Dark biome for players
+16. Added comprehensive tests for the Darkness effect and its interactions
+17. Implemented MangroveSwampBiome with proper terrain generation and biome properties
+18. Implemented Mud Block family (regular, packed, and bricks) with appropriate properties and effects
+19. Added tests for MangroveSwampBiome and all mud block types 
