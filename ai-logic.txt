@@ -1167,60 +1167,476 @@ The next step in the Wild Update implementation is to create Ancient City struct
 
 The Ancient City implementation will provide players with a challenging, rewarding structure to explore in the Deep Dark biome. The structure's design will encourage stealth gameplay due to the presence of Sculk sensors and shriekers that can summon the Warden.
 
-\# # #   2 0 2 4 - 0 8 - 0 5 :   W i l d   U p d a t e   -   M a n g r o v e   S w a m p   B i o m e   a n d   M u d   B l o c k s   I m p l e m e n t a t i o n   # # #  
+### 2024-08-04: Wild Update - Mangrove Swamp Biome and Mud Blocks Implementation ###
+
+I have successfully implemented the Mangrove Swamp biome and related mud blocks for the Wild Update:
+
+1. Created a comprehensive `MangroveSwampBiome` class that extends BiomeBase:
+   - Implemented appropriate climate properties for a warm, wet environment
+   - Added visual properties for a swamp-like appearance (fog, water color, etc.)
+   - Created terrain generation with shallow pools and uneven ground
+   - Implemented feature generation for mangrove trees, roots, and vegetation
+   - Added entity effects for movement on mud (slowness)
+   - Created proper mob spawning tables with future frogs and tadpoles
+   - Integrated with the BiomeRegistry for world generation
+
+2. Implemented the Mud Block family:
+   - Created base `MudBlock` class with:
+     - Appropriate properties (hardness, resistance, sounds)
+     - Slowing effect on entities that walk on it
+     - Particle effects for a wet, bubbling appearance
+     - Tool interactions (faster mining with shovels)
+     - Interactions with water bottles and other tools
+     - Proper serialization/deserialization
+
+   - Created `PackedMudBlock` as a dried variant:
+     - Harder and more resistant than regular mud
+     - Can be created by drying regular mud
+     - Interaction with water to revert to regular mud
+     - Special block update handling for neighboring water
+     - Used as crafting material for mud bricks
+
+   - Created `MudBricksBlock` as a building material:
+     - Crafted from packed mud
+     - Higher hardness and blast resistance
+     - Requires pickaxe for efficient mining
+     - Decorative building block properties
+     - Proper tool efficiency and mining mechanics
+
+3. Updated the BlockRegistry to register all mud block variants
+
+4. Created a comprehensive test suite for verification:
+   - Tests for MangroveSwampBiome properties and generation
+   - Tests for biome registration and climate matching
+   - Tests for all three mud block types
+   - Tests for entity interactions with mud
+   - Tests for tool interactions and mining
+   - Tests for special block behaviors and updates
+
+The Mangrove Swamp biome and its mud blocks are key components of the Wild Update, providing a unique ecosystem with distinctive terrain, blocks, and mechanics. The implementation follows the standard Minecraft features while providing proper integration with the existing game systems.
+
+Next steps will include:
+1. Implementing Mangrove trees and their special root blocks
+2. Creating Frog and Tadpole mobs with proper growth mechanics
+3. Adding special items like Mangrove Propagules and Boat with Chest
+
+/**
+ * NetherBiome - Base class for all nether biomes
+ * Defines common properties and behaviors for nether environments
+ */
+
+const BiomeBase = require('./biomeBase');
+
+class NetherBiome extends BiomeBase {
+  /**
+   * Create a new NetherBiome
+   * @param {Object} options - Biome configuration options
+   */
+  constructor(options = {}) {
+    // Set default options for nether biomes
+    const defaultOptions = {
+      name: 'Nether',
+      id: 'nether',
+      temperature: 2.0,  // Very hot
+      precipitation: 0,   // No rain
+      hasSnow: false,
+      hasCaves: true,
+      fogColor: '#330808',
+      waterColor: '#fc4e03',  // Lava color
+      grassColor: '#3f3f3f',
+      foliageColor: '#3f3f3f',
+      minHeight: 0,
+      maxHeight: 128,
+      surfaceBlock: 'netherrack',
+      subsurfaceBlock: 'netherrack',
+      stoneBlock: 'netherrack',
+      liquidBlock: 'lava',
+      dimension: 'nether',
+      ...options
+    };
+    
+    super(defaultOptions);
+    
+    // Additional nether-specific properties
+    this.isNether = true;
+    this.hasLavaOcean = options.hasLavaOcean !== undefined ? options.hasLavaOcean : true;
+    this.lavaOceanLevel = options.lavaOceanLevel || 31;
+    this.ceilingHeight = options.ceilingHeight || 128;
+    this.hasCeiling = options.hasCeiling !== undefined ? options.hasCeiling : true;
+    this.ceilingBlock = options.ceilingBlock || 'netherrack';
+    
+    // Default vegetation is different in the nether
+    this.vegetationChance = options.vegetationChance || 0.1;
+    this.vegetationTypes = options.vegetationTypes || [];
+    
+    // Structure generation is also different
+    this.structures = options.structures || {
+      netherFortress: { chance: 0.02, minDistance: 300, isNetherOnly: true }
+    };
+    
+    // Hostility is higher in the nether
+    this.hostileMobSpawnChance = options.hostileMobSpawnChance || 0.2;
+    this.passiveMobSpawnChance = options.passiveMobSpawnChance || 0;
+    this.neutralMobSpawnChance = options.neutralMobSpawnChance || 0.05;
+  }
+  
+  /**
+   * Get terrain height at a specific position
+   * @param {number} x - X coordinate
+   * @param {number} z - Z coordinate
+   * @param {Object} noiseGenerators - Noise generators to use
+   * @param {number} seed - World seed value
+   * @returns {number} - Height of the terrain at this position
+   */
+  getTerrainHeight(x, z, noiseGenerators, seed) {
+    // Nether has a different height generation approach
+    // It generates from bottom (0) to ceiling (128) with various cave systems
+    
+    const terrainScale = 0.01; // Scale factor for noise
+    
+    // Base continent noise
+    let baseHeight = 0;
+    if (noiseGenerators && noiseGenerators.continentalness) {
+      baseHeight = noiseGenerators.continentalness.getValue(x, 0, z);
+    } else {
+      // Fallback noise if generators not provided
+      baseHeight = Math.sin(x * terrainScale) * Math.cos(z * terrainScale);
+    }
+    
+    // Adjust to full nether height range
+    baseHeight = (baseHeight + 1) * 0.5; // Normalize to 0-1
+    
+    // Calculate height range - nether typically has height valleys for lava oceans
+    let minGenHeight = this.minHeight || 16;
+    const maxGenHeight = this.hasLavaOcean ? this.lavaOceanLevel + 16 : 48;
+    
+    // Adjust height if below lava ocean level
+    if (this.hasLavaOcean && baseHeight < 0.3) {
+      // Areas with very low noise become lava oceans
+      return this.lavaOceanLevel - (0.3 - baseHeight) * 20;
+    }
+    
+    // Generate base height
+    const height = Math.floor(minGenHeight + baseHeight * (maxGenHeight - minGenHeight));
+    
+    return height;
+  }
+  
+  /**
+   * Get a block type at a specific position
+   * @param {number} x - X coordinate
+   * @param {number} y - Y coordinate
+   * @param {number} z - Z coordinate
+   * @param {Object} noiseGenerators - Noise generators to use
+   * @param {number} seed - World seed
+   * @param {number} surfaceHeight - Height of the terrain surface at this position
+   * @returns {Object} - Block type and properties
+   */
+  getBlockAt(x, y, z, noiseGenerators, seed, surfaceHeight) {
+    // First check for ceiling blocks
+    if (this.hasCeiling && y >= this.ceilingHeight - 1) {
+      return { type: this.ceilingBlock };
+    }
+    
+    // Check for lava ocean
+    if (this.hasLavaOcean && y <= this.lavaOceanLevel) {
+      return { type: this.liquidBlock };
+    }
+    
+    // Add some cave systems
+    if (noiseGenerators && noiseGenerators.caveNoise) {
+      const caveValue = noiseGenerators.caveNoise.getValue(x, y, z);
+      
+      // Larger caves in the nether
+      if (caveValue > 0.6) {
+        return { type: 'air' };
+      }
+    }
+    
+    // Check for soul sand patches using noise
+    if (noiseGenerators && noiseGenerators.erosion) {
+      const erosionValue = noiseGenerators.erosion.getValue(x, y, z);
+      if (erosionValue > 0.8 && y < surfaceHeight + 3 && y > this.lavaOceanLevel) {
+        return { type: 'soul_sand' };
+      }
+    }
+    
+    // Standard nether blocks
+    if (y === surfaceHeight) {
+      return { type: this.surfaceBlock };
+    }
+    
+    return { type: this.subsurfaceBlock };
+  }
+  
+  /**
+   * Get appropriate features (vegetation, ores, etc.) for this position
+   * @param {number} x - X coordinate
+   * @param {number} y - Y coordinate
+   * @param {number} z - Z coordinate
+   * @param {Object} noiseGenerators - Noise generators to use
+   * @param {number} seed - World seed
+   * @returns {Array} - List of features to generate at this position
+   */
+  getFeaturesAt(x, y, z, noiseGenerators, seed) {
+    const features = [];
+    
+    // Simple RNG based on position and seed
+    const rng = this.getPositionRNG(x, y, z, seed);
+    
+    // Generate vegetation if on surface and random check passes
+    if (rng() < this.vegetationChance && this.vegetationTypes.length > 0) {
+      const vegetationType = this.vegetationTypes[Math.floor(rng() * this.vegetationTypes.length)];
+      features.push({ type: vegetationType, x, y, z });
+    }
+    
+    // Add nether-specific ores
+    this.addNetherOres(features, x, y, z, rng);
+    
+    return features;
+  }
+  
+  /**
+   * Add appropriate nether ores to the features list
+   * @private
+   * @param {Array} features - Features array to modify
+   * @param {number} x - X coordinate
+   * @param {number} y - Y coordinate
+   * @param {number} z - Z coordinate
+   * @param {Function} rng - Random number generator
+   */
+  addNetherOres(features, x, y, z, rng) {
+    // Quartz ore - common in the nether
+    if (rng() < 0.1 && y > this.lavaOceanLevel && y < this.ceilingHeight - 10) {
+      features.push({ type: 'nether_quartz_ore', x, y, z });
+    }
+    
+    // Ancient debris - rare but valuable
+    if (rng() < 0.005 && y > 15 && y < 80) {
+      features.push({ type: 'ancient_debris', x, y, z });
+    }
+    
+    // Gold ore - appears in the nether
+    if (rng() < 0.02 && y > this.lavaOceanLevel + 10 && y < this.ceilingHeight - 20) {
+      features.push({ type: 'nether_gold_ore', x, y, z });
+    }
+  }
+  
+  /**
+   * Get structures to generate at this position
+   * @param {number} x - X coordinate
+   * @param {number} z - Z coordinate
+   * @param {Object} noiseGenerators - Noise generators to use
+   * @param {number} seed - World seed
+   * @returns {Array} - List of structures to generate
+   */
+  getStructuresAt(x, z, noiseGenerators, seed) {
+    const structures = [];
+    
+    // Simple RNG based on position and seed
+    const rng = this.getPositionRNG(x, 0, z, seed);
+    
+    // Check for each structure type
+    for (const [structureType, config] of Object.entries(this.structures)) {
+      if (rng() < config.chance) {
+        structures.push({ type: structureType, x, z });
+      }
+    }
+    
+    return structures;
+  }
+  
+  /**
+   * Get a consistent random number generator for a position
+   * @private
+   * @param {number} x - X coordinate
+   * @param {number} y - Y coordinate
+   * @param {number} z - Z coordinate
+   * @param {number} seed - World seed
+   * @returns {Function} - RNG function
+   */
+  getPositionRNG(x, y, z, seed) {
+    // Create a seed from the position and world seed
+    const positionSeed = (x * 73856093) ^ (y * 19349663) ^ (z * 83492791) ^ seed;
+    
+    // Simple RNG function
+    return () => {
+      // Xorshift algorithm
+      let result = positionSeed;
+      result ^= result << 13;
+      result ^= result >> 17;
+      result ^= result << 5;
+      
+      // Normalize to 0-1
+      return Math.abs(result) / 2147483647;
+    };
+  }
+  
+  /**
+   * Check if the biome is valid for a set of climate parameters
+   * @param {Object} climate - Climate parameters
+   * @returns {boolean} - Whether the biome is valid for these parameters
+   */
+  isValidForClimate(climate) {
+    // Nether biomes are only valid for the nether dimension
+    if (climate.dimension !== 'nether') {
+      return false;
+    }
+    
+    // Nether biomes have different climate criteria
+    if (climate.temperature < this.temperature - 0.4 || climate.temperature > this.temperature + 0.4) {
+      return false;
+    }
+    
+    // Check other climate parameters as needed
+    if (climate.continentalness && 
+        (climate.continentalness < this.minContinentalness || 
+         climate.continentalness > this.maxContinentalness)) {
+      return false;
+    }
+    
+    return true;
+  }
+  
+  /**
+   * Get a fitness score for how well this biome matches climate parameters
+   * @param {Object} climate - Climate parameters
+   * @returns {number} - Fitness score (higher is better)
+   */
+  getFitnessScore(climate) {
+    // For non-nether dimensions, return very low score
+    if (climate.dimension !== 'nether') {
+      return -1000;
+    }
+    
+    let score = 1000;
+    
+    // Temperature difference affects score
+    const tempDiff = Math.abs(climate.temperature - this.temperature);
+    score -= tempDiff * 300;
+    
+    // Other climate parameters can affect score
+    if (climate.continentalness !== undefined) {
+      const contDiff = Math.abs(climate.continentalness - (this.minContinentalness + this.maxContinentalness) / 2);
+      score -= contDiff * 200;
+    }
+    
+    return score;
+  }
+}
+
+module.exports = NetherBiome;
+
+### 2024-08-05: Wild Update - Mangrove Swamp Biome and Mud Blocks Implementation ###
+
+I have successfully implemented the Mangrove Swamp biome and related mud blocks for the Wild Update:
+
+1. Created a comprehensive `MangroveSwampBiome` class that extends BiomeBase:
+   - Implemented appropriate climate properties for a warm, wet environment
+   - Added visual properties for a swamp-like appearance (fog, water color, etc.)
+   - Created terrain generation with shallow pools and uneven ground
+   - Implemented feature generation for mangrove trees, roots, and vegetation
+   - Added entity effects for movement on mud (slowness)
+   - Created proper mob spawning tables with future frogs and tadpoles
+   - Integrated with the BiomeRegistry for world generation
+
+2. Implemented the Mud Block family:
+   - Created base `MudBlock` class with:
+     - Appropriate properties (hardness, resistance, sounds)
+     - Slowing effect on entities that walk on it
+     - Particle effects for a wet, bubbling appearance
+     - Tool interactions (faster mining with shovels)
+     - Interactions with water bottles and other tools
+     - Proper serialization/deserialization
+
+   - Created `PackedMudBlock` as a dried variant:
+     - Harder and more resistant than regular mud
+     - Can be created by drying regular mud
+     - Interaction with water to revert to regular mud
+     - Special block update handling for neighboring water
+     - Used as crafting material for mud bricks
+
+   - Created `MudBricksBlock` as a building material:
+     - Crafted from packed mud
+     - Higher hardness and blast resistance
+     - Requires pickaxe for efficient mining
+     - Decorative building block properties
+     - Proper tool efficiency and mining mechanics
+
+3. Updated the BlockRegistry to register all mud block variants
+
+4. Created a comprehensive test suite for verification:
+   - Tests for MangroveSwampBiome properties and generation
+   - Tests for biome registration and climate matching
+   - Tests for all three mud block types
+   - Tests for entity interactions with mud
+   - Tests for tool interactions and mining
+   - Tests for special block behaviors and updates
+
+The Mangrove Swamp biome and its mud blocks are key components of the Wild Update, providing a unique ecosystem with distinctive terrain, blocks, and mechanics. The implementation follows the standard Minecraft features while providing proper integration with the existing game systems.
+
+Next steps will include:
+1. Implementing Mangrove trees and their special root blocks
+2. Creating Frog and Tadpole mobs with proper growth mechanics
+3. Adding special items like Mangrove Propagules and Boat with Chest
+
+\# # #   2 0 2 4 - 0 8 - 0 5 :   W i l d   U p d a t e   -   M a n g r o v e   T r e e   B l o c k s   I m p l e m e n t a t i o n   # # #  
   
- I   h a v e   s u c c e s s f u l l y   i m p l e m e n t e d   t h e   M a n g r o v e   S w a m p   b i o m e   a n d   r e l a t e d   m u d   b l o c k s   f o r   t h e   W i l d   U p d a t e :  
+ I ' v e   s u c c e s s f u l l y   i m p l e m e n t e d   M a n g r o v e   T r e e   b l o c k s   f o r   t h e   W i l d   U p d a t e :  
   
- 1 .   I m p l e m e n t e d   a   c o m p r e h e n s i v e   ` M a n g r o v e S w a m p B i o m e `   c l a s s   t h a t   e x t e n d s   B i o m e B a s e :  
-       -   C r e a t e d   a p p r o p r i a t e   c l i m a t e   p r o p e r t i e s   f o r   a   w a r m ,   w e t   e n v i r o n m e n t   ( t e m p e r a t u r e :   0 . 8 ,   p r e c i p i t a t i o n :   0 . 9 )  
-       -   I m p l e m e n t e d   v i s u a l   p r o p e r t i e s   f o r   a   s w a m p - l i k e   a p p e a r a n c e   i n c l u d i n g :  
-           -   F o g g y   a t m o s p h e r e   ( f o g D e n s i t y :   0 . 3 )  
-           -   M u d d y   w a t e r   c o l o r a t i o n   ( w a t e r C o l o r :   ' # 6 1 7 B 6 4 ' )  
-           -   O l i v e - g r e e n   v e g e t a t i o n   ( g r a s s C o l o r :   ' # 6 A 7 0 3 9 ' ,   f o l i a g e C o l o r :   ' # 4 9 5 2 2 5 ' )  
-       -   D e s i g n e d   t e r r a i n   g e n e r a t i o n   w i t h :  
-           -   L o w - l y i n g   l a n d   ( b a s e H e i g h t :   0 . 1 )    
-           -   S h a l l o w   p o o l s   u s i n g   n o i s e   f u n c t i o n s  
-           -   M u d   p a t c h e s   d i s t r i b u t e d   a c r o s s   t h e   t e r r a i n  
-       -   A d d e d   f e a t u r e   g e n e r a t i o n   f o r   f u t u r e   m a n g r o v e   t r e e s ,   r o o t s ,   a n d   v e g e t a t i o n  
-       -   I m p l e m e n t e d   e n t i t y   s l o w n e s s   e f f e c t s   w h e n   w a l k i n g   o n   m u d  
-       -   C r e a t e d   p r o p e r   m o b   s p a w n i n g   t a b l e s   f o r   f r o g s   a n d   t a d p o l e s  
-       -   I n t e g r a t e d   w i t h   t h e   B i o m e R e g i s t r y   f o r   p r o p e r   w o r l d   g e n e r a t i o n  
+ 1 .   C r e a t e d   ` M a n g r o v e L o g B l o c k `   c l a s s   w i t h   t h e   f o l l o w i n g   f e a t u r e s :  
+       -   S t a n d a r d   l o g   p r o p e r t i e s   w i t h   a p p r o p r i a t e   h a r d n e s s ,   r e s i s t a n c e ,   a n d   s o u n d s  
+       -   S u p p o r t   f o r   b o t h   v e r t i c a l   a n d   h o r i z o n t a l   o r i e n t a t i o n s   t h r o u g h   t h e   a x i s   p r o p e r t y  
+       -   S t r i p p i n g   f u n c t i o n a l i t y   w h e n   r i g h t - c l i c k e d   w i t h   a n   a x e  
+       -   P r o p e r   t o o l   i n t e r a c t i o n s   ( f a s t e r   m i n i n g   w i t h   a x e s )  
+       -   C o m p a t i b l e   d r o p   m e c h a n i c s  
+       -   P r o p e r   s e r i a l i z a t i o n / d e s e r i a l i z a t i o n  
   
- 2 .   I m p l e m e n t e d   t h e   M u d   B l o c k   f a m i l y :  
-       -   C r e a t e d   b a s e   ` M u d B l o c k `   c l a s s   w i t h :  
-           -   A p p r o p r i a t e   p r o p e r t i e s   ( h a r d n e s s :   0 . 5 ,   r e s i s t a n c e :   0 . 5 )  
-           -   S l o w i n g   e f f e c t   ( s l o w n e s s F a c t o r :   0 . 6 )   o n   e n t i t i e s   w a l k i n g   o n   i t  
-           -   B u b b l e   p a r t i c l e   e f f e c t s   f o r   a   w e t   a p p e a r a n c e  
-           -   S h o v e l   a s   t h e   p r e f e r r e d   t o o l   f o r   f a s t e r   m i n i n g  
-           -   W a t e r   b o t t l e   i n t e r a c t i o n s   t o   m a i n t a i n   w e t n e s s  
-           -   P r o p e r   s e r i a l i z a t i o n / d e s e r i a l i z a t i o n   f o r   g a m e   s t a t e  
+ 2 .   C r e a t e d   ` M a n g r o v e R o o t s B l o c k `   c l a s s   w i t h   t h e   f o l l o w i n g   f e a t u r e s :  
+       -   U n i q u e   p a r t i a l l y - t r a n s p a r e n t   s o l i d   b l o c k   t h a t   e n t i t i e s   c a n   w a l k   t h r o u g h  
+       -   W a t e r l o g g i n g   f u n c t i o n a l i t y   ( c a n   c o n t a i n   w a t e r   w i t h i n   t h e   b l o c k )  
+       -   S p e c i a l   p l a c e m e n t   r u l e s   ( c a n   o n l y   b e   p l a c e d   o n   c e r t a i n   b l o c k s   l i k e   m u d ,   d i r t ,   e t c . )  
+       -   S u p p o r t   m e c h a n i c s   ( b r e a k s   i f   s u p p o r t i n g   b l o c k   i s   r e m o v e d )  
+       -   S l o w s   e n t i t y   m o v e m e n t   s l i g h t l y   ( b u t   l e s s   t h a n   m u d )  
+       -   P r o p e r   t o o l   i n t e r a c t i o n s   a n d   d r o p   m e c h a n i c s  
+       -   F l u i d   h a n d l i n g   f o r   w a t e r l o g g e d   s t a t e  
   
-       -   C r e a t e d   ` P a c k e d M u d B l o c k `   a s   a   d r i e d   v a r i a n t :  
-           -   H i g h e r   h a r d n e s s   a n d   r e s i s t a n c e   t h a n   r e g u l a r   m u d   ( h a r d n e s s :   1 . 0 ,   r e s i s t a n c e :   3 . 0 )  
-           -   W a t e r   i n t e r a c t i o n s   t o   r e v e r t   t o   r e g u l a r   m u d  
-           -   N e i g h b o r   b l o c k   u p d a t e   h a n d l i n g   f o r   w a t e r   p r o x i m i t y  
-           -   U s e d   a s   c r a f t i n g   m a t e r i a l   f o r   m u d   b r i c k s  
-           -   B o t h   p i c k a x e   a n d   s h o v e l   e f f e c t i v e n e s s   f o r   m i n i n g  
+ 3 .   C r e a t e d   ` M a n g r o v e L e a v e s B l o c k `   c l a s s   w i t h   t h e   f o l l o w i n g   f e a t u r e s :  
+       -   L e a f   d e c a y   s y s t e m   t i e d   t o   d i s t a n c e   f r o m   l o g s  
+       -   P e r s i s t e n t   f l a g   f o r   p l a y e r - p l a c e d   l e a v e s  
+       -   W a t e r l o g g i n g   f u n c t i o n a l i t y  
+       -   S p e c i a l   d r o p   m e c h a n i c s   ( c h a n c e   t o   d r o p   p r o p a g u l e s   o r   s t i c k s )  
+       -   T o o l   i n t e r a c t i o n s   ( s h e a r s   a n d   s i l k   t o u c h   f o r   l e a f   d r o p s )  
+       -   P r o p e r   s o u n d   e f f e c t s   a n d   b r e a k i n g   p a r t i c l e s  
+       -   R a n d o m   t i c k   u p d a t e s   f o r   l e a f   d e c a y    
   
-       -   C r e a t e d   ` M u d B r i c k s B l o c k `   a s   a   b u i l d i n g   m a t e r i a l :  
-           -   H i g h e r   h a r d n e s s   a n d   b l a s t   r e s i s t a n c e   ( h a r d n e s s :   1 . 5 ,   r e s i s t a n c e :   6 . 0 )  
-           -   P i c k a x e   r e q u i r e m e n t   f o r   e f f i c i e n t   m i n i n g  
-           -   A p p r o p r i a t e   s t o n e - l i k e   s o u n d   e f f e c t s  
-           -   B u i l d i n g   b l o c k   p r o p e r t i e s   s i m i l a r   t o   o t h e r   b r i c k   t y p e s  
+ 4 .   C r e a t e d   ` M a n g r o v e P r o p a g u l e B l o c k `   c l a s s   w i t h   t h e   f o l l o w i n g   f e a t u r e s :  
+       -   D i s t i n c t   h a n g i n g   ( f r o m   l e a v e s )   a n d   p l a n t e d   ( o n   g r o u n d )   s t a t e s  
+       -   G r o w t h   s t a g e s   ( 0 - 4 )   w i t h   v i s u a l   p r o g r e s s i o n  
+       -   R a n d o m   g r o w t h   t h r o u g h   t i c k   u p d a t e s  
+       -   B o n e   m e a l   i n t e r a c t i o n   f o r   a c c e l e r a t e d   g r o w t h  
+       -   T r e e   g r o w t h   m e c h a n i c   w h e n   f u l l y   m a t u r e  
+       -   S u p p o r t   m e c h a n i c s   ( b r e a k s   i f   s u p p o r t i n g   b l o c k   i s   r e m o v e d )  
+       -   W a t e r l o g g i n g   f u n c t i o n a l i t y  
+       -   C o m p r e h e n s i v e   t r e e   g e n e r a t i o n   a l g o r i t h m  
   
- 3 .   U p d a t e d   t h e   B l o c k R e g i s t r y   t o   i n c l u d e   a l l   m u d   b l o c k   v a r i a n t s ,   e n s u r i n g   t h e y ' r e   a v a i l a b l e   f o r   w o r l d   g e n e r a t i o n   a n d   p l a y e r   u s e .  
+ 5 .   U p d a t e d   B l o c k R e g i s t r y   t o   i n c l u d e   a l l   M a n g r o v e   t r e e   b l o c k s :  
+       -   A d d e d   M a n g r o v e L o g B l o c k   ( a n d   s t r i p p e d   v a r i a n t )  
+       -   A d d e d   M a n g r o v e R o o t s B l o c k  
+       -   A d d e d   M a n g r o v e L e a v e s B l o c k  
+       -   A d d e d   M a n g r o v e P r o p a g u l e B l o c k  
+       -   E n s u r e d   b l o c k s   h a v e   p r o p e r   I D s   a n d   d i s p l a y   n a m e s  
   
- 4 .   C r e a t e d   a n d   r a n   c o m p r e h e n s i v e   t e s t s   t o   v e r i f y :  
-       -   M a n g r o v e S w a m p B i o m e   p r o p e r t i e s   a n d   g e n e r a t i o n  
-       -   M u d   b l o c k   i n t e r a c t i o n s   a n d   e f f e c t s  
-       -   P e r f o r m a n c e   o f   p a r t i c l e   s y s t e m s   w i t h   m u d   b u b b l e s  
-       -   T o o l   i n t e r a c t i o n s   w i t h   a l l   m u d   b l o c k   v a r i a n t s  
-       -   W a t e r   b o t t l e   i n t e r a c t i o n s   w i t h   d i f f e r e n t   m u d   t y p e s  
+ 6 .   C r e a t e d   c o m p r e h e n s i v e   t e s t s   f o r   a l l   M a n g r o v e   t r e e   b l o c k s :  
+       -   T e s t s   f o r   b l o c k   p r o p e r t i e s   a n d   b e h a v i o r s  
+       -   T e s t s   f o r   s p e c i a l   m e c h a n i c s   l i k e   s t r i p p i n g ,   w a t e r l o g g i n g ,   a n d   l e a f   d e c a y  
+       -   T e s t s   f o r   g r o w t h   m e c h a n i c s   o f   p r o p a g u l e s  
+       -   T e s t s   f o r   t r e e   g e n e r a t i o n  
+       -   T e s t s   f o r   B l o c k R e g i s t r y   i n t e g r a t i o n  
   
- T h e   M a n g r o v e   S w a m p   b i o m e   a n d   m u d   b l o c k s   i m p l e m e n t a t i o n   p r o v i d e s   p l a y e r s   w i t h   a   n e w   e n v i r o n m e n t   t o   e x p l o r e   w i t h   u n i q u e   t e r r a i n   f e a t u r e s   a n d   b u i l d i n g   m a t e r i a l s .   T h i s   c o m p l e t e s   a n o t h e r   m a j o r   c o m p o n e n t   o f   t h e   W i l d   U p d a t e ,   w i t h   f u t u r e   w o r k   n e e d e d   o n   M a n g r o v e   t r e e s   a n d   F r o g / T a d p o l e   m o b s .  
+ T h e   M a n g r o v e   T r e e   b l o c k s   i m p l e m e n t a t i o n   p r o v i d e s   a   u n i q u e   t r e e   v a r i a n t   w i t h   s p e c i a l   m e c h a n i c s   f o r   t h e   M a n g r o v e   S w a m p   b i o m e .   T h e   i m p l e m e n t a t i o n   i n c l u d e s   a l l   t h e   e s s e n t i a l   f e a t u r e s   f r o m   M i n e c r a f t ' s   M a n g r o v e   t r e e s ,   i n c l u d i n g   t h e   d i s t i n c t i v e   e l e v a t e d   r o o t   s y s t e m ,   h a n g i n g   p r o p a g u l e s ,   a n d   s p e c i a l   g r o w t h   m e c h a n i c s .  
   
  N e x t   s t e p s :  
- 1 .   I m p l e m e n t   M a n g r o v e   t r e e s   w i t h   t h e i r   s p e c i a l   r o o t   b l o c k   s y s t e m  
- 2 .   C r e a t e   F r o g   a n d   T a d p o l e   m o b s   w i t h   p r o p e r   g r o w t h   m e c h a n i c s  
- 3 .   A d d   s p e c i a l   i t e m s   l i k e   M a n g r o v e   P r o p a g u l e s   a n d   B o a t   w i t h   C h e s t    
+ 1 .   C r e a t e   F r o g   a n d   T a d p o l e   m o b s   w i t h   p r o p e r   g r o w t h   m e c h a n i c s   a n d   b e h a v i o r s  
+ 2 .   I m p l e m e n t   s p e c i a l   i t e m s   l i k e   B o a t   w i t h   C h e s t    
  

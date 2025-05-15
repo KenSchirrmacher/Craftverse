@@ -16,6 +16,8 @@ const CrimsonForestBiome = require('./crimsonForestBiome');
 const WarpedForestBiome = require('./warpedForestBiome');
 const BasaltDeltasBiome = require('./basaltDeltasBiome');
 const LushCavesBiome = require('./lushCavesBiome');
+const DeepDarkBiome = require('./deepDarkBiome');
+const MangroveSwampBiome = require('./mangroveSwampBiome');
 
 class BiomeRegistry {
   /**
@@ -59,6 +61,10 @@ class BiomeRegistry {
     
     // Register cave biomes
     const lushCaves = new LushCavesBiome();
+    const deepDark = new DeepDarkBiome();
+    
+    // Register Wild Update biomes
+    const mangroveSwamp = new MangroveSwampBiome();
     
     // Register all overworld biomes
     this.registerBiome(plains);
@@ -71,6 +77,7 @@ class BiomeRegistry {
     this.registerBiome(deepOcean);
     this.registerBiome(frozenOcean);
     this.registerBiome(frozenDeepOcean);
+    this.registerBiome(mangroveSwamp);
     
     // Register all nether biomes
     this.registerBiome(netherWastes);
@@ -81,6 +88,7 @@ class BiomeRegistry {
     
     // Register all cave biomes
     this.registerBiome(lushCaves);
+    this.registerBiome(deepDark);
     
     // Set plains as the default overworld biome
     this.defaultBiome = plains;
@@ -240,6 +248,11 @@ class BiomeRegistry {
       case 'desert':
         return this.biomeList.filter(biome => 
           biome.id.includes('desert')
+        );
+        
+      case 'swamp':
+        return this.biomeList.filter(biome => 
+          biome.id.includes('swamp')
         );
         
       default:

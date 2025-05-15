@@ -3,8 +3,6 @@
  * Defines common properties and behaviors for nether environments
  */
 
-const Biome = require('./biome');
-
 const BiomeBase = require('./biomeBase');
 
 class NetherBiome extends BiomeBase {

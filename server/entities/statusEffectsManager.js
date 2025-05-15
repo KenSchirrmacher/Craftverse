@@ -46,6 +46,65 @@ class StatusEffectsManager extends EventEmitter {
         beneficial: false,
         color: '#5A6C81'
       },
+      DARKNESS: {
+        apply: (entity, level) => {
+          // Visual effect mostly handled by client
+          entity.darknessLevel = level; // Store darkness level for reference
+          
+          // Additional server-side effect: reduced visibility range
+          if (entity.visibilityRange) {
+            entity.originalVisibilityRange = entity.originalVisibilityRange || entity.visibilityRange;
+            entity.visibilityRange = Math.max(2, entity.originalVisibilityRange - level * 5);
+          }
+          
+          // Reduce light level perception (for mobs that avoid light)
+          if (entity.perceivesLightLevel) {
+            entity.originalLightLevelPerception = entity.originalLightLevelPerception || entity.perceivesLightLevel;
+            entity.perceivesLightLevel = (level) => {
+              // Entity perceives light levels as darker than they actually are
+              return Math.max(0, level - this.darknessLevel * 4);
+            };
+          }
+        },
+        remove: (entity) => {
+          // Restore original visibility range
+          if (entity.originalVisibilityRange) {
+            entity.visibilityRange = entity.originalVisibilityRange;
+            delete entity.originalVisibilityRange;
+          }
+          
+          // Restore original light level perception
+          if (entity.originalLightLevelPerception) {
+            entity.perceivesLightLevel = entity.originalLightLevelPerception;
+            delete entity.originalLightLevelPerception;
+          }
+          
+          delete entity.darknessLevel;
+        },
+        tickRate: 10, // Check every half second
+        onTick: (entity, level) => {
+          // Pulsing effect, intensity varies over time
+          const pulseFactor = Math.sin(Date.now() / 1000) * 0.5 + 0.5; // Value between 0-1
+          
+          // Emit an event that can be caught by the client for visual effects
+          this.emit('effectPulse', {
+            entityId: entity.id,
+            effectType: 'DARKNESS',
+            intensity: level * pulseFactor
+          });
+          
+          // Affect entity's ability to see in the dark based on pulse
+          if (entity.visibilityRange && entity.originalVisibilityRange) {
+            // Visibility fluctuates with the pulse
+            const reduction = level * 5 * pulseFactor;
+            entity.visibilityRange = Math.max(2, entity.originalVisibilityRange - reduction);
+          }
+        },
+        beneficial: false,
+        color: '#000000', // Black color for darkness
+        particleType: 'sculk', // Special particle type for darkness effect
+        ambient: true // Can be applied by being in certain areas (Deep Dark)
+      },
       HASTE: {
         apply: (entity, level) => {
           if (entity.miningSpeed) {
@@ -139,7 +198,7 @@ class StatusEffectsManager extends EventEmitter {
         remove: (entity) => {
           // No cleanup needed
         },
-        tickRate: 50 / (level + 1), // Regenerate health every 2.5s, 1.7s, 1.25s based on level
+        tickRate: (level) => 50 / (level + 1), // Regenerate health every 2.5s, 1.7s, 1.25s based on level
         onTick: (entity, level) => {
           if (entity.health < entity.maxHealth) {
             entity.health = Math.min(entity.maxHealth, entity.health + 1);
@@ -224,7 +283,7 @@ class StatusEffectsManager extends EventEmitter {
         remove: (entity) => {
           // No cleanup needed
         },
-        tickRate: 40 / level, // Reduce hunger faster with higher levels
+        tickRate: (level) => 40 / level, // Reduce hunger faster with higher levels
         onTick: (entity, level) => {
           if (entity.hunger) {
             entity.hunger = Math.max(0, entity.hunger - 1);
@@ -240,7 +299,7 @@ class StatusEffectsManager extends EventEmitter {
         remove: (entity) => {
           // No cleanup needed
         },
-        tickRate: 25 / level, // Damage more frequently at higher levels
+        tickRate: (level) => 25 / level, // Damage more frequently at higher levels
         onTick: (entity, level) => {
           if (entity.health && entity.health > 1) { // Poison can't kill
             entity.health = Math.max(1, entity.health - 1);
@@ -256,7 +315,7 @@ class StatusEffectsManager extends EventEmitter {
         remove: (entity) => {
           // No cleanup needed
         },
-        tickRate: 40 / level, // Damage more frequently at higher levels
+        tickRate: (level) => 40 / level, // Damage more frequently at higher levels
         onTick: (entity, level) => {
           if (entity.health) {
             entity.health = Math.max(0, entity.health - 1); // Wither can kill
@@ -375,8 +434,13 @@ class StatusEffectsManager extends EventEmitter {
         
         // Process tick-based effects
         const effectDef = this.effectDefinitions[effectType];
-        if (effectDef && effectDef.tickRate > 0 && effectDef.onTick) {
-          if (this.tickCounter % effectDef.tickRate === 0) {
+        if (effectDef && effectDef.onTick) {
+          // Handle both static and dynamic tickRate
+          const tickRate = typeof effectDef.tickRate === 'function' 
+            ? effectDef.tickRate(effectData.level) 
+            : effectDef.tickRate;
+            
+          if (tickRate > 0 && this.tickCounter % Math.floor(tickRate) === 0) {
             effectDef.onTick(entity, effectData.level);
           }
         }

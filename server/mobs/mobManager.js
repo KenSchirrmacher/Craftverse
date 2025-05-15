@@ -1,12 +1,4 @@
-// Mob Manager - handles spawning, updating, and interactions with all mobs
-const passiveMobs = require('./passiveMobs');
-const neutralMobs = require('./neutralMobs');
-const hostileMobs = require('./hostileMobs');
-const netherMobs = require('./netherMobs');
-const aquaticMobs = require('./aquaticMobs');
-const VillagerNPC = require('./villagerNPC');
-const ZombieVillager = require('./zombieVillager');
-const Warden = require('./warden');
+// Mob Manager - handles spawning, updating, and interactions with all mobsconst passiveMobs = require('./passiveMobs');const neutralMobs = require('./neutralMobs');const hostileMobs = require('./hostileMobs');const netherMobs = require('./netherMobs');const aquaticMobs = require('./aquaticMobs');const VillagerNPC = require('./villagerNPC');const ZombieVillager = require('./zombieVillager');const Warden = require('./warden');const { Frog, Tadpole } = require('./frogAndTadpole');
 
 class MobManager {
   constructor() {
@@ -32,6 +24,8 @@ class MobManager {
       'chicken': passiveMobs.Chicken,
       'squid': aquaticMobs.Squid,
       'glow_squid': aquaticMobs.GlowSquid,
+      'frog': Frog,
+      'tadpole': Tadpole,
       
       // Neutral mobs
       'wolf': neutralMobs.Wolf,
@@ -157,6 +151,16 @@ class MobManager {
       case 'arrow':
         // Skeleton shot an arrow, create projectile
         this.createProjectile(updateResult);
+        break;
+        
+      case 'grow_into_frog':
+        // Tadpole grew into a frog
+        const { position, variant } = updateResult;
+        console.log(`Tadpole grew into a ${variant} frog at`, position);
+        
+        // Remove the tadpole and spawn a frog
+        this.spawnMob('frog', position, { variant });
+        mob.dead = true;
         break;
         
       default:
@@ -331,7 +335,7 @@ class MobManager {
   // Original method kept for backwards compatibility
   selectMobType(category) {
     const mobTypes = {
-      passive: ['sheep', 'cow', 'pig', 'chicken'],
+      passive: ['sheep', 'cow', 'pig', 'chicken', 'frog', 'tadpole'],
       neutral: ['wolf', 'spider', 'enderman', 'goat'],
       hostile: ['zombie', 'skeleton', 'creeper'],
       villager: ['villager']

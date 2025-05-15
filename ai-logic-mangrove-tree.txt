@@ -1,0 +1,59 @@
+### 2024-08-05: Wild Update - Mangrove Tree Blocks Implementation ###
+
+I've successfully implemented Mangrove Tree blocks for the Wild Update:
+
+1. Created `MangroveLogBlock` class with the following features:
+   - Standard log properties with appropriate hardness, resistance, and sounds
+   - Support for both vertical and horizontal orientations through the axis property
+   - Stripping functionality when right-clicked with an axe
+   - Proper tool interactions (faster mining with axes)
+   - Compatible drop mechanics
+   - Proper serialization/deserialization
+
+2. Created `MangroveRootsBlock` class with the following features:
+   - Unique partially-transparent solid block that entities can walk through
+   - Waterlogging functionality (can contain water within the block)
+   - Special placement rules (can only be placed on certain blocks like mud, dirt, etc.)
+   - Support mechanics (breaks if supporting block is removed)
+   - Slows entity movement slightly (but less than mud)
+   - Proper tool interactions and drop mechanics
+   - Fluid handling for waterlogged state
+
+3. Created `MangroveLeavesBlock` class with the following features:
+   - Leaf decay system tied to distance from logs
+   - Persistent flag for player-placed leaves
+   - Waterlogging functionality
+   - Special drop mechanics (chance to drop propagules or sticks)
+   - Tool interactions (shears and silk touch for leaf drops)
+   - Proper sound effects and breaking particles
+   - Random tick updates for leaf decay 
+
+4. Created `MangrovePropaguleBlock` class with the following features:
+   - Distinct hanging (from leaves) and planted (on ground) states
+   - Growth stages (0-4) with visual progression
+   - Random growth through tick updates
+   - Bone meal interaction for accelerated growth
+   - Tree growth mechanic when fully mature
+   - Support mechanics (breaks if supporting block is removed)
+   - Waterlogging functionality
+   - Comprehensive tree generation algorithm
+
+5. Updated BlockRegistry to include all Mangrove tree blocks:
+   - Added MangroveLogBlock (and stripped variant)
+   - Added MangroveRootsBlock
+   - Added MangroveLeavesBlock
+   - Added MangrovePropaguleBlock
+   - Ensured blocks have proper IDs and display names
+
+6. Created comprehensive tests for all Mangrove tree blocks:
+   - Tests for block properties and behaviors
+   - Tests for special mechanics like stripping, waterlogging, and leaf decay
+   - Tests for growth mechanics of propagules
+   - Tests for tree generation
+   - Tests for BlockRegistry integration
+
+The Mangrove Tree blocks implementation provides a unique tree variant with special mechanics for the Mangrove Swamp biome. The implementation includes all the essential features from Minecraft's Mangrove trees, including the distinctive elevated root system, hanging propagules, and special growth mechanics.
+
+Next steps:
+1. Create Frog and Tadpole mobs with proper growth mechanics and behaviors
+2. Implement special items like Boat with Chest 

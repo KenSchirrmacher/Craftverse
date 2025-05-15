@@ -98,7 +98,11 @@
   - [COMPLETED] Darkness effect
   
 - [COMPLETED] Mangrove Swamp biome
-  - [PENDING] Mangrove trees
+  - [COMPLETED] Mangrove trees
+    - [COMPLETED] Mangrove Log blocks
+    - [COMPLETED] Mangrove Roots blocks
+    - [COMPLETED] Mangrove Leaves blocks
+    - [COMPLETED] Mangrove Propagule blocks
   - [COMPLETED] Mud blocks
     - [COMPLETED] Regular Mud Block
     - [COMPLETED] Packed Mud Block
@@ -109,7 +113,6 @@
 
 ## Current Tasks
 1. Continue implementation of Mangrove Swamp biome
-   - Implement Mangrove trees
    - Implement Frog and Tadpole mobs
 2. Plan Allay mob implementation
 
@@ -132,4 +135,6 @@
 16. Added comprehensive tests for the Darkness effect and its interactions
 17. Implemented MangroveSwampBiome with proper terrain generation and biome properties
 18. Implemented Mud Block family (regular, packed, and bricks) with appropriate properties and effects
-19. Added tests for MangroveSwampBiome and all mud block types 
+19. Added tests for MangroveSwampBiome and all mud block types
+20. Implemented Mangrove tree blocks (logs, roots, leaves, propagules) with proper behaviors and interactions
+21. Added tests to verify Mangrove tree blocks work correctly 

@@ -21,6 +21,13 @@ const DeepslateBricksBlock = require('./deepslateBricksBlock');
 const DeepslateChiseledBlock = require('./deepslateChiseledBlock');
 const DeepslateTilesBlock = require('./deepslateTilesBlock');
 const { CaveVineHeadBlock, CaveVineBodyBlock } = require('./caveVineBlock');
+const MudBlock = require('./mudBlock');
+const PackedMudBlock = require('./packedMudBlock');
+const MudBricksBlock = require('./mudBricksBlock');
+const MangroveLogBlock = require('./mangroveLogBlock');
+const MangroveLeavesBlock = require('./mangroveLeavesBlock');
+const MangroveRootsBlock = require('./mangroveRootsBlock');
+const MangrovePropaguleBlock = require('./mangrovePropaguleBlock');
 
 class BlockRegistry {
   /**
@@ -142,6 +149,18 @@ class BlockRegistry {
     this.registerBlock(new DeepslateBricksBlock());
     this.registerBlock(new DeepslateChiseledBlock());
     this.registerBlock(new DeepslateTilesBlock());
+    
+    // Register Wild Update blocks (Mangrove Swamp)
+    this.registerBlock(new MudBlock());
+    this.registerBlock(new PackedMudBlock());
+    this.registerBlock(new MudBricksBlock());
+    
+    // Register Mangrove tree blocks
+    this.registerBlock(new MangroveLogBlock());
+    this.registerBlock(new MangroveLogBlock({ id: 'stripped_mangrove_log', name: 'Stripped Mangrove Log', stripped: true }));
+    this.registerBlock(new MangroveLeavesBlock());
+    this.registerBlock(new MangroveRootsBlock());
+    this.registerBlock(new MangrovePropaguleBlock());
     
     // Future: Register vanilla blocks (stone, dirt, etc.)
     // this.registerBlock(new StoneBlock());

@@ -1,7 +1,4 @@
-/**
- * Structure Generator - Handles generation of predefined structures in the world
- */
-const VillageGenerator = require('./villageGenerator');
+/** * Structure Generator - Handles generation of predefined structures in the world */const VillageGenerator = require('./villageGenerator');const AncientCityGenerator = require('./structures/ancientCityGenerator');
 
 class StructureGenerator {
   /**
@@ -31,33 +28,7 @@ class StructureGenerator {
     this.entitySpawner = spawner;
   }
   
-  /**
-   * Register default structure generators
-   * @private
-   */
-  registerDefaultStructures() {
-    // Small structures
-    this.registerStructure('desert_well', this.generateDesertWell);
-    this.registerStructure('boulder_pile', this.generateBoulderPile);
-    this.registerStructure('fallen_tree', this.generateFallenTree);
-    
-    // Medium structures
-    this.registerStructure('desert_pyramid', this.generateDesertPyramid);
-    this.registerStructure('small_ruin', this.generateSmallRuin);
-    this.registerStructure('witch_hut', this.generateWitchHut);
-    
-    // Underground structures
-    this.registerStructure('dungeon', this.generateDungeon);
-    
-    // Ocean structures
-    this.registerStructure('ocean_ruins', this.generateOceanRuins);
-    
-    // Large structures (placeholder functions)
-    this.registerStructure('village', this.generateVillage);
-    this.registerStructure('stronghold', this.generateStronghold);
-    this.registerStructure('mineshaft', this.generateMineshaft);
-    this.registerStructure('ocean_monument', this.generateOceanMonument);
-  }
+    /**   * Register default structure generators   * @private   */  registerDefaultStructures() {    // Small structures    this.registerStructure('desert_well', this.generateDesertWell);    this.registerStructure('boulder_pile', this.generateBoulderPile);    this.registerStructure('fallen_tree', this.generateFallenTree);        // Medium structures    this.registerStructure('desert_pyramid', this.generateDesertPyramid);    this.registerStructure('small_ruin', this.generateSmallRuin);    this.registerStructure('witch_hut', this.generateWitchHut);        // Underground structures    this.registerStructure('dungeon', this.generateDungeon);    this.registerStructure('ancient_city', this.generateAncientCity);        // Ocean structures    this.registerStructure('ocean_ruins', this.generateOceanRuins);        // Large structures (placeholder functions)    this.registerStructure('village', this.generateVillage);    this.registerStructure('stronghold', this.generateStronghold);    this.registerStructure('mineshaft', this.generateMineshaft);    this.registerStructure('ocean_monument', this.generateOceanMonument);  }
   
   /**
    * Register a structure generator
@@ -3613,4 +3584,4 @@ class StructureGenerator {
   }
 }
 
-module.exports = StructureGenerator; 
+  /**   * Generate an Ancient City structure   * @param {Object} position - Position to generate the structure   * @param {Object} options - Additional options   * @param {Function} blockSetter - Function to set blocks   * @returns {Object} Generated structure data   */  generateAncientCity(position, options, blockSetter) {    // Initialize Ancient City Generator if not already created    if (!this.ancientCityGenerator) {      this.ancientCityGenerator = new AncientCityGenerator({ seed: this.seed });    }        // Use the Ancient City Generator to create the structure    return this.ancientCityGenerator.generateAncientCity(      position,       options,       blockSetter,       this.entitySpawner    );  }module.exports = StructureGenerator; 
