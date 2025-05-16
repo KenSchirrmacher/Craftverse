@@ -24,6 +24,7 @@ const ChiseledBookshelfItem = require('./chiseledBookshelfItem');
 // Import bamboo items
 const { BambooItem, BambooSignItem, BambooButtonItem, BambooPressurePlateItem } = require('./bambooItem');
 const BambooRaftItem = require('./bambooRaftItem');
+const RaftItem = require('./raftItem');
 
 class ItemRegistry {
   /**
@@ -208,6 +209,16 @@ class ItemRegistry {
     // Register chest boats
     for (const woodType of woodTypes) {
       this.registerItem(new BoatItem({ woodType, hasChest: true }));
+    }
+    
+    // Register regular rafts (1.20 Update)
+    for (const woodType of woodTypes) {
+      this.registerItem(new RaftItem({ woodType, hasChest: false }));
+    }
+    
+    // Register chest rafts (1.20 Update)
+    for (const woodType of woodTypes) {
+      this.registerItem(new RaftItem({ woodType, hasChest: true }));
     }
   }
   
