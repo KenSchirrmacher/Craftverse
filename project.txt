@@ -195,7 +195,13 @@
     - [COMPLETED] Cherry Sapling blocks with proper growth mechanics
   - [COMPLETED] Integration with world generation
   - [COMPLETED] Tests for all Cherry Blossom components
-- [TODO] Camel mob
+- [COMPLETED] Camel mob
+  - [COMPLETED] Basic mob implementation with sitting/standing mechanics
+  - [COMPLETED] Two-player riding support
+  - [COMPLETED] Dash ability when sprinting
+  - [COMPLETED] Breeding mechanics with cactus
+  - [COMPLETED] Age growth from baby to adult
+  - [COMPLETED] Tests validating all Camel functionality
 - [TODO] Armor trims
 - [TODO] Complete pottery system
 - [TODO] Hanging signs
