@@ -1,408 +1,165 @@
 /**
- * Base Biome class
- * Provides default implementation and structure for all biomes
+ * BaseBiome - Base class for all biomes in the game
  */
-class Biome {
+
+class BaseBiome {
   /**
-   * Create a new biome
-   * @param {Object} props - Biome properties
+   * Create a new biome type
+   * @param {Object} options - Biome options
+   * @param {string} options.id - Unique biome identifier
+   * @param {string} options.name - Human-readable biome name
+   * @param {string} options.color - Biome color (hex code)
+   * @param {number} options.temperature - Biome temperature (0.0 to 2.0)
+   * @param {number} options.humidity - Biome humidity (0.0 to 1.0)
+   * @param {Object} options.elevation - Elevation range
+   * @param {number} options.rarity - Biome rarity (0.0 to 1.0)
+   * @param {Array} options.features - List of feature types to generate
    */
-  constructor(props = {}) {
-    // Basic biome information
-    this.id = props.id || 'unknown';
-    this.name = props.name || 'Unknown Biome';
-    this.color = props.color || '#FFFFFF';
+  constructor(options = {}) {
+    this.id = options.id || 'unknown';
+    this.name = options.name || 'Unknown Biome';
+    this.color = options.color || '#7FBF7F';
+    this.temperature = options.temperature !== undefined ? options.temperature : 0.5;
+    this.humidity = options.humidity !== undefined ? options.humidity : 0.5;
+    this.elevation = options.elevation || { min: 0, max: 128 };
+    this.rarity = options.rarity !== undefined ? options.rarity : 1.0;
+    this.features = options.features || [];
     
-    // Climate parameters
-    this.temperatureRange = props.temperatureRange || { min: -1.0, max: 1.0 };
-    this.precipitationRange = props.precipitationRange || { min: 0.0, max: 1.0 };
-    this.continentalnessRange = props.continentalnessRange || { min: 0.0, max: 1.0 };
-    this.erosionRange = props.erosionRange || { min: 0.0, max: 1.0 };
-    this.weirdnessRange = props.weirdnessRange || { min: -1.0, max: 1.0 };
-    
-    // Terrain properties
-    this.baseHeight = props.baseHeight || 64;
-    this.heightVariation = props.heightVariation || 4;
-    this.hilliness = props.hilliness || 0.5;
-    
-    // Block types
-    this.topBlock = props.topBlock || { id: 'grass_block', metadata: 0 };
-    this.fillerBlock = props.fillerBlock || { id: 'dirt', metadata: 0 };
-    this.undergroundBlock = props.undergroundBlock || { id: 'stone', metadata: 0 };
-    this.underwaterBlock = props.underwaterBlock || { id: 'gravel', metadata: 0 };
-    
-    // Vegetation density
-    this.treeDensity = props.treeDensity !== undefined ? props.treeDensity : 0.1;
-    this.grassDensity = props.grassDensity !== undefined ? props.grassDensity : 0.3;
-    this.flowerDensity = props.flowerDensity !== undefined ? props.flowerDensity : 0.05;
-    
-    // Features and structures
-    this.features = props.features || [];
-    this.structures = props.structures || [];
-    
-    // Mob spawning
-    this.spawnRates = props.spawnRates || {
-      passive: {},
-      neutral: {},
-      hostile: {}
-    };
-    
-    // Weather and visual properties
-    this.weatherProperties = props.weatherProperties || {
-      rainChance: 0.25,
-      thunderChance: 0.05,
-      fogDensity: 0.0,
-      temperature: 0.5,
-      rainfall: 0.5
-    };
-    
-    this.visualEffects = props.visualEffects || {
-      skyColor: '#7BA4FF',
-      fogColor: '#C0D8FF',
-      waterColor: '#3F76E4',
-      waterFogColor: '#050533',
-      grassColor: '#91BD59',
-      foliageColor: '#77AB2F'
-    };
-    
-    this.ambientSounds = props.ambientSounds || {
-      day: ['ambient.generic.day'],
-      night: ['ambient.generic.night'],
-      mood: ['ambient.generic.mood']
-    };
-    
-    // Mob spawning lists
-    this.mobSpawnLists = props.mobSpawnLists || {
-      passive: [
-        { type: 'sheep', weight: 12, minCount: 2, maxCount: 4 },
-        { type: 'pig', weight: 10, minCount: 2, maxCount: 4 },
-        { type: 'chicken', weight: 10, minCount: 2, maxCount: 4 },
-        { type: 'cow', weight: 8, minCount: 2, maxCount: 4 }
-      ],
-      neutral: [
-        { type: 'wolf', weight: 5, minCount: 1, maxCount: 4 },
-        { type: 'spider', weight: 10, minCount: 1, maxCount: 3 },
-        { type: 'enderman', weight: 1, minCount: 1, maxCount: 1 }
-      ],
-      hostile: [
-        { type: 'zombie', weight: 10, minCount: 1, maxCount: 4 },
-        { type: 'skeleton', weight: 10, minCount: 1, maxCount: 4 },
-        { type: 'creeper', weight: 8, minCount: 1, maxCount: 2 }
-      ]
-    };
+    // Default values
+    this.seaLevel = 63;
+    this.groundCoverageChance = 0.7;
+    this.vegetationChance = 0.1;
+    this.treeFrequency = 0.05;
   }
 
   /**
-   * Check if this biome is valid for the given climate parameters
-   * @param {Object} climate - Climate parameters
-   * @returns {boolean} - Whether this biome is valid
-   */
-  isValidForClimate(climate) {
-    // Check if climate parameters are within the biome's valid ranges
-    if (climate.temperature < this.temperatureRange.min || 
-        climate.temperature > this.temperatureRange.max) {
-      return false;
-    }
-    
-    if (climate.precipitation < this.precipitationRange.min || 
-        climate.precipitation > this.precipitationRange.max) {
-      return false;
-    }
-    
-    if (climate.continentalness < this.continentalnessRange.min || 
-        climate.continentalness > this.continentalnessRange.max) {
-      return false;
-    }
-    
-    if (climate.erosion < this.erosionRange.min || 
-        climate.erosion > this.erosionRange.max) {
-      return false;
-    }
-    
-    if (climate.weirdness < this.weirdnessRange.min || 
-        climate.weirdness > this.weirdnessRange.max) {
-      return false;
-    }
-    
-    return true;
-  }
-
-  /**
-   * Calculate how well this biome fits the given climate parameters
-   * @param {Object} climate - Climate parameters
-   * @returns {number} - Fitness score (0-1, higher is better)
-   */
-  getFitnessScore(climate) {
-    // If not a valid climate, return 0
-    if (!this.isValidForClimate(climate)) {
-      return 0;
-    }
-    
-    // Calculate distance from climate parameters to range midpoints
-    const tempMid = (this.temperatureRange.min + this.temperatureRange.max) / 2;
-    const tempDist = 1 - Math.abs(climate.temperature - tempMid) / 
-      ((this.temperatureRange.max - this.temperatureRange.min) / 2);
-    
-    const precipMid = (this.precipitationRange.min + this.precipitationRange.max) / 2;
-    const precipDist = 1 - Math.abs(climate.precipitation - precipMid) / 
-      ((this.precipitationRange.max - this.precipitationRange.min) / 2);
-    
-    const contMid = (this.continentalnessRange.min + this.continentalnessRange.max) / 2;
-    const contDist = 1 - Math.abs(climate.continentalness - contMid) / 
-      ((this.continentalnessRange.max - this.continentalnessRange.min) / 2);
-    
-    const erosionMid = (this.erosionRange.min + this.erosionRange.max) / 2;
-    const erosionDist = 1 - Math.abs(climate.erosion - erosionMid) / 
-      ((this.erosionRange.max - this.erosionRange.min) / 2);
-    
-    const weirdMid = (this.weirdnessRange.min + this.weirdnessRange.max) / 2;
-    const weirdDist = 1 - Math.abs(climate.weirdness - weirdMid) / 
-      ((this.weirdnessRange.max - this.weirdnessRange.min) / 2);
-    
-    // Weight the parameters by importance
-    // Temperature and precipitation are most important for biome selection
-    const weights = {
-      temperature: 0.35,
-      precipitation: 0.25,
-      continentalness: 0.2,
-      erosion: 0.15,
-      weirdness: 0.05
-    };
-    
-    // Calculate weighted score
-    const score = tempDist * weights.temperature +
-      precipDist * weights.precipitation +
-      contDist * weights.continentalness +
-      erosionDist * weights.erosion +
-      weirdDist * weights.weirdness;
-    
-    return Math.max(0, Math.min(1, score));
-  }
-
-  /**
-   * Gets the terrain height at the specified coordinates
-   * Default implementation for basic noise-based terrain
-   * @param {number} x - X coordinate
-   * @param {number} z - Z coordinate 
-   * @param {Object} noiseGenerators - Noise generators
-   * @returns {number} - Terrain height at this position
-   */
-  getHeight(x, z, noiseGenerators) {
-    // Basic height generation uses two noise layers
-    const baseNoise = noiseGenerators.heightNoise ? 
-      noiseGenerators.heightNoise.get(x * 0.01, z * 0.01) : 
-      Math.sin(x * 0.01) * Math.cos(z * 0.01);
-    
-    const detailNoise = noiseGenerators.detailNoise ? 
-      noiseGenerators.detailNoise.get(x * 0.05, z * 0.05) : 
-      Math.sin(x * 0.05) * Math.cos(z * 0.05);
-    
-    // Base terrain shape
-    const baseHeight = this.baseHeight + (baseNoise * this.heightVariation * this.hilliness);
-    
-    // Add small details
-    const detailHeight = detailNoise * 1.5 * this.hilliness;
-    
-    return baseHeight + detailHeight;
-  }
-
-  /**
-   * Get block at specified coordinates
-   * Default implementation for basic layer-based terrain
-   * @param {number} x - X coordinate
-   * @param {number} y - Y coordinate 
-   * @param {number} z - Z coordinate
-   * @param {number} surfaceHeight - Height of the surface at this position
-   * @param {Object} noiseGenerators - Noise generators
-   * @returns {Object} - Block type {id, metadata} at this position
-   */
-  getBlockAt(x, y, z, surfaceHeight, noiseGenerators) {
-    // Air above surface
-    if (y > surfaceHeight) {
-      return { id: 'air', metadata: 0 };
-    }
-    
-    // Top layer (usually grass or similar)
-    if (y === surfaceHeight) {
-      return this.topBlock;
-    }
-    
-    // Filler layer (usually dirt or similar, several blocks deep)
-    if (y >= surfaceHeight - 3) {
-      return this.fillerBlock;
-    }
-    
-    // Underground layer (usually stone)
-    return this.undergroundBlock;
-  }
-
-  /**
-   * Get features to place at specified coordinates
-   * Default implementation for basic feature generation
+   * Get the features that should be generated at the given position
    * @param {number} x - X coordinate
    * @param {number} z - Z coordinate
-   * @param {Function} random - Seeded random function
-   * @param {Object} noiseGenerators - Noise generators
-   * @returns {Array} - Array of features to place at this position
+   * @param {Object} random - Random number generator
+   * @returns {Array} - List of features to generate
    */
-  getFeaturesAt(x, z, random, noiseGenerators) {
+  getFeaturesAt(x, z, random) {
     const features = [];
     
-    // Tree generation
-    if (random() < this.treeDensity) {
+    // Add trees based on frequency
+    if (random.nextFloat() < this.treeFrequency) {
+      const treeTypes = ['oak', 'birch', 'spruce', 'jungle', 'acacia', 'dark_oak'];
+      const treeType = treeTypes[Math.floor(random.nextFloat() * treeTypes.length)];
+      
       features.push({
-        type: 'tree',
-        id: 'oak_tree',
-        x, z
+        type: treeType,
+        position: { x, z }
       });
     }
     
-    // Grass generation
-    if (random() < this.grassDensity) {
-      features.push({
-        type: 'vegetation',
-        id: 'grass',
-        x, z
-      });
-    }
-    
-    // Flower generation
-    if (random() < this.flowerDensity) {
-      const flowerType = random() < 0.5 ? 'poppy' : 'dandelion';
-      features.push({
-        type: 'vegetation',
-        id: flowerType,
-        x, z
-      });
+    // Add grass and flowers
+    if (random.nextFloat() < this.groundCoverageChance) {
+      // Tall grass
+      if (random.nextFloat() < 0.8) {
+        features.push({
+          type: 'tall_grass',
+          position: { x, z }
+        });
+      }
+      
+      // Flowers
+      if (random.nextFloat() < 0.2) {
+        const flowerTypes = [
+          'dandelion',
+          'poppy',
+          'blue_orchid',
+          'allium',
+          'azure_bluet',
+          'tulip_red',
+          'tulip_orange',
+          'tulip_white',
+          'tulip_pink',
+          'oxeye_daisy'
+        ];
+        
+        const flowerType = flowerTypes[Math.floor(random.nextFloat() * flowerTypes.length)];
+        
+        features.push({
+          type: 'flower',
+          variant: flowerType,
+          position: { x, z }
+        });
+      }
     }
     
     return features;
   }
-
+  
   /**
-   * Get structures to place at specified coordinates
-   * Default implementation for basic structure generation
-   * @param {number} x - X coordinate
-   * @param {number} z - Z coordinate
-   * @param {Function} random - Seeded random function
-   * @returns {Array} - Array of structures to place at this position
+   * Get suitable blocks for this biome at the given height
+   * @param {number} height - Block height/Y coordinate
+   * @param {number} surfaceHeight - Surface height at this position
+   * @returns {string} - Block type to place
    */
-  getStructuresAt(x, z, random) {
-    const structures = [];
-    
-    // Default implementation just uses the predefined structures
-    for (const structure of this.structures) {
-      if (random() < (structure.weight || 0.001)) {
-        structures.push({
-          type: 'structure',
-          id: structure.id,
-          x, z
-        });
-      }
+  getBlockAt(height, surfaceHeight) {
+    // Bedrock at the bottom
+    if (height <= 1) {
+      return 'bedrock';
     }
     
-    return structures;
-  }
-
-  /**
-   * Get the mob spawn list for this biome
-   * @param {string} category - Mob category: 'passive', 'neutral', or 'hostile'
-   * @param {Object} options - Additional options for spawn selection
-   * @param {boolean} options.isDaytime - Whether it's daytime (affects hostile mob spawning)
-   * @param {number} options.moonPhase - Moon phase (0-7, affects some mob spawning)
-   * @param {boolean} options.isRaining - Whether it's raining (affects some mob spawning)
-   * @returns {Array} - Array of mob spawn entries for the requested category
-   */
-  getMobSpawnList(category, options = {}) {
-    const { isDaytime = true, moonPhase = 0, isRaining = false } = options;
-    
-    // Default mob lists from the biome
-    const spawnList = [...(this.mobSpawnLists[category] || [])];
-    
-    // Apply time and weather based modifications
-    if (category === 'hostile') {
-      // Reduce hostile mob spawning during daytime
-      if (isDaytime) {
-        // Keep only mobs that can spawn in daylight, reduce spawn rates
-        return spawnList
-          .filter(entry => this.canSpawnInDaylight(entry.type))
-          .map(entry => ({
-            ...entry,
-            weight: Math.max(1, Math.floor(entry.weight * 0.5)) // Reduce weights during day
-          }));
-      }
-      
-      // Full moon increases some hostile mob spawning
-      if (moonPhase === 0) {
-        // Increase zombie and skeleton spawn rates during full moon
-        spawnList.forEach(entry => {
-          if (entry.type === 'zombie' || entry.type === 'skeleton') {
-            entry.weight = Math.floor(entry.weight * 1.5);
-            entry.maxCount += 1;
-          }
-        });
-      }
+    // Underground
+    if (height < surfaceHeight - 3) {
+      return 'stone';
     }
     
-    // Weather effects
-    if (isRaining) {
-      // Some mobs are more common during rain
-      spawnList.forEach(entry => {
-        if (entry.type === 'enderman') {
-          // Endermen don't like rain
-          entry.weight = Math.max(1, Math.floor(entry.weight * 0.5));
-        }
-      });
+    // Surface layers
+    if (height < surfaceHeight) {
+      return 'dirt';
     }
     
-    return spawnList;
+    // Surface block
+    if (height === surfaceHeight) {
+      return 'grass_block';
+    }
+    
+    // Water if below sea level
+    if (height <= this.seaLevel) {
+      return 'water';
+    }
+    
+    // Air above surface
+    return 'air';
   }
   
   /**
-   * Check if a mob type can spawn in daylight
-   * @private
-   * @param {string} mobType - Type of mob to check
-   * @returns {boolean} - Whether the mob can spawn in daylight
+   * Get the height variation for this biome
+   * @param {number} x - X coordinate
+   * @param {number} z - Z coordinate
+   * @param {Object} noiseGenerators - Noise generators to use
+   * @returns {number} - Height modifier (-1.0 to 1.0)
    */
-  canSpawnInDaylight(mobType) {
-    // In a real implementation, would be more comprehensive
-    const dayTimeHostileMobs = ['spider']; // Spiders are neutral in daylight
-    return dayTimeHostileMobs.includes(mobType);
+  getHeightVariation(x, z, noiseGenerators) {
+    // Default implementation uses simple perlin noise
+    return noiseGenerators.continentalness.noise2D(x * 0.01, z * 0.01) * 0.5;
   }
-
+  
   /**
-   * Get mob spawn rates for a specific type
-   * @param {string} type - Mob type (passive, neutral, hostile)
-   * @returns {Object} - Spawn rates for this biome
+   * Get the density coefficient for this biome
+   * Used for 3D noise-based generation
+   * @param {number} x - X coordinate
+   * @param {number} y - Y coordinate
+   * @param {number} z - Z coordinate
+   * @param {Object} noiseGenerators - Noise generators to use
+   * @returns {number} - Density value for cave carving
    */
-  getMobSpawnRates(type) {
-    return this.spawnRates[type] || {};
+  getDensityCoefficient(x, y, z, noiseGenerators) {
+    return 1.0;
   }
-
+  
   /**
-   * Get weather properties for this biome
-   * @returns {Object} - Weather properties
+   * Handle ambient effects specific to this biome
+   * @param {Object} player - Player to apply effects to
+   * @param {Object} position - Player position
    */
-  getWeatherProperties() {
-    return this.weatherProperties;
-  }
-
-  /**
-   * Get visual effects for this biome
-   * @returns {Object} - Visual effect properties
-   */
-  getVisualEffects() {
-    return this.visualEffects;
-  }
-
-  /**
-   * Get ambient sounds for this biome
-   * @param {string} timeOfDay - Time of day ('day' or 'night')
-   * @returns {Array} - List of ambient sounds
-   */
-  getAmbientSounds(timeOfDay) {
-    return this.ambientSounds[timeOfDay] || this.ambientSounds.day;
+  applyAmbientEffects(player, position) {
+    // Default implementation does nothing
   }
 }
 
-module.exports = Biome; 
+module.exports = BaseBiome; 

@@ -83,39 +83,33 @@ You MUST NOT create work arounds, or hacks to make the feature or service work. 
    - Pottery system
 
 ### Current Focus ###
-Implementing The Wild Update, which includes:
-- [x] Deep Dark biome
-  - [x] Sculk blocks and mechanics
-  - [x] Ancient city structures
-  - [x] Warden mob implementation
-  - [x] Darkness effect
-  - [x] Sculk sensor mechanics
-  - [x] Sculk shrieker mechanics
-  - [x] Sculk catalyst mechanics
-- [x] Mangrove swamp biome
-  - [x] Mangrove trees
-    - [x] Mangrove log blocks
-    - [x] Mangrove roots blocks
-    - [x] Mangrove leaves blocks
-    - [x] Mangrove propagule blocks
-    - [x] Block registry integration
-    - [x] Tree growth mechanics
-  - [x] Mud blocks
-  - [x] Mud bricks
-  - [x] Frogs and tadpoles
-  - [ ] Fireflies
-- [x] Boat with chest
-  - [x] Inventory storage functionality
-  - [x] Different wood type variants
-  - [x] Proper breaking and drops handling
-  - [x] Serialization and persistence
-- [x] Recovery Compass
-  - [x] Location tracking to player's last death
-  - [x] Compass needle pointing mechanics
-  - [x] Different dimension handling
-- [x] Echo Shards
-  - [x] Added as loot in Ancient Cities
-  - [x] Used as crafting material for Recovery Compass
+Implementing Trails & Tales Update, which includes:
+- [x] Archaeology system
+  - [x] Brush tool
+  - [x] Suspicious blocks
+  - [x] Pottery sherds
+  - [x] Archaeological sites generation
+  - [x] Biome integration
+- [x] Sniffer mob
+  - [x] Basic mob mechanics
+  - [x] Sniffing behavior
+  - [x] Digging behavior
+  - [x] Growing from egg to adult stages
+  - [x] Plant seed drops
+- [x] Cherry Blossom biome
+  - [x] Cherry Grove biome with pink aesthetic
+  - [x] Cherry tree generation with curved branches
+  - [x] Cherry wood blocks (logs, planks, etc.)
+  - [x] Cherry leaves with petal particles
+  - [x] Cherry sapling with proper growth mechanics
+  - [x] Biome terrain generation
+  - [x] Integration with world generation system
+  - [x] Tests for all Cherry Blossom components
+- [ ] Camel mob
+- [ ] Armor trims
+- [ ] Complete pottery system
+- [ ] Hanging signs
+- [ ] Chiseled bookshelf
 
 ### Test Cases ###
 Each feature will have its own test case to ensure proper functionality. Test cases will be documented here as they are created.

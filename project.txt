@@ -187,7 +187,14 @@
   - [COMPLETED] Breeding mechanics
   - [COMPLETED] Drops and interactions
   - [COMPLETED] Tests
-- [TODO] Cherry blossom biome
+- [COMPLETED] Cherry blossom biome
+  - [COMPLETED] Cherry Grove biome with appropriate terrain and features
+  - [COMPLETED] Cherry trees
+    - [COMPLETED] Cherry Log blocks
+    - [COMPLETED] Cherry Leaves blocks with petal particles
+    - [COMPLETED] Cherry Sapling blocks with proper growth mechanics
+  - [COMPLETED] Integration with world generation
+  - [COMPLETED] Tests for all Cherry Blossom components
 - [TODO] Camel mob
 - [TODO] Armor trims
 - [TODO] Complete pottery system
