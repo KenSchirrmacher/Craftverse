@@ -262,7 +262,7 @@
   - [TODO] Tests
 
 ## Current Tasks
-1. Implement Netherite upgrade template for the 1.20 Update
+1. Implement Calibrated Sculk Sensor for the 1.20 Update
 
 ## Completed Features (Trails & Tales Update)
 - [COMPLETED] Archaeology system
