@@ -430,9 +430,23 @@ function testMobManagerIntegration() {
 }
 
 // Export runTests function
-module.exports = runTests;
+module.exports = {
+  runTests: function() {
+    console.log('Starting Allay tests...');
+
+    testAllayBasics();
+    testAllayStates();
+    testItemCollection();
+    testNoteBlockInteraction();
+    testDuplication();
+    testMovementPhysics();
+    testMobManagerIntegration();
+
+    console.log('All Allay tests completed successfully!');
+  }
+};
 
 // If this file is run directly, run the tests
 if (require.main === module) {
-  runTests();
+  module.exports.runTests();
 } 

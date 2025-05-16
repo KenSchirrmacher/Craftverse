@@ -165,6 +165,15 @@ class MobManager {
         mob.dead = true;
         break;
         
+      case 'allay_duplicated':
+        // Allay has duplicated after interacting with a note block while holding an item
+        const newAllayData = updateResult.newAllay;
+        console.log('Allay duplicated at', newAllayData.position);
+        
+        // Spawn the new Allay
+        this.spawnMob('allay', newAllayData.position, newAllayData.options);
+        break;
+        
       default:
         // Unknown update result
         console.log('Unknown update result:', updateResult);
