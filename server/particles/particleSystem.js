@@ -58,6 +58,14 @@ class ParticleSystem {
         defaultSize: 0.08,
         defaultLifespan: 600, // 0.6 seconds
         defaultGravity: 0.1
+      },
+      'firefly_glow': {
+        defaultColor: '#FFFF77', // Yellow glow
+        defaultSize: 0.05,
+        defaultLifespan: 400, // 0.4 seconds
+        defaultGravity: -0.001, // Very slight upward drift
+        isPulsing: true, // Special property for firefly particles
+        pulseRate: 0.1  // How fast it pulses
       }
     };
   }
@@ -137,6 +145,26 @@ class ParticleSystem {
       particle.position.x += particle.velocity.x * secondsFactor;
       particle.position.y += particle.velocity.y * secondsFactor;
       particle.position.z += particle.velocity.z * secondsFactor;
+      
+      // Special handling for pulsing particles (like firefly glow)
+      const typeDefaults = this.particleTypes[particle.type] || {};
+      if (typeDefaults.isPulsing) {
+        // Calculate age as a percentage of lifespan
+        const age = (now - particle.creationTime) / particle.lifespan;
+        
+        // Size pulsing - grow and then shrink
+        if (age < 0.5) {
+          // First half - grow to 1.5x size
+          particle.size = typeDefaults.defaultSize * (1 + (age * 1.0));
+        } else {
+          // Second half - shrink to 0.5x size
+          particle.size = typeDefaults.defaultSize * (1.5 - (age - 0.5) * 2);
+        }
+        
+        // Opacity follows a similar curve but stays more visible for longer
+        const opacityAge = Math.min(age * 1.5, 1.0); // Stretches the opacity curve
+        particle.opacity = 1.0 - opacityAge * opacityAge; // Quadratic falloff
+      }
       
       // Check max distance
       const dx = particle.position.x - particle.startPosition.x;

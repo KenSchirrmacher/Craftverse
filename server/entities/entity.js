@@ -3,6 +3,7 @@
  */
 const EventEmitter = require('events');
 const { v4: uuidv4 } = require('uuid');
+const fs = require('fs');
 
 class Entity extends EventEmitter {
   /**
@@ -342,5 +343,8 @@ class Entity extends EventEmitter {
     this.boundingBox = this.calculateBoundingBox();
   }
 }
+
+// If I can't find the method, I'll let you know
+console.log("Checking entity.js file content to see what we need to update...")
 
 module.exports = Entity; 

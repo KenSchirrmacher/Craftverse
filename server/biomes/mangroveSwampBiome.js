@@ -48,6 +48,7 @@ class MangroveSwampBiome extends BiomeBase {
     this.hasMangroves = true;
     this.hasMudBlocks = true;
     this.hasFrogs = true;
+    this.hasFireflies = true;
     
     // Features and structures
     this.features = [
@@ -57,7 +58,8 @@ class MangroveSwampBiome extends BiomeBase {
       { id: 'water_pool', weight: 0.5 },
       { id: 'seagrass', weight: 0.3 },
       { id: 'lily_pad', weight: 0.3 },
-      { id: 'vines', weight: 0.4 }
+      { id: 'vines', weight: 0.4 },
+      { id: 'fireflies', weight: 0.6 }
     ];
     
     this.structures = [
@@ -83,6 +85,9 @@ class MangroveSwampBiome extends BiomeBase {
         { type: 'tadpole', weight: 10, minCount: 2, maxCount: 5 },
         { type: 'squid', weight: 5, minCount: 1, maxCount: 2 },
         { type: 'glow_squid', weight: 3, minCount: 1, maxCount: 1 }
+      ],
+      ambient: [
+        { type: 'firefly', weight: 20, minCount: 3, maxCount: 8 }
       ]
     };
   }
@@ -258,6 +263,77 @@ class MangroveSwampBiome extends BiomeBase {
   getRandomFromCoords(x, z, salt = '') {
     const hash = (Math.sin(x * 12.9898 + z * 78.233 + salt.charCodeAt(0)) * 43758.5453) % 1;
     return Math.abs(hash);
+  }
+  
+  /**
+   * Generate ambient entities in this biome
+   * @param {Object} world - World reference
+   * @param {Object} position - Center position for generation
+   * @param {number} radius - Generation radius
+   * @param {Function} random - Random function
+   * @returns {Array} - Generated ambient entities
+   */
+  generateAmbientEntities(world, position, radius, random) {
+    if (!world || !position) return [];
+    
+    const entities = [];
+    
+    // Generate fireflies at night
+    if (this.hasFireflies && world.timeOfDay >= 0.75 || world.timeOfDay < 0.25) {
+      // Determine firefly count based on biome's ambient spawn configuration
+      const fireflySpawn = this.mobSpawns.ambient?.find(m => m.type === 'firefly');
+      const fireflyCount = fireflySpawn ? 
+        Math.floor(random() * (fireflySpawn.maxCount - fireflySpawn.minCount + 1)) + fireflySpawn.minCount : 
+        Math.floor(random() * 5) + 2; // Default 2-6 fireflies
+      
+      // Create firefly groups
+      const groupCount = Math.ceil(fireflyCount / 3); // Each group has about 3 fireflies
+      
+      for (let g = 0; g < groupCount; g++) {
+        // Choose a random position within the radius
+        const groupX = position.x + (random() * 2 - 1) * radius;
+        const groupZ = position.z + (random() * 2 - 1) * radius;
+        
+        // Get the highest block at this position for Y coordinate
+        const groundY = world.getHighestBlock(groupX, groupZ);
+        if (groundY === null) continue; // Skip if no valid ground
+        
+        // Base Y position above ground
+        const baseY = groundY + 1.5 + random() * 2;
+        
+        // Generate group ID for fireflies to stick together
+        const groupId = `firefly_group_${Date.now()}_${g}`;
+        
+        // Generate 2-4 fireflies per group
+        const groupSize = Math.floor(random() * 3) + 2;
+        
+        for (let i = 0; i < groupSize && entities.length < fireflyCount; i++) {
+          // Create position with small offset from group center
+          const fireflyPos = {
+            x: groupX + (random() * 2 - 1) * 2,
+            y: baseY + (random() * 2 - 1) * 1,
+            z: groupZ + (random() * 2 - 1) * 2
+          };
+          
+          // First firefly in group is the leader
+          const isGroupLeader = i === 0;
+          
+          // Create firefly entity
+          const Firefly = require('../entities/firefly');
+          const firefly = new Firefly(world, {
+            position: fireflyPos,
+            groupId: groupId,
+            isGroupLeader: isGroupLeader,
+            glowColor: random() < 0.2 ? '#89FF77' : '#FFFF77', // Some fireflies have greenish glow
+            glowCycleSpeed: 0.3 + random() * 0.8
+          });
+          
+          entities.push(firefly);
+        }
+      }
+    }
+    
+    return entities;
   }
 }
 

@@ -1,6 +1,13 @@
+/**
+ * Entity Factory - Creates entity instances based on type
+ */
+
+const Entity = require('./entity');
 const ThrownPotion = require('./thrownPotion');
 const AreaEffectCloud = require('./areaEffectCloud');
 const Boat = require('./boat');
+const Firefly = require('./firefly');
+const EndCrystal = require('./endCrystal');
 const { v4: uuidv4 } = require('uuid');
 
 /**
@@ -34,6 +41,12 @@ function createEntity(type, id = null, options = {}) {
     
     case 'boat':
       return new Boat(options.world, { id: entityId, ...options });
+      
+    case 'firefly':
+      return new Firefly(options.world, { id: entityId, ...options });
+      
+    case 'end_crystal':
+      return new EndCrystal(options.world, { id: entityId, ...options });
     
     // ... other entity types ...
     
