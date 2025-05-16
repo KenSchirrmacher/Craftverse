@@ -188,6 +188,10 @@ class CraftingManager {
     // Register pottery system recipes
     const { registerPotteryRecipes } = require('./potteryRecipes');
     registerPotteryRecipes(this);
+    
+    // Register hanging sign recipes
+    const { registerHangingSignRecipes } = require('./hangingSignRecipes');
+    registerHangingSignRecipes(this);
   }
 }
 

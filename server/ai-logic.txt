@@ -1,0 +1,30 @@
+### 2024-08-16: Trails & Tales Update - Hanging Signs Implementation Plan ###
+
+Next, I'll implement the Hanging Signs feature from the Trails & Tales Update. Based on my analysis, there doesn't appear to be an existing sign implementation in the codebase. Therefore, I need to:
+
+1. Create a comprehensive SignBlock base class that will serve as the foundation for both regular signs and hanging signs:
+   - Support for different sign materials (oak, spruce, birch, etc.)
+   - Text editing and formatting capabilities
+   - Proper interaction handling
+   - Directional placement (wall-mounted or standing)
+
+2. Implement the HangingSignBlock class extending from SignBlock:
+   - Support for ceiling and chain attachment
+   - Different visual appearance and behavior from regular signs
+   - Proper support chain visualization
+   - All wood variants support
+   - Different placement mechanics (requires block above)
+
+3. Add HangingSignItem that places the HangingSignBlock
+   - Material-specific variants
+   - Proper placement validation
+   - Integration with crafting system
+
+4. Create comprehensive tests:
+   - Test placement mechanics for hanging signs
+   - Test text editing functionality
+   - Test attachment points (ceiling, chain, wall)
+   - Test proper serialization/deserialization
+   - Test breaking mechanics and drops
+
+I'll approach this by first creating a base SignBlock implementation, then extending it for HangingSignBlock to avoid duplicating code. I'll ensure proper integration with the existing block and item systems.

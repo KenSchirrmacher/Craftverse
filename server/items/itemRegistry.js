@@ -19,6 +19,8 @@ const { ArmorItem, ArmorType, ArmorMaterial } = require('./armorItem');
 const { ArmorTrimItem, createAllArmorTrimTemplates } = require('./armorTrimItem');
 const PotBase = require('./potBase');
 const DecoratedPotItem = require('./decoratedPotItem');
+const HangingSignItem = require('./hangingSignItem');
+const ChiseledBookshelfItem = require('./chiseledBookshelfItem');
 
 class ItemRegistry {
   /**
@@ -174,6 +176,9 @@ class ItemRegistry {
     // Register Pottery System items
     this.registerPotteryItems();
     
+    // Register Hanging Sign items
+    this.registerHangingSignItems();
+    
     // Future: Register more items (stone, dirt, etc.)
     
     // Register potion items
@@ -205,11 +210,11 @@ class ItemRegistry {
    * @private
    */
   registerWildUpdateItems() {
-    // Register Echo Shards
+    // Register Recovery Compass and Echo Shard
+    this.registerItem(new RecoveryCompassItem());
     this.registerItem(new EchoShardItem());
     
-    // Register Recovery Compass
-    this.registerItem(new RecoveryCompassItem());
+    // Other Wild Update items...
   }
   
   /**
@@ -217,29 +222,31 @@ class ItemRegistry {
    * @private
    */
   registerTrailsAndTalesItems() {
-    // Register Brush item
+    // Register Archaeology-related items
     this.registerItem(new BrushItem());
-    this.registerItem(new BrushItem({ id: 'copper_brush', name: 'Copper Brush', brushType: 'copper', durability: 96, maxDurability: 96 }));
-    this.registerItem(new BrushItem({ id: 'iron_brush', name: 'Iron Brush', brushType: 'iron', durability: 128, maxDurability: 128 }));
-    this.registerItem(new BrushItem({ id: 'gold_brush', name: 'Gold Brush', brushType: 'gold', durability: 32, maxDurability: 32 }));
-    this.registerItem(new BrushItem({ id: 'netherite_brush', name: 'Netherite Brush', brushType: 'netherite', durability: 256, maxDurability: 256 }));
     
-    // Register Pottery Sherds
+    // Register pottery sherds
     this.registerSherdItems();
     
-    // Register Armor Trim Templates
+    // Register armor trim templates
     this.registerArmorTrimItems();
+    
+    // Register basic armor items (for testing trims)
+    this.registerBasicArmorItems();
+    
+    // Register Chiseled Bookshelf item
+    this.registerItem(new ChiseledBookshelfItem());
   }
   
   /**
-   * Register Pottery Sherd items
+   * Register all pottery sherd items
    * @private
    */
   registerSherdItems() {
     const patterns = [
-      'arms_up', 'skull', 'explorer', 'archer', 'prize', 
-      'heartbreak', 'brewer', 'friend', 'howl', 'angler', 
-      'shelter', 'danger', 'miner'
+      'angler', 'archer', 'arms_up', 'blade', 'brewer', 'burn', 'danger',
+      'explorer', 'friend', 'heart', 'heartbreak', 'howl', 'miner', 
+      'mourner', 'plenty', 'prize', 'sheaf', 'shelter', 'skull', 'snort'
     ];
     
     for (const pattern of patterns) {
@@ -248,18 +255,33 @@ class ItemRegistry {
   }
   
   /**
-   * Register Armor Trim items
+   * Register all armor trim template items
    * @private
    */
   registerArmorTrimItems() {
-    // Register all armor trim templates
+    // Create and register all armor trim templates
     const armorTrimTemplates = createAllArmorTrimTemplates();
+    
     for (const template of armorTrimTemplates) {
       this.registerItem(template);
     }
+  }
+  
+  /**
+   * Register hanging sign items for all wood types
+   * @private
+   */
+  registerHangingSignItems() {
+    // Wood types supported for hanging signs
+    const woodTypes = [
+      'oak', 'spruce', 'birch', 'jungle', 'acacia', 'dark_oak', 
+      'mangrove', 'cherry', 'bamboo', 'crimson', 'warped'
+    ];
     
-    // Register basic armor items for testing if needed
-    this.registerBasicArmorItems();
+    // Register hanging sign items for each wood type
+    for (const woodType of woodTypes) {
+      this.registerItem(new HangingSignItem({ woodType }));
+    }
   }
   
   /**
@@ -267,9 +289,9 @@ class ItemRegistry {
    * @private
    */
   registerBasicArmorItems() {
-    // Register a set of each armor material for testing
+    // Register all armor pieces for each material for testing
     const materials = [
-      ArmorMaterial.LEATHER, 
+      ArmorMaterial.LEATHER,
       ArmorMaterial.CHAINMAIL,
       ArmorMaterial.IRON,
       ArmorMaterial.GOLD,
@@ -277,53 +299,43 @@ class ItemRegistry {
       ArmorMaterial.NETHERITE
     ];
     
+    const types = [
+      ArmorType.HELMET,
+      ArmorType.CHESTPLATE,
+      ArmorType.LEGGINGS,
+      ArmorType.BOOTS
+    ];
+    
     for (const material of materials) {
-      // Create helmet
-      this.registerItem(new ArmorItem({
-        id: `${material.toLowerCase()}_helmet`,
-        name: `${material.charAt(0) + material.slice(1).toLowerCase()} Helmet`,
-        armorType: ArmorType.HELMET,
-        armorMaterial: material
-      }));
-      
-      // Create chestplate
-      this.registerItem(new ArmorItem({
-        id: `${material.toLowerCase()}_chestplate`,
-        name: `${material.charAt(0) + material.slice(1).toLowerCase()} Chestplate`,
-        armorType: ArmorType.CHESTPLATE,
-        armorMaterial: material
-      }));
-      
-      // Create leggings
-      this.registerItem(new ArmorItem({
-        id: `${material.toLowerCase()}_leggings`,
-        name: `${material.charAt(0) + material.slice(1).toLowerCase()} Leggings`,
-        armorType: ArmorType.LEGGINGS,
-        armorMaterial: material
-      }));
-      
-      // Create boots
-      this.registerItem(new ArmorItem({
-        id: `${material.toLowerCase()}_boots`,
-        name: `${material.charAt(0) + material.slice(1).toLowerCase()} Boots`,
-        armorType: ArmorType.BOOTS,
-        armorMaterial: material
-      }));
+      for (const type of types) {
+        const materialName = material.toLowerCase();
+        const typeName = type.toLowerCase();
+        const itemName = `${materialName}_${typeName}`;
+        
+        const formattedMaterial = material.charAt(0) + material.slice(1).toLowerCase();
+        const formattedType = type.charAt(0) + type.slice(1).toLowerCase();
+        const displayName = `${formattedMaterial} ${formattedType}`;
+        
+        this.registerItem(new ArmorItem({
+          id: itemName,
+          name: displayName,
+          material: material,
+          type: type
+        }));
+      }
     }
   }
   
   /**
-   * Register Pottery System items
+   * Register pottery system items
    * @private
    */
   registerPotteryItems() {
-    // Register the pot base item
+    // Register pot base
     this.registerItem(new PotBase());
     
-    // Register the decorated pot item
+    // Register decorated pot item
     this.registerItem(new DecoratedPotItem());
-    
-    console.log('Registered Pottery System items');
   }
   
   /**
@@ -346,18 +358,88 @@ class ItemRegistry {
         ...itemType.toJSON(),
         ...options
       });
-    } else {
-      // Fallback to creating a new instance directly
-      try {
-        const ItemConstructor = itemType.constructor;
-        return new ItemConstructor(options);
-      } catch (error) {
-        console.error(`Error creating item of type '${type}':`, error);
-        return null;
-      }
     }
+    
+    // Default to creating a new instance with merged options
+    return new itemType.constructor({
+      ...itemType,
+      ...options
+    });
   }
 }
 
-// Export the registry
-module.exports = new ItemRegistry(); 
+/**
+ * Default item classes needed by the registry
+ * These would normally be imported from their own files
+ */
+class SwordItem extends Item {
+  constructor(options = {}) {
+    super({
+      id: options.id || 'iron_sword',
+      name: options.name || 'Iron Sword',
+      type: 'sword',
+      durability: 250,
+      maxDurability: 250,
+      stackable: false,
+      ...options
+    });
+  }
+}
+
+class PickaxeItem extends Item {
+  constructor(options = {}) {
+    super({
+      id: options.id || 'iron_pickaxe',
+      name: options.name || 'Iron Pickaxe',
+      type: 'pickaxe',
+      durability: 250,
+      maxDurability: 250,
+      stackable: false,
+      ...options
+    });
+  }
+}
+
+class AxeItem extends Item {
+  constructor(options = {}) {
+    super({
+      id: options.id || 'iron_axe',
+      name: options.name || 'Iron Axe',
+      type: 'axe',
+      durability: 250,
+      maxDurability: 250,
+      stackable: false,
+      ...options
+    });
+  }
+}
+
+class ShovelItem extends Item {
+  constructor(options = {}) {
+    super({
+      id: options.id || 'iron_shovel',
+      name: options.name || 'Iron Shovel',
+      type: 'shovel',
+      durability: 250,
+      maxDurability: 250,
+      stackable: false,
+      ...options
+    });
+  }
+}
+
+class HoeItem extends Item {
+  constructor(options = {}) {
+    super({
+      id: options.id || 'iron_hoe',
+      name: options.name || 'Iron Hoe',
+      type: 'hoe',
+      durability: 250,
+      maxDurability: 250,
+      stackable: false,
+      ...options
+    });
+  }
+}
+
+module.exports = ItemRegistry; 

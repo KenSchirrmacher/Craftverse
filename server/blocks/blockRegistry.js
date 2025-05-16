@@ -31,6 +31,9 @@ const CherryLog = require('./cherryLog');
 const CherryLeaves = require('./cherryLeaves');
 const CherrySapling = require('./cherrySapling');
 const DecoratedPot = require('./decoratedPot');
+const SignBlock = require('./signBlock');
+const HangingSignBlock = require('./hangingSignBlock');
+const ChiseledBookshelfBlock = require('./chiseledBookshelfBlock');
 
 class BlockRegistry {
   /**
@@ -174,10 +177,70 @@ class BlockRegistry {
     // Register Pottery System blocks (Trails & Tales Update)
     this.registerBlock(new DecoratedPot());
     
+    // Register Sign and Hanging Sign blocks (Trails & Tales Update)
+    this.registerSignBlocks();
+    
+    // Register Chiseled Bookshelf block (Trails & Tales Update)
+    this.registerBlock(new ChiseledBookshelfBlock());
+    
     // Future: Register vanilla blocks (stone, dirt, etc.)
     // this.registerBlock(new StoneBlock());
     // this.registerBlock(new DirtBlock());
     // etc.
+  }
+  
+  /**
+   * Register sign and hanging sign blocks for all wood types
+   * @private
+   */
+  registerSignBlocks() {
+    // Wood types supported for signs
+    const woodTypes = [
+      'oak', 'spruce', 'birch', 'jungle', 'acacia', 'dark_oak', 
+      'mangrove', 'cherry', 'bamboo', 'crimson', 'warped'
+    ];
+    
+    // Register regular signs for each wood type
+    for (const woodType of woodTypes) {
+      const formattedWoodType = woodType.charAt(0).toUpperCase() + woodType.slice(1);
+      
+      // Register standing sign
+      this.registerBlock(new SignBlock({
+        id: `${woodType}_sign`,
+        name: `${formattedWoodType} Sign`,
+        woodType,
+        isWallSign: false
+      }));
+      
+      // Register wall sign variant
+      this.registerBlock(new SignBlock({
+        id: `${woodType}_wall_sign`,
+        name: `${formattedWoodType} Wall Sign`,
+        woodType,
+        isWallSign: true
+      }));
+    }
+    
+    // Register hanging signs for each wood type (Trails & Tales feature)
+    for (const woodType of woodTypes) {
+      const formattedWoodType = woodType.charAt(0).toUpperCase() + woodType.slice(1);
+      
+      // Register ceiling hanging sign
+      this.registerBlock(new HangingSignBlock({
+        id: `${woodType}_hanging_sign`,
+        name: `${formattedWoodType} Hanging Sign`,
+        woodType,
+        attachmentType: 'ceiling'
+      }));
+      
+      // Register wall hanging sign variant
+      this.registerBlock(new HangingSignBlock({
+        id: `${woodType}_wall_hanging_sign`,
+        name: `${formattedWoodType} Wall Hanging Sign`,
+        woodType,
+        attachmentType: 'wall'
+      }));
+    }
   }
   
   /**
@@ -200,16 +263,13 @@ class BlockRegistry {
         ...blockType.toJSON(),
         ...options
       });
-    } else {
-      // Fallback to creating a new instance directly
-      try {
-        const BlockConstructor = blockType.constructor;
-        return new BlockConstructor(options);
-      } catch (error) {
-        console.error(`Error creating block of type '${type}':`, error);
-        return null;
-      }
     }
+    
+    // Default to creating a new instance with merged options
+    return new blockType.constructor({
+      ...blockType,
+      ...options
+    });
   }
 }
 
