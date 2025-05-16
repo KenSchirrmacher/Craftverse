@@ -1,0 +1,42 @@
+### 2024-08-12: Sniffer Mob Implementation ###
+
+I've successfully implemented the Sniffer mob for the Trails & Tales Update with the following features:
+
+1. Created a comprehensive Sniffer class (server/mobs/sniffer.js) with these key features:
+   - Ancient mob that can find ancient seeds through a unique sniffing mechanic
+   - Multiple behavioral states: idle, sniffing, and digging
+   - Growth mechanics allowing babies to grow into adults over time
+   - Breeding system using Torchflower seeds
+   - Different size and appearance for baby and adult forms
+   - Special egg drops when sheared with shears
+   - Specialized animation states for different actions
+
+2. Implemented the Sniffer's core behaviors:
+   - Idle behavior with random wandering and head movement
+   - Sniffing behavior where it searches for ancient seeds
+   - Digging behavior that occurs after finding seeds during sniffing
+   - Specialized breeding mechanics with breeding cooldowns
+   - Proper physics and collision handling
+
+3. Implemented unique rewards from the Sniffer:
+   - Ancient seed drops after successful digging (Torchflower seeds, Pitcher pods)
+   - Sniffer egg drops when sheared with shears
+   - Special animation and sound effects for all behaviors
+
+4. Updated the MobManager to register the Sniffer mob type:
+   - Added proper mob registration in the mobManager.js file
+   - Ensured appropriate spawning mechanics are in place
+   - Set up proper mob initialization and deserialization
+
+5. Created comprehensive tests in snifferTest.js:
+   - Tests for basic creation and properties
+   - Tests for growth mechanics from baby to adult
+   - Tests for sniffing and digging behaviors
+   - Tests for breeding mechanics
+   - Tests for shearing to obtain eggs
+   - Tests for serialization and deserialization
+   - Tests for physics and movement
+
+The Sniffer implementation provides players with a new unique passive mob that has special behaviors focused on finding ancient seeds. These seeds can be used to grow new decorative plants, adding more variety to the game's flora. The implementation follows the original design of the mob, with all its distinctive behaviors and characteristics.
+
+With the Sniffer implementation complete, we can now move on to the next feature in the Trails & Tales Update: the Cherry Blossom biome. 

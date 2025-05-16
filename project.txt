@@ -118,6 +118,7 @@
     - [COMPLETED] Packed Mud Block
     - [COMPLETED] Mud Bricks Block
   - [COMPLETED] Frogs and Tadpoles
+  - [COMPLETED] Fireflies
 
 - [COMPLETED] Allay mob
 
@@ -129,7 +130,7 @@
   - [COMPLETED] Echo Shards
 
 ## Current Tasks
-1. Implement Echo Shards as chest loot in Ancient Cities
+1. Prepare for implementation of Trails & Tales Update features
 
 ## Completed Tasks
 1. Analyzed and verified Weather System implementation
@@ -163,3 +164,32 @@
 29. Implemented Echo Shards as crafting material for Recovery Compass
 30. Created crafting system with support for the Recovery Compass recipe
 31. Added comprehensive tests for Recovery Compass and Echo Shards functionality
+32. Added Echo Shards as loot in Ancient City treasure chests
+33. Implemented Firefly entity for Mangrove Swamp biomes with proper behavior, light emission, and day/night cycle
+34. Created comprehensive tests for Firefly entity
+
+# Current Project: Trails & Tales Update Implementation
+
+## Feature Status
+- [COMPLETED] Archaeology system
+  - [COMPLETED] BrushItem implementation
+  - [COMPLETED] SuspiciousBlocks
+  - [COMPLETED] PotterySherdItem
+  - [COMPLETED] ArchaeologyManager
+  - [COMPLETED] World integration
+  - [COMPLETED] Tests
+  - [COMPLETED] Biome integration for site generation
+- [COMPLETED] Sniffer mob
+  - [COMPLETED] Basic mob implementation
+  - [COMPLETED] Sniffing behavior
+  - [COMPLETED] Digging behavior
+  - [COMPLETED] Baby-to-adult growth
+  - [COMPLETED] Breeding mechanics
+  - [COMPLETED] Drops and interactions
+  - [COMPLETED] Tests
+- [TODO] Cherry blossom biome
+- [TODO] Camel mob
+- [TODO] Armor trims
+- [TODO] Complete pottery system
+- [TODO] Hanging signs
+- [TODO] Chiseled bookshelf

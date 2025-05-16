@@ -36,3 +36,18 @@ supports all wood types, and correctly handles serialization, breaking, and drop
 All tests are now passing for this feature.
 
 Part of: The Wild Update implementation 
+
+feat(mobs): Complete Sniffer mob implementation for Trails & Tales Update
+
+- Implemented Sniffer mob with special sniffing and digging behaviors
+- Added ancient seed finding mechanics and drops (Torchflower seeds, Pitcher pods)
+- Implemented breeding system using Torchflower seeds
+- Added growth system for baby Sniffers
+- Implemented shearing interaction to obtain Sniffer eggs
+- Added comprehensive tests in snifferTest.js
+- Updated project documentation in project.txt and ai-logic.txt
+- Registered Sniffer in the mobManager
+
+This completes the Sniffer mob implementation for the Trails & Tales Update. The Sniffer
+is a unique passive mob that can find ancient seeds, breed, and has baby-to-adult growth.
+Players can interact with Sniffers to breed them or shear them for eggs. 

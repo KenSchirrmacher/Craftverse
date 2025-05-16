@@ -1,4 +1,4 @@
-// Mob Manager - handles spawning, updating, and interactions with all mobsconst passiveMobs = require('./passiveMobs');const neutralMobs = require('./neutralMobs');const hostileMobs = require('./hostileMobs');const netherMobs = require('./netherMobs');const aquaticMobs = require('./aquaticMobs');const VillagerNPC = require('./villagerNPC');const ZombieVillager = require('./zombieVillager');const Warden = require('./warden');const { Frog, Tadpole } = require('./frogAndTadpole');const Allay = require('./allay');
+// Mob Manager - handles spawning, updating, and interactions with all mobsconst passiveMobs = require('./passiveMobs');const neutralMobs = require('./neutralMobs');const hostileMobs = require('./hostileMobs');const netherMobs = require('./netherMobs');const aquaticMobs = require('./aquaticMobs');const VillagerNPC = require('./villagerNPC');const ZombieVillager = require('./zombieVillager');const Warden = require('./warden');const { Frog, Tadpole } = require('./frogAndTadpole');const Allay = require('./allay');const Sniffer = require('./sniffer');
 
 class MobManager {
   constructor() {
@@ -27,6 +27,7 @@ class MobManager {
       'frog': Frog,
       'tadpole': Tadpole,
       'allay': Allay,
+      'sniffer': Sniffer,
       
       // Neutral mobs
       'wolf': neutralMobs.Wolf,
