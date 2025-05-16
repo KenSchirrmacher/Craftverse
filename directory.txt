@@ -52,6 +52,7 @@
 - server/items/specialArrows.js - Implementation of special arrow types like tipped arrows
 - server/items/itemRegistry.js - Central registry for all items in the game
 - server/items/boatItem.js - Implementation of boat items, including boats with chests for the Wild Update
+- server/items/netheriteUpgradeTemplate.js - Implementation of the smithing template required for upgrading diamond equipment to netherite in the 1.20 update
 
 ### Blocks
 - server/blocks/amethystBlock.js - Implementation of amethyst block and amethyst cluster growth
@@ -160,6 +161,8 @@
 - server/tests/boatWithChestTest.js - Tests for Boat with Chest implementation, inventory system, and item drop mechanics
 - server/tests/runBoatWithChestTest.js - Test runner for Boat with Chest tests
 - server/tests/chiseledBookshelfTest.js - Tests for the Chiseled Bookshelf implementation
+- server/tests/netheriteUpgradeTemplateTest.js - Tests for the Netherite Upgrade Template implementation
+- server/tests/runNetheriteUpgradeTemplateTest.js - Test runner for the Netherite Upgrade Template tests
 
 ## Client
 - public/index.html - Main client page

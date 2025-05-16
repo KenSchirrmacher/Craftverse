@@ -2188,3 +2188,172 @@ Implementing 1.20 Update, which includes:
   - [ ] Template item implementation
   - [ ] Smithing table integration
   - [ ] Upgrade mechanics
+
+### 2024-08-18: 1.20 Update - Bamboo Wood Set Implementation Completion ###
+
+I have successfully completed the implementation of the Bamboo Wood Set for the 1.20 Update. Here's a summary of the implemented features:
+
+1. **Bamboo Blocks Implementation**:
+   - Created comprehensive block types for bamboo wood variants
+   - Implemented special properties unique to bamboo blocks
+   - Added proper textures and models for all block types
+   - Integrated with the block registry system
+
+2. **Bamboo Items Implementation**:
+   - Created BambooItem for the base bamboo plant item
+   - Implemented BambooRaftItem extending from BoatItem
+   - Created bamboo sign, button, and pressure plate items
+   - Added crafting recipes for all bamboo items
+
+3. **Bamboo Crafting Recipes**:
+   - Added recipes for converting bamboo to blocks
+   - Added recipes for bamboo planks and mosaic
+   - Added recipes for bamboo furniture and decorative items
+   - Added recipes for bamboo rafts and signs
+
+4. **Bamboo Biome Integration**:
+   - Created BambooJungleBiome class extending from JungleBiome
+   - Added higher bamboo density for bamboo jungle biomes
+   - Updated biome registry to include the new biome type
+   - Added appropriate vegetation and features to the biome
+
+5. **Bamboo World Generation**:
+   - Created bambooGeneration.js to handle bamboo plant generation
+   - Implemented bamboo cluster generation in jungle biomes
+   - Added higher density generation in bamboo jungle biomes
+   - Created integrateBamboo.js to connect with the world generator
+
+6. **Testing**:
+   - Created bambooBlocksTest.js to test block functionality
+   - Created runBambooBlocksTest.js to run the block tests
+   - Created bambooGenerationTest.js to test bamboo world generation
+   - Created runBambooGenerationTest.js to run the generation tests
+   - All tests are passing, confirming proper functionality
+
+The bamboo wood set is now fully functional and integrated into the game. Players can:
+- Collect bamboo from jungle and bamboo jungle biomes
+- Craft bamboo into blocks, planks, and other decorative items
+- Build structures using bamboo blocks with unique visual style
+- Create and use bamboo rafts for water transportation
+- Enjoy bamboo-specific mechanics and properties
+
+With this implementation, we have successfully completed the first major feature of the 1.20 Update.
+
+Next, we'll focus on implementing full Raft support, including base raft implementation, bamboo raft variants, and chest raft variants.
+
+### Current Issue Being Fixed ###
+The Cherry Grove biome tests were failing with: "AssertionError [ERR_ASSERTION]: Stripped cherry log should be registered". 
+
+To fix this issue:
+1. Created a dedicated StrippedCherryLog class that extends LogBlock with proper properties
+2. Updated blockRegistry.js to import and register the StrippedCherryLog class properly
+3. Updated tests to explicitly check for stripped cherry log properties
+4. All tests now pass successfully, confirming the Cherry Grove biome is fully implemented
+
+The issue was that we were previously passing the stripped cherry log as an option to CherryLog, but the test was expecting it to be a fully registered block of its own class. With the implementation of a dedicated StrippedCherryLog class, all tests now pass.
+
+### 2024-08-19: Fix for Cherry Blossom Biome Tests ###
+
+The Cherry Grove biome tests were failing with: "AssertionError [ERR_ASSERTION]: Stripped cherry log should be registered". 
+
+To fix this issue:
+1. Created a dedicated StrippedCherryLog class that extends LogBlock with proper properties
+2. Updated blockRegistry.js to import and register the StrippedCherryLog class properly
+3. Updated tests to explicitly check for stripped cherry log properties
+4. All tests now pass successfully, confirming the Cherry Grove biome is fully implemented
+
+The issue was that we were previously passing the stripped cherry log as an option to CherryLog, but the test was expecting it to be a fully registered block of its own class. With the implementation of a dedicated StrippedCherryLog class, all tests now pass.
+
+### 2024-08-19: Fixed Cherry Blossom Biome Implementation ###
+
+The Cherry Grove biome tests were failing with: "AssertionError [ERR_ASSERTION]: Stripped cherry log should be registered". To fix this issue, I:
+
+1. Created a dedicated StrippedCherryLog class that extends LogBlock with proper properties
+2. Updated blockRegistry.js to import and register the StrippedCherryLog class properly
+3. Updated tests to explicitly check for stripped cherry log properties
+4. All tests now pass successfully, confirming the Cherry Grove biome is fully implemented
+
+The issue was that we were previously passing the stripped cherry log as an option to CherryLog, but the test was expecting it to be a fully registered block of its own class. With the implementation of a dedicated StrippedCherryLog class, all tests now pass.
+
+The Cherry Blossom biome is now fully implemented with the following components:
+- Cherry Grove biome with pink aesthetic and special ground coverage
+- Cherry trees with distinctive curved branches and hanging leaves
+- Cherry wood blocks (logs, stripped logs) with proper axe interaction
+- Cherry leaves with falling petal particles
+- Cherry saplings with proper growth mechanics
+- Integration with world generation through proper Feature registry
+- Comprehensive tests for all components
+
+Next, I'll be implementing the Rafts feature for the 1.20 Update.
+
+### 2024-08-19: Implemented Raft System for 1.20 Update ###
+
+The raft implementation is now complete with all necessary features:
+
+1. Created Raft entity:
+   - Based on existing Boat entity but with custom physics and properties
+   - Support for all wood types including bamboo
+   - Passenger support (max 2 passengers)
+   - Custom buoyancy and physics properties
+
+2. Created RaftItem for placing rafts:
+   - Support for all wood types
+   - Regular and chest variants
+   - Added use functionality for placement in water
+
+3. Created BambooRaftItem with bamboo-specific properties:
+   - Higher speed than traditional rafts
+   - Different appearance and physics properties
+   - Support for chest variants
+
+4. Updated entity factory to handle all raft types:
+   - Support for different wood types
+   - Support for chest variants
+
+5. Updated item registry to register all raft variants:
+   - All wood types (oak, spruce, birch, jungle, acacia, dark_oak, mangrove)
+   - Both regular and chest variants for each wood type
+
+6. Created tests for all raft components:
+   - Entity property tests
+   - Item property tests
+   - Registration tests
+   - Functionality tests
+
+The Raft feature is now complete and marked as [COMPLETED] in the project.txt file.
+
+The next task is to implement the Netherite upgrade template for the 1.20 Update.
+
+### 2024-08-19: Implementing Netherite Upgrade Template for 1.20 Update ###
+
+After completing the Raft system, the next feature to implement is the Netherite upgrade template for the 1.20 Update. In Minecraft 1.20, upgrading diamond gear to netherite now requires a specific smithing template item, rather than using just a netherite ingot directly.
+
+Current status:
+1. We already have a SmithingTable class implementation
+2. We have netherite items and recipes implemented
+3. We have armor trims implemented using a template-based system
+4. The current smithing system allows direct diamond-to-netherite upgrades without a template
+
+Plan to implement Netherite upgrade template:
+1. Create a new NetheriteUpgradeTemplate class that extends Item:
+   - Similar structure to ArmorTrimItem but for netherite upgrades
+   - Specific properties and methods for netherite upgrade functionality
+   - JSON serialization/deserialization support
+
+2. Update the SmithingTable class:
+   - Modify the process method to require a template for netherite upgrades
+   - Update existing diamond-to-netherite recipes to use the template
+   - Ensure backward compatibility for existing tests if needed
+
+3. Create appropriate item registration for the template:
+   - Register the template in itemRegistry.js
+   - Add appropriate crafting recipes for the template
+   - Define loot table entries for finding the template
+
+4. Create comprehensive tests:
+   - Test NetheriteUpgradeTemplate class properties
+   - Test smithing table integration with template requirement
+   - Test upgrading all armor and tool types
+   - Test property transfer when upgrading
+
+I'll start by creating the NetheriteUpgradeTemplate class and then modify the SmithingTable to work with this new template.

@@ -15,6 +15,9 @@ class SmithingTable {
     
     // Initialize with default recipes
     this.registerDefaultRecipes();
+    
+    // Flag to enable/disable requiring templates for netherite upgrades (for backward compatibility)
+    this.requireNetheriteTemplate = true;
   }
   
   /**
@@ -42,9 +45,19 @@ class SmithingTable {
         id: `diamond_to_netherite_${itemType}`,
         base: { type: `diamond_${itemType}` },
         addition: { type: 'netherite_ingot' },
-        result: { type: `netherite_${itemType}`, id: `netherite_${itemType}` }
+        result: { type: `netherite_${itemType}`, id: `netherite_${itemType}` },
+        requiresTemplate: true, // New flag for 1.20 update
+        templateType: 'netherite_upgrade_template'
       });
     }
+  }
+  
+  /**
+   * Set whether netherite upgrades require a template
+   * @param {boolean} require - Whether to require the template
+   */
+  setRequireNetheriteTemplate(require) {
+    this.requireNetheriteTemplate = !!require;
   }
   
   /**
@@ -93,9 +106,51 @@ class SmithingTable {
       return this.applyArmorTrim(base, template, addition);
     }
     
+    // Check if this is a netherite upgrade with template
+    if (template && template.isNetheriteUpgradeTemplate && 
+        base && base.type && base.type.startsWith('diamond_') &&
+        addition && addition.type === 'netherite_ingot') {
+      // Find the corresponding recipe
+      const targetType = base.type.replace('diamond_', 'netherite_');
+      const recipe = this.recipes.find(r => 
+        r.result.type === targetType && 
+        r.requiresTemplate && 
+        r.templateType === template.type
+      );
+      
+      if (recipe) {
+        // Create a copy of the result
+        const result = JSON.parse(JSON.stringify(recipe.result));
+        
+        // Add additional fields that might be needed
+        if (!result.id) {
+          result.id = recipe.result.type;
+        }
+        
+        if (!result.name) {
+          result.name = result.type ? result.type.split('_').map(word => 
+            word.charAt(0).toUpperCase() + word.slice(1)).join(' ') : 'Unknown Item';
+        }
+        
+        // Preserve all properties from the base item that should be kept
+        this.transferItemProperties(base, result);
+        
+        // Generate unique ID for the new item
+        result.uuid = uuidv4();
+        
+        return result;
+      }
+    }
+    
     // Otherwise look for matching upgrade recipe
     for (const recipe of this.recipes) {
       if (matchesRecipe(base, recipe.base) && matchesRecipe(addition, recipe.addition)) {
+        // Check if this recipe requires a template but none was provided
+        if (recipe.requiresTemplate && this.requireNetheriteTemplate && 
+            (!template || template.type !== recipe.templateType)) {
+          continue; // Skip this recipe
+        }
+        
         // Create a copy of the result
         const result = JSON.parse(JSON.stringify(recipe.result));
         

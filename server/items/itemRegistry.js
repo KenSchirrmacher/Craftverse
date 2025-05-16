@@ -21,6 +21,7 @@ const PotBase = require('./potBase');
 const DecoratedPotItem = require('./decoratedPotItem');
 const HangingSignItem = require('./hangingSignItem');
 const ChiseledBookshelfItem = require('./chiseledBookshelfItem');
+const { NetheriteUpgradeTemplate } = require('./netheriteUpgradeTemplate');
 // Import bamboo items
 const { BambooItem, BambooSignItem, BambooButtonItem, BambooPressurePlateItem } = require('./bambooItem');
 const BambooRaftItem = require('./bambooRaftItem');
@@ -250,6 +251,9 @@ class ItemRegistry {
     
     // Register Chiseled Bookshelf Item
     this.registerItem(new ChiseledBookshelfItem());
+    
+    // Register Netherite Upgrade Template
+    this.registerItem(new NetheriteUpgradeTemplate());
   }
   
   /**

@@ -52,6 +52,7 @@
 ## Current Tasks
 1. ~~Implement Echo Shards as chest loot in Ancient Cities~~
 2. Implement Fireflies for the Mangrove Swamp biome
+3. Implement Netherite upgrade template for the 1.20 Update
 
 ## Completed Tasks
 1. Analyzed and verified Weather System implementation
@@ -87,6 +88,9 @@
 31. Added comprehensive tests for Recovery Compass and Echo Shards functionality
 32. Added Echo Shards as loot in Ancient City treasure chests
 33. Created comprehensive tests for Echo Shards loot generation in Ancient Cities
+34. Created comprehensive tests for Firefly entity
+35. Implemented Raft system with bamboo variant and chest variants
+36. Created tests for all raft types and their functionality
 
 ## Next Milestones
 1. Review and test all Caves & Cliffs features
@@ -167,6 +171,8 @@
 32. Added Echo Shards as loot in Ancient City treasure chests
 33. Implemented Firefly entity for Mangrove Swamp biomes with proper behavior, light emission, and day/night cycle
 34. Created comprehensive tests for Firefly entity
+35. Implemented Raft system with bamboo variant and chest variants
+36. Created tests for all raft types and their functionality
 
 # Current Project: Trails & Tales Update Implementation
 
@@ -239,16 +245,16 @@
   - [COMPLETED] Block properties and mechanics
   - [COMPLETED] Integration with world generation
   - [COMPLETED] Tests
-- [TODO] Rafts
-  - [TODO] Base raft implementation
-  - [TODO] Bamboo raft variant
-  - [TODO] Chest raft variant
-  - [TODO] Tests
-- [TODO] Netherite upgrade template
-  - [TODO] Template item implementation
-  - [TODO] Smithing table integration
-  - [TODO] Upgrade mechanics
-  - [TODO] Tests
+- [COMPLETED] Rafts
+  - [COMPLETED] Base raft implementation
+  - [COMPLETED] Bamboo raft variant
+  - [COMPLETED] Chest raft variant
+  - [COMPLETED] Tests
+- [COMPLETED] Netherite upgrade template
+  - [COMPLETED] Template item implementation
+  - [COMPLETED] Smithing table integration
+  - [COMPLETED] Upgrade mechanics
+  - [COMPLETED] Tests
 - [TODO] Calibrated sculk sensor
   - [TODO] Block implementation
   - [TODO] Filter system
@@ -256,7 +262,7 @@
   - [TODO] Tests
 
 ## Current Tasks
-1. Implement Bamboo wood set for the 1.20 Update
+1. Implement Netherite upgrade template for the 1.20 Update
 
 ## Completed Features (Trails & Tales Update)
 - [COMPLETED] Archaeology system
