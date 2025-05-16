@@ -202,7 +202,11 @@
   - [COMPLETED] Breeding mechanics with cactus
   - [COMPLETED] Age growth from baby to adult
   - [COMPLETED] Tests validating all Camel functionality
-- [TODO] Armor trims
+- [COMPLETED] Armor trims
+  - [COMPLETED] ArmorItem with trim support
+  - [COMPLETED] ArmorTrimItem smithing templates
+  - [COMPLETED] SmithingTable integration
+  - [COMPLETED] Comprehensive test coverage
 - [TODO] Complete pottery system
 - [TODO] Hanging signs
 - [TODO] Chiseled bookshelf

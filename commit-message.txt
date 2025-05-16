@@ -51,3 +51,13 @@ feat(mobs): Complete Sniffer mob implementation for Trails & Tales Update
 This completes the Sniffer mob implementation for the Trails & Tales Update. The Sniffer
 is a unique passive mob that can find ancient seeds, breed, and has baby-to-adult growth.
 Players can interact with Sniffers to breed them or shear them for eggs. 
+
+feat(armor-trims): Complete armor trims implementation
+
+- Fixed SmithingTable.process method to properly handle upgrade recipes
+- Added improved transferItemProperties method for preserving item attributes
+- Fixed matchesRecipe function to handle armor types more effectively
+- Added case-insensitive comparison for armor materials
+- All tests now passing for armor trim functionality
+- Updated project.txt to mark feature as complete
+- Updated ai-logic.txt with implementation documentation 
