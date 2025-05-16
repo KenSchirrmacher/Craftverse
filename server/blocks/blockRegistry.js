@@ -28,6 +28,7 @@ const MangroveLeavesBlock = require('./mangroveLeavesBlock');
 const MangroveRootsBlock = require('./mangroveRootsBlock');
 const MangrovePropaguleBlock = require('./mangrovePropaguleBlock');
 const CherryLog = require('./cherryLog');
+const StrippedCherryLog = require('./strippedCherryLog');
 const CherryLeaves = require('./cherryLeaves');
 const CherrySapling = require('./cherrySapling');
 const DecoratedPot = require('./decoratedPot');
@@ -183,7 +184,7 @@ class BlockRegistry {
     
     // Register Cherry Blossom blocks (Trails & Tales Update)
     this.registerBlock(new CherryLog());
-    this.registerBlock(new CherryLog({ id: 'stripped_cherry_log', name: 'Stripped Cherry Log', stripped: true }));
+    this.registerBlock(new StrippedCherryLog());
     this.registerBlock(new CherryLeaves());
     this.registerBlock(new CherrySapling());
     

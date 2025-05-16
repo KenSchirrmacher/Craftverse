@@ -154,6 +154,11 @@ function testCherryBlocks() {
   assert.strictEqual(cherryLog.name, 'Cherry Log', 'Cherry log should have correct name');
   assert.strictEqual(cherryLog.woodType, 'cherry', 'Cherry log should have correct wood type');
   
+  const strippedCherryLog = blockRegistry.getBlock('stripped_cherry_log');
+  assert.strictEqual(strippedCherryLog.name, 'Stripped Cherry Log', 'Stripped cherry log should have correct name');
+  assert.strictEqual(strippedCherryLog.woodType, 'cherry', 'Stripped cherry log should have correct wood type');
+  assert.strictEqual(strippedCherryLog.stripped, true, 'Stripped cherry log should have stripped property set to true');
+  
   const cherryLeaves = blockRegistry.getBlock('cherry_leaves');
   assert.strictEqual(cherryLeaves.name, 'Cherry Leaves', 'Cherry leaves should have correct name');
   assert.strictEqual(cherryLeaves.color, '#ffb7c5', 'Cherry leaves should have pink color');
