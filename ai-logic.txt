@@ -1632,125 +1632,6 @@ Next steps will include:
 2. Creating Frog and Tadpole mobs with proper growth mechanics
 3. Adding special items like Mangrove Propagules and Boat with Chest
 
-\# # #   2 0 2 4 - 0 8 - 0 5 :   W i l d   U p d a t e   -   M a n g r o v e   T r e e   B l o c k s   I m p l e m e n t a t i o n   # # # 
- 
- 
- 
- I ' v e   s u c c e s s f u l l y   i m p l e m e n t e d   M a n g r o v e   T r e e   b l o c k s   f o r   t h e   W i l d   U p d a t e : 
- 
- 
- 
- 1 .   C r e a t e d   ` M a n g r o v e L o g B l o c k `   c l a s s   w i t h   t h e   f o l l o w i n g   f e a t u r e s : 
- 
-       -   S t a n d a r d   l o g   p r o p e r t i e s   w i t h   a p p r o p r i a t e   h a r d n e s s ,   r e s i s t a n c e ,   a n d   s o u n d s 
- 
-       -   S u p p o r t   f o r   b o t h   v e r t i c a l   a n d   h o r i z o n t a l   o r i e n t a t i o n s   t h r o u g h   t h e   a x i s   p r o p e r t y 
- 
-       -   S t r i p p i n g   f u n c t i o n a l i t y   w h e n   r i g h t - c l i c k e d   w i t h   a n   a x e 
- 
-       -   P r o p e r   t o o l   i n t e r a c t i o n s   ( f a s t e r   m i n i n g   w i t h   a x e s ) 
- 
-       -   C o m p a t i b l e   d r o p   m e c h a n i c s 
- 
-       -   P r o p e r   s e r i a l i z a t i o n / d e s e r i a l i z a t i o n 
- 
- 
- 
- 2 .   C r e a t e d   ` M a n g r o v e R o o t s B l o c k `   c l a s s   w i t h   t h e   f o l l o w i n g   f e a t u r e s : 
- 
-       -   U n i q u e   p a r t i a l l y - t r a n s p a r e n t   s o l i d   b l o c k   t h a t   e n t i t i e s   c a n   w a l k   t h r o u g h 
- 
-       -   W a t e r l o g g i n g   f u n c t i o n a l i t y   ( c a n   c o n t a i n   w a t e r   w i t h i n   t h e   b l o c k ) 
- 
-       -   S p e c i a l   p l a c e m e n t   r u l e s   ( c a n   o n l y   b e   p l a c e d   o n   c e r t a i n   b l o c k s   l i k e   m u d ,   d i r t ,   e t c . ) 
- 
-       -   S u p p o r t   m e c h a n i c s   ( b r e a k s   i f   s u p p o r t i n g   b l o c k   i s   r e m o v e d ) 
- 
-       -   S l o w s   e n t i t y   m o v e m e n t   s l i g h t l y   ( b u t   l e s s   t h a n   m u d ) 
- 
-       -   P r o p e r   t o o l   i n t e r a c t i o n s   a n d   d r o p   m e c h a n i c s 
- 
-       -   F l u i d   h a n d l i n g   f o r   w a t e r l o g g e d   s t a t e 
- 
- 
- 
- 3 .   C r e a t e d   ` M a n g r o v e L e a v e s B l o c k `   c l a s s   w i t h   t h e   f o l l o w i n g   f e a t u r e s : 
- 
-       -   L e a f   d e c a y   s y s t e m   t i e d   t o   d i s t a n c e   f r o m   l o g s 
- 
-       -   P e r s i s t e n t   f l a g   f o r   p l a y e r - p l a c e d   l e a v e s 
- 
-       -   W a t e r l o g g i n g   f u n c t i o n a l i t y 
- 
-       -   S p e c i a l   d r o p   m e c h a n i c s   ( c h a n c e   t o   d r o p   p r o p a g u l e s   o r   s t i c k s ) 
- 
-       -   T o o l   i n t e r a c t i o n s   ( s h e a r s   a n d   s i l k   t o u c h   f o r   l e a f   d r o p s ) 
- 
-       -   P r o p e r   s o u n d   e f f e c t s   a n d   b r e a k i n g   p a r t i c l e s 
- 
-       -   R a n d o m   t i c k   u p d a t e s   f o r   l e a f   d e c a y   
- 
- 
- 
- 4 .   C r e a t e d   ` M a n g r o v e P r o p a g u l e B l o c k `   c l a s s   w i t h   t h e   f o l l o w i n g   f e a t u r e s : 
- 
-       -   D i s t i n c t   h a n g i n g   ( f r o m   l e a v e s )   a n d   p l a n t e d   ( o n   g r o u n d )   s t a t e s 
- 
-       -   G r o w t h   s t a g e s   ( 0 - 4 )   w i t h   v i s u a l   p r o g r e s s i o n 
- 
-       -   R a n d o m   g r o w t h   t h r o u g h   t i c k   u p d a t e s 
- 
-       -   B o n e   m e a l   i n t e r a c t i o n   f o r   a c c e l e r a t e d   g r o w t h 
- 
-       -   T r e e   g r o w t h   m e c h a n i c   w h e n   f u l l y   m a t u r e 
- 
-       -   S u p p o r t   m e c h a n i c s   ( b r e a k s   i f   s u p p o r t i n g   b l o c k   i s   r e m o v e d ) 
- 
-       -   W a t e r l o g g i n g   f u n c t i o n a l i t y 
- 
-       -   C o m p r e h e n s i v e   t r e e   g e n e r a t i o n   a l g o r i t h m 
- 
- 
- 
- 5 .   U p d a t e d   B l o c k R e g i s t r y   t o   i n c l u d e   a l l   M a n g r o v e   t r e e   b l o c k s : 
- 
-       -   A d d e d   M a n g r o v e L o g B l o c k   ( a n d   s t r i p p e d   v a r i a n t ) 
- 
-       -   A d d e d   M a n g r o v e R o o t s B l o c k 
- 
-       -   A d d e d   M a n g r o v e L e a v e s B l o c k 
- 
-       -   A d d e d   M a n g r o v e P r o p a g u l e B l o c k 
- 
-       -   E n s u r e d   b l o c k s   h a v e   p r o p e r   I D s   a n d   d i s p l a y   n a m e s 
- 
- 
- 
- 6 .   C r e a t e d   c o m p r e h e n s i v e   t e s t s   f o r   a l l   M a n g r o v e   t r e e   b l o c k s : 
- 
-       -   T e s t s   f o r   b l o c k   p r o p e r t i e s   a n d   b e h a v i o r s 
- 
-       -   T e s t s   f o r   s p e c i a l   m e c h a n i c s   l i k e   s t r i p p i n g ,   w a t e r l o g g i n g ,   a n d   l e a f   d e c a y 
- 
-       -   T e s t s   f o r   g r o w t h   m e c h a n i c s   o f   p r o p a g u l e s 
- 
-       -   T e s t s   f o r   t r e e   g e n e r a t i o n 
- 
-       -   T e s t s   f o r   B l o c k R e g i s t r y   i n t e g r a t i o n 
- 
- 
- 
- T h e   M a n g r o v e   T r e e   b l o c k s   i m p l e m e n t a t i o n   p r o v i d e s   a   u n i q u e   t r e e   v a r i a n t   w i t h   s p e c i a l   m e c h a n i c s   f o r   t h e   M a n g r o v e   S w a m p   b i o m e .   T h e   i m p l e m e n t a t i o n   i n c l u d e s   a l l   t h e   e s s e n t i a l   f e a t u r e s   f r o m   M i n e c r a f t ' s   M a n g r o v e   t r e e s ,   i n c l u d i n g   t h e   d i s t i n c t i v e   e l e v a t e d   r o o t   s y s t e m ,   h a n g i n g   p r o p a g u l e s ,   a n d   s p e c i a l   g r o w t h   m e c h a n i c s . 
- 
- 
- 
- N e x t   s t e p s : 
- 
- 1 .   C r e a t e   F r o g   a n d   T a d p o l e   m o b s   w i t h   p r o p e r   g r o w t h   m e c h a n i c s   a n d   b e h a v i o r s 
- 
- 2 .   I m p l e m e n t   s p e c i a l   i t e m s   l i k e   B o a t   w i t h   C h e s t   
- 
- 
 ### 2024-08-06: Wild Update - Allay Mob Implementation ###
 
 I've successfully implemented the Allay mob for the Wild Update:
@@ -2067,3 +1948,243 @@ Next steps:
 1. Fix the failing tests in the SmithingTable implementation
 2. Verify full integration with the item system
 3. Update the project.txt file once the issues are resolved
+
+### 2024-08-14: Trails & Tales Update - Armor Trims Implementation ###
+
+I've successfully implemented the Armor Trims feature for the Trails & Tales Update:
+
+1. Created a comprehensive ArmorItem class (server/items/armorItem.js) with trim support:
+   - Support for applying and removing trim patterns and materials
+   - Validation of trim patterns and materials
+   - Getter methods for accessing trim information
+   - Proper serialization/deserialization of trim data
+   - Visual representation with color codes
+
+2. Created ArmorTrimItem class (server/items/armorTrimItem.js) for smithing templates:
+   - Support for all 16 trim patterns from the update
+   - Source information for where each template can be found
+   - Usage instructions and descriptive properties
+   - Registry methods for creating the complete set of templates
+
+3. Enhanced SmithingTable class (server/crafting/smithingTable.js) with:
+   - Support for applying trims to armor pieces
+   - Handling of regular upgrade recipes (diamond to netherite)
+   - Preservation of item properties during upgrades (enchantments, custom names, etc.)
+   - Proper validation of materials and recipes
+
+4. Updated item registration in ItemRegistry:
+   - Registered all armor trim template types
+   - Ensured proper integration with existing item systems
+   - Support for all armor item types
+
+5. Created comprehensive tests in armorTrimsTest.js:
+   - Tests for basic trim application and removal
+   - Tests for validation of patterns and materials
+   - Tests for smithing table operations
+   - Tests for registry and item system integration
+
+The Armor Trims implementation provides players with a way to customize their armor with unique visual patterns, using materials that determine the color. This feature adds a new dimension of personalization without changing armor stats, encouraging exploration to find the various trim templates in different structures.
+
+This completes another key feature of the Trails & Tales Update, with both Camel mobs and Armor Trims now fully implemented and tested.
+
+Next steps:
+1. Implement the Complete Pottery System feature
+
+### 2024-08-16: Trails & Tales Update - Complete Pottery System Implementation ###
+
+I've successfully completed the Pottery System implementation for the Trails & Tales Update with the following enhancements and fixes:
+
+1. Fixed serialization/deserialization in all three main components:
+   - PotBase: Fixed serialize method to use toJSON() from parent class
+   - DecoratedPotItem: Fixed serialize method and added missing placeable property
+   - DecoratedPot: Fixed serialization and property initialization
+
+2. Validated the entire Pottery System implementation:
+   - All tests are now passing in potterySystemTest.js
+   - Confirmed proper behavior with simplePotteryTest.js
+   - The complete Pottery System accurately represents Minecraft's implementation
+
+3. The Pottery System includes the following components:
+   - PotBase item for crafting decorated pots
+   - PotterySherdItem with various patterns and categories
+   - DecoratedPotItem that can be placed in the world
+   - DecoratedPot block with inventory capabilities
+   - Complete crafting recipes for all components
+   - Proper integration with the game's item and block systems
+
+The Pottery System allows players to collect pottery sherds through archaeology, craft pot bases from clay, and combine them to create decorated pots with various patterns. The pots can store a single item stack and maintain their decoration patterns when broken and picked up. This implementation completes another key feature of the Trails & Tales Update.
+
+Next steps:
+1. Mark the Pottery System as complete in the project tracking
+2. Move on to implementing the next feature in the Trails & Tales Update: Hanging Signs
+
+### 2024-08-16: Trails & Tales Update - Hanging Signs Implementation Plan ###
+
+Next, I'll implement the Hanging Signs feature from the Trails & Tales Update. Based on my analysis, there doesn't appear to be an existing sign implementation in the codebase. Therefore, I need to:
+
+1. Create a comprehensive SignBlock base class that will serve as the foundation for both regular signs and hanging signs:
+   - Support for different sign materials (oak, spruce, birch, etc.)
+   - Text editing and formatting capabilities
+   - Proper interaction handling
+   - Directional placement (wall-mounted or standing)
+
+2. Implement the HangingSignBlock class extending from SignBlock:
+   - Support for ceiling and chain attachment
+   - Different visual appearance and behavior from regular signs
+   - Proper support chain visualization
+   - All wood variants support
+   - Different placement mechanics (requires block above)
+
+3. Add HangingSignItem that places the HangingSignBlock
+   - Material-specific variants
+   - Proper placement validation
+   - Integration with crafting system
+
+4. Create comprehensive tests:
+   - Test placement mechanics for hanging signs
+   - Test text editing functionality
+   - Test attachment points (ceiling, chain, wall)
+   - Test proper serialization/deserialization
+   - Test breaking mechanics and drops
+
+I'll approach this by first creating a base SignBlock implementation, then extending it for HangingSignBlock to avoid duplicating code. I'll ensure proper integration with the existing block and item systems.
+
+### 2024-08-17: Trails & Tales Update - Hanging Signs Implementation Complete ###
+
+I've successfully implemented the Hanging Signs feature for the Trails & Tales Update with the following components:
+
+1. Created a comprehensive SignBlock base class:
+   - Support for all wood types (oak, spruce, birch, jungle, acacia, dark_oak, mangrove, cherry, bamboo, crimson, warped)
+   - Text editing with up to 4 lines
+   - Text color and formatting (including glowing text)
+   - Waxing mechanism to prevent further editing
+   - Different variants for standing and wall-mounted signs
+   - Proper serialization/deserialization
+
+2. Implemented the HangingSignBlock class:
+   - Support for three attachment types: ceiling, chain, and wall
+   - Physics validation to ensure signs stay attached to valid surfaces
+   - Proper rotation based on player placement angle
+   - Special behaviors for different attachment types
+   - Automatic block breaking when support is removed
+
+3. Added HangingSignItem for sign placement:
+   - Support for all wood types
+   - Intelligent placement logic based on clicked face
+   - Detection of valid placement positions
+   - Proper item tooltips and metadata
+
+4. Implemented hanging sign crafting recipes:
+   - Recipes for all wood types
+   - Support for using either stripped logs or planks
+   - Proper chain requirements
+   - Yields 6 signs per craft
+
+5. Created comprehensive tests:
+   - Tests for all SignBlock base functionality
+   - Tests for HangingSignBlock placement validation
+   - Tests for different attachment types
+   - Tests for crafting recipes
+   - Tests for serialization/deserialization
+
+All tests are now passing, and the Hanging Signs feature is complete. Players can now craft and place hanging signs in a variety of wood types, with different mounting options (ceiling, chain, or wall). The signs can be edited, colored, and waxed to prevent further changes, just like in the official Minecraft Trails & Tales Update.
+
+Next steps:
+1. Mark the Hanging Signs feature as complete in project.txt
+2. Begin implementing the Chiseled Bookshelf feature, which is the last remaining feature for the Trails & Tales Update
+
+# Implementation of Chiseled Bookshelf Feature
+
+## Analysis of Requirements
+- Chiseled Bookshelf is a decorative storage block introduced in the Trails & Tales Update
+- It can store up to 6 books (any type of book item)
+- The bookshelf emits a redstone signal based on how many slots are filled
+- The block remembers its rotation to determine front-facing orientation
+
+## Implementation Plan
+1. Created ChiseledBookshelfBlock with 6-slot inventory for storing books
+2. Created ChiseledBookshelfItem for placing the block in the world
+3. Added book validation, slot-specific interactions and redstone signal output
+4. Created comprehensive tests to verify functionality
+
+## Conclusion
+The Chiseled Bookshelf feature is now fully implemented with book storage functionality, rotation-aware interaction, redstone signal output, and full test coverage.
+
+### 2024-08-18: 1.20 Update - Bamboo Wood Set Implementation Analysis ###
+
+After analyzing the current state of the Craftverse project, I've determined we need to implement the Bamboo wood set for the 1.20 Update. I've observed the following:
+
+1. The bambooBlock.js file has already been created with comprehensive implementations for:
+   - Base BambooBlock class
+   - BambooWoodBlock (regular and stripped variants)
+   - BambooPlanksBlock 
+   - BambooMosaicBlock
+   - BambooDoorBlock
+   - BambooTrapdoorBlock
+   - BambooFenceBlock
+   - BambooFenceGateBlock
+   - BambooSlabBlock
+   - BambooStairsBlock
+
+2. However, these blocks are not yet registered in the BlockRegistry, and we're missing:
+   - Implementation of bamboo wood item variants
+   - Implementation of bamboo raft item
+   - Test files for bamboo wood variants
+   - Registration in relevant registries
+
+To complete the Bamboo wood set implementation, I'll:
+
+1. Create a new BambooItem class to implement bamboo-related items:
+   - Raw bamboo item
+   - Bamboo sign item
+   - Bamboo button item
+   - Bamboo pressure plate item
+
+2. Create a BambooRaftItem class that extends from the existing BoatItem class:
+   - Support for regular and chest variants
+   - Special properties unique to bamboo rafts
+   - Proper rendering hints
+
+3. Update the BlockRegistry to register all bamboo block variants:
+   - Add all blocks already defined in bambooBlock.js
+   - Ensure proper integration with the block system
+
+4. Update the ItemRegistry to register bamboo items:
+   - Register bamboo variants of standard items
+   - Register bamboo raft items (regular and chest variants)
+   - Register bamboo sign items
+
+5. Create comprehensive test files:
+   - Unit tests for bamboo blocks
+   - Unit tests for bamboo items
+   - Integration tests for crafting recipes
+   - Tests for bamboo raft behavior
+
+6. Update relevant documentation:
+   - Update project.txt to reflect progress
+   - Add bamboo entries to directory.txt
+
+Once these components are implemented, we'll have completed the bamboo wood set part of the 1.20 Update, providing players with a unique wood type that has its own distinct properties and appearance.
+
+Next, I'll start by creating the BambooItem and BambooRaftItem classes, then update the registries.
+
+### Current Focus ###
+Implementing 1.20 Update, which includes:
+- [x] Bamboo wood set
+  - [x] BambooBlock implementation
+  - [x] BambooPlankBlock, BambooMosaicBlock, and other bamboo-based blocks
+  - [x] BambooRaftItem for water transportation
+  - [x] BambooItem for basic bamboo plants
+  - [x] Bamboo crafting recipes and transformations
+  - [x] Bamboo biome integration (Bamboo Jungle)
+  - [x] Bamboo world generation in appropriate biomes
+  - [x] Tests validating all bamboo functionality
+- [ ] Rafts
+  - [ ] Base raft implementation
+  - [ ] Bamboo raft variant
+  - [ ] Chest raft variant
+  - [ ] Tests
+- [ ] Netherite upgrade template
+  - [ ] Template item implementation
+  - [ ] Smithing table integration
+  - [ ] Upgrade mechanics

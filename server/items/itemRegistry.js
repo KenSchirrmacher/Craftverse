@@ -21,6 +21,9 @@ const PotBase = require('./potBase');
 const DecoratedPotItem = require('./decoratedPotItem');
 const HangingSignItem = require('./hangingSignItem');
 const ChiseledBookshelfItem = require('./chiseledBookshelfItem');
+// Import bamboo items
+const { BambooItem, BambooSignItem, BambooButtonItem, BambooPressurePlateItem } = require('./bambooItem');
+const BambooRaftItem = require('./bambooRaftItem');
 
 class ItemRegistry {
   /**
@@ -179,6 +182,9 @@ class ItemRegistry {
     // Register Hanging Sign items
     this.registerHangingSignItems();
     
+    // Register Bamboo items for 1.20 Update
+    this.registerBambooItems();
+    
     // Future: Register more items (stone, dirt, etc.)
     
     // Register potion items
@@ -199,63 +205,60 @@ class ItemRegistry {
       this.registerItem(new BoatItem({ woodType, hasChest: false }));
     }
     
-    // Register boats with chests (Wild Update feature)
+    // Register chest boats
     for (const woodType of woodTypes) {
       this.registerItem(new BoatItem({ woodType, hasChest: true }));
     }
   }
   
   /**
-   * Register Wild Update items
+   * Register items for the Wild Update
    * @private
    */
   registerWildUpdateItems() {
-    // Register Recovery Compass and Echo Shard
+    // Register Recovery Compass
     this.registerItem(new RecoveryCompassItem());
-    this.registerItem(new EchoShardItem());
     
-    // Other Wild Update items...
+    // Register Echo Shards
+    this.registerItem(new EchoShardItem());
   }
   
   /**
-   * Register Trails & Tales Update items
+   * Register items for the Trails & Tales Update
    * @private
    */
   registerTrailsAndTalesItems() {
-    // Register Archaeology-related items
+    // Register Brush item for archaeology
     this.registerItem(new BrushItem());
     
-    // Register pottery sherds
+    // Register Pottery Sherd items
     this.registerSherdItems();
     
-    // Register armor trim templates
+    // Register Armor Trim Smithing Templates
     this.registerArmorTrimItems();
     
-    // Register basic armor items (for testing trims)
-    this.registerBasicArmorItems();
-    
-    // Register Chiseled Bookshelf item
+    // Register Chiseled Bookshelf Item
     this.registerItem(new ChiseledBookshelfItem());
   }
   
   /**
-   * Register all pottery sherd items
+   * Register pottery sherd items
    * @private
    */
   registerSherdItems() {
-    const patterns = [
+    const sherdTypes = [
       'angler', 'archer', 'arms_up', 'blade', 'brewer', 'burn', 'danger',
-      'explorer', 'friend', 'heart', 'heartbreak', 'howl', 'miner', 
-      'mourner', 'plenty', 'prize', 'sheaf', 'shelter', 'skull', 'snort'
+      'explorer', 'friend', 'heart', 'heartbreak', 'howl', 'miner', 'mourner',
+      'plenty', 'prize', 'sheaf', 'shelter', 'skull', 'snort'
     ];
     
-    for (const pattern of patterns) {
-      this.registerItem(new PotterySherdItem({ pattern }));
+    for (const type of sherdTypes) {
+      this.registerItem(new PotterySherdItem({ type }));
     }
   }
   
   /**
-   * Register all armor trim template items
+   * Register armor trim items
    * @private
    */
   registerArmorTrimItems() {
@@ -278,56 +281,55 @@ class ItemRegistry {
       'mangrove', 'cherry', 'bamboo', 'crimson', 'warped'
     ];
     
-    // Register hanging sign items for each wood type
+    // Register hanging sign items
     for (const woodType of woodTypes) {
-      this.registerItem(new HangingSignItem({ woodType }));
+      this.registerItem(new HangingSignItem({
+        woodType: woodType
+      }));
     }
   }
   
   /**
-   * Register basic armor items for testing
+   * Register bamboo items for the 1.20 Update
    * @private
    */
-  registerBasicArmorItems() {
-    // Register all armor pieces for each material for testing
-    const materials = [
-      ArmorMaterial.LEATHER,
-      ArmorMaterial.CHAINMAIL,
-      ArmorMaterial.IRON,
-      ArmorMaterial.GOLD,
-      ArmorMaterial.DIAMOND,
-      ArmorMaterial.NETHERITE
+  registerBambooItems() {
+    // Register basic bamboo item
+    this.registerItem(new BambooItem());
+    
+    // Register bamboo building items
+    this.registerItem(new BambooSignItem());
+    this.registerItem(new BambooButtonItem());
+    this.registerItem(new BambooPressurePlateItem());
+    
+    // Register door, slab, fence items
+    const blockItems = [
+      'bamboo_block', 'stripped_bamboo_block', 'bamboo_planks', 'bamboo_mosaic',
+      'bamboo_door', 'bamboo_trapdoor', 'bamboo_fence', 'bamboo_fence_gate',
+      'bamboo_slab', 'bamboo_mosaic_slab', 'bamboo_stairs', 'bamboo_mosaic_stairs'
     ];
     
-    const types = [
-      ArmorType.HELMET,
-      ArmorType.CHESTPLATE,
-      ArmorType.LEGGINGS,
-      ArmorType.BOOTS
-    ];
-    
-    for (const material of materials) {
-      for (const type of types) {
-        const materialName = material.toLowerCase();
-        const typeName = type.toLowerCase();
-        const itemName = `${materialName}_${typeName}`;
-        
-        const formattedMaterial = material.charAt(0) + material.slice(1).toLowerCase();
-        const formattedType = type.charAt(0) + type.slice(1).toLowerCase();
-        const displayName = `${formattedMaterial} ${formattedType}`;
-        
-        this.registerItem(new ArmorItem({
-          id: itemName,
-          name: displayName,
-          material: material,
-          type: type
-        }));
-      }
+    for (const blockId of blockItems) {
+      this.registerItem(new Item({
+        id: blockId,
+        type: blockId,
+        name: blockId.split('_')
+          .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+          .join(' '),
+        description: `A ${blockId.replace(/_/g, ' ')} for building.`,
+        stackable: true,
+        maxStackSize: 64,
+        placeable: true
+      }));
     }
+    
+    // Register bamboo raft items
+    this.registerItem(new BambooRaftItem({ hasChest: false }));
+    this.registerItem(new BambooRaftItem({ hasChest: true }));
   }
   
   /**
-   * Register pottery system items
+   * Register pottery items
    * @private
    */
   registerPotteryItems() {
@@ -339,10 +341,52 @@ class ItemRegistry {
   }
   
   /**
-   * Create a new item instance
-   * @param {string} type - Item type ID
-   * @param {Object} options - Additional item options
-   * @returns {Item|null} New item instance or null if type not found
+   * Register basic armor items
+   * @private
+   */
+  registerBasicArmorItems() {
+    // Register leather armor
+    const leatherPieces = [
+      { id: 'leather_helmet', name: 'Leather Helmet', type: ArmorType.HELMET },
+      { id: 'leather_chestplate', name: 'Leather Chestplate', type: ArmorType.CHESTPLATE },
+      { id: 'leather_leggings', name: 'Leather Leggings', type: ArmorType.LEGGINGS },
+      { id: 'leather_boots', name: 'Leather Boots', type: ArmorType.BOOTS }
+    ];
+    
+    for (const piece of leatherPieces) {
+      this.registerItem(new ArmorItem({
+        id: piece.id,
+        name: piece.name,
+        type: piece.type,
+        material: ArmorMaterial.LEATHER,
+        durability: 55
+      }));
+    }
+    
+    // Register iron armor
+    const ironPieces = [
+      { id: 'iron_helmet', name: 'Iron Helmet', type: ArmorType.HELMET },
+      { id: 'iron_chestplate', name: 'Iron Chestplate', type: ArmorType.CHESTPLATE },
+      { id: 'iron_leggings', name: 'Iron Leggings', type: ArmorType.LEGGINGS },
+      { id: 'iron_boots', name: 'Iron Boots', type: ArmorType.BOOTS }
+    ];
+    
+    for (const piece of ironPieces) {
+      this.registerItem(new ArmorItem({
+        id: piece.id,
+        name: piece.name,
+        type: piece.type,
+        material: ArmorMaterial.IRON,
+        durability: 165
+      }));
+    }
+  }
+  
+  /**
+   * Create an item instance by type
+   * @param {string} type - Item type
+   * @param {Object} options - Item options
+   * @returns {Item|null} Item instance or null if type not found
    */
   createItem(type, options = {}) {
     const itemType = this.getItem(type);
@@ -368,18 +412,14 @@ class ItemRegistry {
   }
 }
 
-/**
- * Default item classes needed by the registry
- * These would normally be imported from their own files
- */
+// Standard item types
 class SwordItem extends Item {
   constructor(options = {}) {
     super({
-      id: options.id || 'iron_sword',
-      name: options.name || 'Iron Sword',
+      id: 'sword',
+      name: 'Sword',
       type: 'sword',
-      durability: 250,
-      maxDurability: 250,
+      description: 'A basic sword for combat.',
       stackable: false,
       ...options
     });
@@ -389,11 +429,10 @@ class SwordItem extends Item {
 class PickaxeItem extends Item {
   constructor(options = {}) {
     super({
-      id: options.id || 'iron_pickaxe',
-      name: options.name || 'Iron Pickaxe',
+      id: 'pickaxe',
+      name: 'Pickaxe',
       type: 'pickaxe',
-      durability: 250,
-      maxDurability: 250,
+      description: 'A mining tool for breaking stone blocks.',
       stackable: false,
       ...options
     });
@@ -403,11 +442,10 @@ class PickaxeItem extends Item {
 class AxeItem extends Item {
   constructor(options = {}) {
     super({
-      id: options.id || 'iron_axe',
-      name: options.name || 'Iron Axe',
+      id: 'axe',
+      name: 'Axe',
       type: 'axe',
-      durability: 250,
-      maxDurability: 250,
+      description: 'A tool for chopping wood and combat.',
       stackable: false,
       ...options
     });
@@ -417,11 +455,10 @@ class AxeItem extends Item {
 class ShovelItem extends Item {
   constructor(options = {}) {
     super({
-      id: options.id || 'iron_shovel',
-      name: options.name || 'Iron Shovel',
+      id: 'shovel',
+      name: 'Shovel',
       type: 'shovel',
-      durability: 250,
-      maxDurability: 250,
+      description: 'A tool for digging dirt and similar blocks.',
       stackable: false,
       ...options
     });
@@ -431,15 +468,15 @@ class ShovelItem extends Item {
 class HoeItem extends Item {
   constructor(options = {}) {
     super({
-      id: options.id || 'iron_hoe',
-      name: options.name || 'Iron Hoe',
+      id: 'hoe',
+      name: 'Hoe',
       type: 'hoe',
-      durability: 250,
-      maxDurability: 250,
+      description: 'A farming tool for tilling soil.',
       stackable: false,
       ...options
     });
   }
 }
 
-module.exports = ItemRegistry; 
+// Export the registry
+module.exports = new ItemRegistry(); 

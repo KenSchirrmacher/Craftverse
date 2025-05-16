@@ -157,6 +157,9 @@ class CraftingManager {
     
     // Register Trails & Tales Update recipes
     this.registerTrailsAndTalesRecipes();
+    
+    // Register 1.20 Update recipes
+    this.register120UpdateRecipes();
   }
   
   /**
@@ -192,6 +195,17 @@ class CraftingManager {
     // Register hanging sign recipes
     const { registerHangingSignRecipes } = require('./hangingSignRecipes');
     registerHangingSignRecipes(this);
+  }
+  
+  /**
+   * Register 1.20 Update recipes
+   */
+  register120UpdateRecipes() {
+    // Register bamboo recipes
+    const { registerBambooRecipes } = require('./bambooRecipes');
+    registerBambooRecipes(this);
+    
+    // Future: Register other 1.20 update recipes
   }
 }
 

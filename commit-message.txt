@@ -61,3 +61,23 @@ feat(armor-trims): Complete armor trims implementation
 - All tests now passing for armor trim functionality
 - Updated project.txt to mark feature as complete
 - Updated ai-logic.txt with implementation documentation 
+
+Implement Chiseled Bookshelf feature
+
+This commit adds the Chiseled Bookshelf feature from the Trails & Tales Update:
+
+- Implemented ChiseledBookshelfBlock with:
+  - 6-slot inventory for book storage
+  - Slot-specific interaction
+  - Redstone signal output
+  - Rotation-aware front face
+  
+- Implemented ChiseledBookshelfItem for block placement
+
+- Added comprehensive tests in chiseledBookshelfTest.js
+
+- Updated block and item registries
+
+- Added documentation and updated project files
+
+All tests pass successfully. This completes the Chiseled Bookshelf feature for the Trails & Tales Update. 

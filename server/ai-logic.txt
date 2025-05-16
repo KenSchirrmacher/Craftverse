@@ -28,3 +28,4 @@ Next, I'll implement the Hanging Signs feature from the Trails & Tales Update. B
    - Test breaking mechanics and drops
 
 I'll approach this by first creating a base SignBlock implementation, then extending it for HangingSignBlock to avoid duplicating code. I'll ensure proper integration with the existing block and item systems.
+

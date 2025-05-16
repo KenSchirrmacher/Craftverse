@@ -10,6 +10,7 @@ const MountainsBiome = require('./mountainsBiome');
 const MountainGoatBiome = require('./mountainGoatBiome');
 const OceanBiome = require('./oceanBiome');
 const JungleBiome = require('./jungleBiome');
+const BambooJungleBiome = require('./bambooJungleBiome');
 const NetherWastesBiome = require('./netherWastesBiome');
 const SoulSandValleyBiome = require('./soulSandValleyBiome');
 const CrimsonForestBiome = require('./crimsonForestBiome');
@@ -45,6 +46,7 @@ class BiomeRegistry {
     const mountains = new MountainsBiome();
     const mountainGoat = new MountainGoatBiome();
     const jungle = new JungleBiome();
+    const bambooJungle = new BambooJungleBiome();
     
     // Register ocean variants
     const ocean = new OceanBiome();
@@ -73,6 +75,7 @@ class BiomeRegistry {
     this.registerBiome(mountains);
     this.registerBiome(mountainGoat);
     this.registerBiome(jungle);
+    this.registerBiome(bambooJungle);
     this.registerBiome(ocean);
     this.registerBiome(deepOcean);
     this.registerBiome(frozenOcean);

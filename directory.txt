@@ -88,6 +88,7 @@
 - server/blocks/sculkCatalystBlock.js - Implementation of sculk catalyst for spreading sculk
 - server/blocks/sculkSensorBlock.js - Implementation of sculk sensor with vibration detection
 - server/blocks/sculkShriekerBlock.js - Implementation of sculk shrieker for summoning the Warden
+- server/blocks/chiseledBookshelfBlock.js - Implementation of the Chiseled Bookshelf block for the Trails & Tales Update
 
 ### Biomes
 - server/biomes/baseBiome.js - Base class for all biomes
@@ -158,6 +159,7 @@
 - server/tests/runAllayTest.js - Test runner for Allay tests
 - server/tests/boatWithChestTest.js - Tests for Boat with Chest implementation, inventory system, and item drop mechanics
 - server/tests/runBoatWithChestTest.js - Test runner for Boat with Chest tests
+- server/tests/chiseledBookshelfTest.js - Tests for the Chiseled Bookshelf implementation
 
 ## Client
 - public/index.html - Main client page
@@ -168,4 +170,81 @@
 ## Core Files
 - ai-logic.txt - Tracks the development progress and implementation details
 - project.txt - Project tracking for current development focus
-- directory.txt - This file, listing all important files in the project 
+- directory.txt - This file, listing all important files in the project
+
+# Trails & Tales Update Files
+
+## server/archaeology/archaeologyManager.js
+This is the main manager for the archaeology system. It handles:
+- Archaeological site generation in the world
+- Excavation mechanics when players use brushes on suspicious blocks
+- Loot tables for different archaeological site types
+- Integration with the World class to handle brush interactions
+- Serialization/deserialization of archaeological sites
+
+## server/items/brushItem.js
+This is the implementation of the Brush tool used for archaeology:
+- Different brush types (wood, copper, iron, gold, netherite) with varying durabilities
+- Handling interaction with suspicious blocks to start excavation
+- Particle effects during brushing
+- Durability management
+
+## server/blocks/suspiciousBlocks.js
+This file contains implementations for suspicious blocks that can be excavated:
+- SuspiciousBlock: Base class with common functionality
+- SuspiciousSandBlock: Found in desert biomes
+- SuspiciousGravelBlock: Found in plains/mountains/river biomes
+- Logic for converting to normal blocks after excavation
+- Physics behavior (falling) consistent with base block types
+
+## server/items/potterySherdItem.js
+This implements pottery sherds, which are archaeological artifacts:
+- Various patterns for different sherds
+- Categorization (storytelling, decoration, etc.)
+- Crafting compatibility for pottery creation
+- Properties for display in inventory
+
+## server/world.js
+This is the main World class that integrates all world systems:
+- Block management
+- Entity management
+- Player interaction
+- Integration with archaeology system
+- Serialization/deserialization
+
+## server/tests/archaeologyTest.js
+This contains comprehensive tests for the archaeology system:
+- Unit tests for ArchaeologyManager
+- Unit tests for BrushItem
+- Unit tests for SuspiciousBlocks
+- Unit tests for PotterySherdItem
+- Integration tests for the complete excavation workflow
+
+## server/tests/runArchaeologyTest.js
+This is a simple runner script to execute the archaeology tests.
+
+## server/blocks/chiseledBookshelfBlock.js
+This file implements the Chiseled Bookshelf block for the Trails & Tales Update. It provides:
+- 6-slot inventory system for storing different types of books
+- Redstone signal output based on number of filled slots
+- Slot-specific interaction through player click positioning
+- Rotation-aware front face detection for interaction
+- Serialization/deserialization for persistent storage
+
+## server/items/chiseledBookshelfItem.js
+This file implements the Chiseled Bookshelf item that places the bookshelf block:
+- Places a ChiseledBookshelfBlock in the world
+- Sets the block's rotation based on player facing direction
+- Provides tooltip information about the block's capabilities
+
+## server/tests/chiseledBookshelfTest.js
+This file contains comprehensive tests for the Chiseled Bookshelf implementation:
+- Tests basic properties of the block and item
+- Tests book storage and retrieval functionality
+- Tests slot-specific interactions
+- Tests redstone signal output based on filled slots
+- Tests serialization and deserialization
+- Tests block breaking and item drops
+
+## server/chiseled-bookshelf-implementation.md
+Documentation file describing the implementation details of the Chiseled Bookshelf feature. 

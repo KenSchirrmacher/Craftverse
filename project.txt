@@ -207,6 +207,63 @@
   - [COMPLETED] ArmorTrimItem smithing templates
   - [COMPLETED] SmithingTable integration
   - [COMPLETED] Comprehensive test coverage
-- [TODO] Complete pottery system
-- [TODO] Hanging signs
-- [TODO] Chiseled bookshelf
+- [COMPLETED] Complete pottery system
+  - [COMPLETED] PotBase item implementation
+  - [COMPLETED] DecoratedPotItem with sherd customization
+  - [COMPLETED] DecoratedPot block with inventory capability
+  - [COMPLETED] Crafting recipes for pottery combinations
+  - [COMPLETED] PotterySherdItem with various patterns
+  - [COMPLETED] Comprehensive test coverage
+- [COMPLETED] Hanging signs
+  - [COMPLETED] SignBlock base implementation
+  - [COMPLETED] HangingSignBlock implementation
+  - [COMPLETED] HangingSignItem for placement
+  - [COMPLETED] Multiple wood types support
+  - [COMPLETED] Multiple attachment types (ceiling, chain, wall)
+  - [COMPLETED] Crafting recipes for all variants
+  - [COMPLETED] Comprehensive test coverage
+- [COMPLETED] Chiseled bookshelf
+  - [COMPLETED] ChiseledBookshelfBlock implementation
+  - [COMPLETED] ChiseledBookshelfItem for placement
+  - [COMPLETED] Book storage functionality with 6 slots
+  - [COMPLETED] Redstone signal output based on filled slots
+  - [COMPLETED] Comprehensive test coverage
+
+# Current Project: 1.20 Update Implementation
+
+## Feature Status
+- [COMPLETED] Bamboo wood set
+  - [COMPLETED] Bamboo blocks (mosaic, planks)
+  - [COMPLETED] Bamboo items (raft, sign)
+  - [COMPLETED] Crafting recipes
+  - [COMPLETED] Block properties and mechanics
+  - [COMPLETED] Integration with world generation
+  - [COMPLETED] Tests
+- [TODO] Rafts
+  - [TODO] Base raft implementation
+  - [TODO] Bamboo raft variant
+  - [TODO] Chest raft variant
+  - [TODO] Tests
+- [TODO] Netherite upgrade template
+  - [TODO] Template item implementation
+  - [TODO] Smithing table integration
+  - [TODO] Upgrade mechanics
+  - [TODO] Tests
+- [TODO] Calibrated sculk sensor
+  - [TODO] Block implementation
+  - [TODO] Filter system
+  - [TODO] Redstone mechanics
+  - [TODO] Tests
+
+## Current Tasks
+1. Implement Bamboo wood set for the 1.20 Update
+
+## Completed Features (Trails & Tales Update)
+- [COMPLETED] Archaeology system
+- [COMPLETED] Sniffer mob
+- [COMPLETED] Cherry blossom biome
+- [COMPLETED] Camel mob
+- [COMPLETED] Armor trims
+- [COMPLETED] Complete pottery system
+- [COMPLETED] Hanging signs
+- [COMPLETED] Chiseled bookshelf

@@ -1,5 +1,7 @@
 const events = require('events');
 const ParticleSystem = require('../particles/particleSystem');
+const BiomeRegistry = require('../biomes/biomeRegistry');
+const { integrateBambooGeneration } = require('./integrateBamboo');
 
 class WorldGenerator extends events.EventEmitter {
   constructor(options = {}) {
@@ -15,26 +17,105 @@ class WorldGenerator extends events.EventEmitter {
     this.on('structureGenerated', (structure) => {
       console.log(`Structure generated: ${structure.type}`);
     });
+    
+    this.seed = options.seed || Math.floor(Math.random() * 2147483647);
+    this.noiseGenerators = options.noiseGenerators || {};
+    
+    // Register structure generators
+    this.structureGenerators = [];
+    
+    // Integrate bamboo generation
+    integrateBambooGeneration(this);
   }
   
   // ... existing methods
   
   /**
-   * Generate structures in a chunk
-   * @param {Object} chunk - Chunk data
+   * Generate chunk data
    * @param {number} chunkX - Chunk X coordinate
    * @param {number} chunkZ - Chunk Z coordinate
+   * @returns {Object} Generated chunk data
+   */
+  generateChunk(chunkX, chunkZ) {
+    // Create chunk object
+    const chunk = {
+      x: chunkX,
+      z: chunkZ,
+      blocks: []
+    };
+    
+    // Generate terrain
+    this.generateTerrain(chunk);
+    
+    // Generate structures
+    this.generateStructures(chunk, chunkX, chunkZ);
+    
+    // Generate ores
+    this.generateOres(chunk);
+    
+    // Generate caves
+    this.generateCaves(chunk);
+    
+    return chunk;
+  }
+  
+  /**
+   * Generate terrain for a chunk
+   * @param {Object} chunk - The chunk to generate terrain for
+   */
+  generateTerrain(chunk) {
+    // Placeholder for actual terrain generation logic
+    console.log(`Generating terrain for chunk (${chunk.x}, ${chunk.z})`);
+  }
+  
+  /**
+   * Generate structures for a chunk
+   * @param {Object} chunk - The chunk to generate structures for
+   * @param {number} chunkX - Chunk X coordinate
+   * @param {number} chunkZ - Chunk Z coordinate
+   * @returns {Array} List of generated structures
    */
   generateStructures(chunk, chunkX, chunkZ) {
-    // ... existing implementation
+    const structures = [];
     
-    // When a structure is successfully generated:
-    if (structure && structure.type) {
-      // Emit the structure generated event
-      this.emit('structureGenerated', structure);
+    // Run all structure generators
+    for (const generator of this.structureGenerators) {
+      const generated = generator.generate(chunk, chunkX, chunkZ, this.seed);
+      if (generated) {
+        structures.push(generated);
+      }
     }
     
     return structures;
+  }
+  
+  /**
+   * Generate ores for a chunk
+   * @param {Object} chunk - The chunk to generate ores for
+   */
+  generateOres(chunk) {
+    // Placeholder for actual ore generation logic
+    console.log(`Generating ores for chunk (${chunk.x}, ${chunk.z})`);
+  }
+  
+  /**
+   * Generate caves for a chunk
+   * @param {Object} chunk - The chunk to generate caves for
+   */
+  generateCaves(chunk) {
+    // Placeholder for actual cave generation logic
+    console.log(`Generating caves for chunk (${chunk.x}, ${chunk.z})`);
+  }
+  
+  /**
+   * Get the biome for a chunk
+   * @param {Object} chunk - The chunk to get the biome for
+   * @returns {Object} The biome for this chunk
+   */
+  getBiomeForChunk(chunk) {
+    // Placeholder for actual biome determination logic
+    // For now, just return the default biome
+    return BiomeRegistry.getDefaultBiome();
   }
   
   /**
@@ -144,4 +225,6 @@ class WorldGenerator extends events.EventEmitter {
   }
   
   // ... rest of the class
-} 
+}
+
+module.exports = WorldGenerator; 

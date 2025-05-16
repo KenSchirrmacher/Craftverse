@@ -34,6 +34,19 @@ const DecoratedPot = require('./decoratedPot');
 const SignBlock = require('./signBlock');
 const HangingSignBlock = require('./hangingSignBlock');
 const ChiseledBookshelfBlock = require('./chiseledBookshelfBlock');
+// Import bamboo blocks
+const { 
+  BambooBlock, 
+  BambooWoodBlock, 
+  BambooPlanksBlock, 
+  BambooMosaicBlock,
+  BambooDoorBlock,
+  BambooTrapdoorBlock,
+  BambooFenceBlock,
+  BambooFenceGateBlock,
+  BambooSlabBlock,
+  BambooStairsBlock
+} = require('./bambooBlock');
 
 class BlockRegistry {
   /**
@@ -183,6 +196,9 @@ class BlockRegistry {
     // Register Chiseled Bookshelf block (Trails & Tales Update)
     this.registerBlock(new ChiseledBookshelfBlock());
     
+    // Register Bamboo blocks (1.20 Update)
+    this.registerBambooBlocks();
+    
     // Future: Register vanilla blocks (stone, dirt, etc.)
     // this.registerBlock(new StoneBlock());
     // this.registerBlock(new DirtBlock());
@@ -200,43 +216,34 @@ class BlockRegistry {
       'mangrove', 'cherry', 'bamboo', 'crimson', 'warped'
     ];
     
-    // Register regular signs for each wood type
+    // Register sign blocks
     for (const woodType of woodTypes) {
-      const formattedWoodType = woodType.charAt(0).toUpperCase() + woodType.slice(1);
-      
-      // Register standing sign
+      // Standing sign
       this.registerBlock(new SignBlock({
-        id: `${woodType}_sign`,
-        name: `${formattedWoodType} Sign`,
         woodType,
         isWallSign: false
       }));
       
-      // Register wall sign variant
+      // Wall sign
       this.registerBlock(new SignBlock({
-        id: `${woodType}_wall_sign`,
-        name: `${formattedWoodType} Wall Sign`,
         woodType,
         isWallSign: true
       }));
-    }
-    
-    // Register hanging signs for each wood type (Trails & Tales feature)
-    for (const woodType of woodTypes) {
-      const formattedWoodType = woodType.charAt(0).toUpperCase() + woodType.slice(1);
       
-      // Register ceiling hanging sign
+      // Hanging sign
       this.registerBlock(new HangingSignBlock({
-        id: `${woodType}_hanging_sign`,
-        name: `${formattedWoodType} Hanging Sign`,
         woodType,
         attachmentType: 'ceiling'
       }));
       
-      // Register wall hanging sign variant
+      // Chain hanging sign
       this.registerBlock(new HangingSignBlock({
-        id: `${woodType}_wall_hanging_sign`,
-        name: `${formattedWoodType} Wall Hanging Sign`,
+        woodType,
+        attachmentType: 'chain'
+      }));
+      
+      // Wall hanging sign
+      this.registerBlock(new HangingSignBlock({
         woodType,
         attachmentType: 'wall'
       }));
@@ -244,34 +251,76 @@ class BlockRegistry {
   }
   
   /**
-   * Create a new block instance
-   * @param {string} type - Block type ID
-   * @param {Object} options - Additional block options
-   * @returns {Block|null} New block instance or null if type not found
+   * Register bamboo blocks for the 1.20 Update
+   * @private
+   */
+  registerBambooBlocks() {
+    // Register base bamboo blocks
+    this.registerBlock(new BambooWoodBlock());
+    this.registerBlock(new BambooWoodBlock({ stripped: true }));
+    this.registerBlock(new BambooPlanksBlock());
+    this.registerBlock(new BambooMosaicBlock());
+    
+    // Register bamboo building blocks
+    this.registerBlock(new BambooDoorBlock());
+    this.registerBlock(new BambooTrapdoorBlock());
+    this.registerBlock(new BambooFenceBlock());
+    this.registerBlock(new BambooFenceGateBlock());
+    
+    // Register bamboo decorative blocks
+    this.registerBlock(new BambooSlabBlock()); // Regular bamboo slab
+    this.registerBlock(new BambooSlabBlock({ type: 'mosaic' })); // Bamboo mosaic slab
+    this.registerBlock(new BambooStairsBlock()); // Regular bamboo stairs
+    this.registerBlock(new BambooStairsBlock({ type: 'mosaic' })); // Bamboo mosaic stairs
+    
+    // Register bamboo buttons and pressure plates
+    this.registerBlock(new Block({
+      id: 'bamboo_button',
+      name: 'Bamboo Button',
+      material: 'wood',
+      hardness: 0.5,
+      toolType: 'axe',
+      solid: false,
+      transparent: true,
+      textures: {
+        all: 'blocks/bamboo_planks'
+      }
+    }));
+    
+    this.registerBlock(new Block({
+      id: 'bamboo_pressure_plate',
+      name: 'Bamboo Pressure Plate',
+      material: 'wood',
+      hardness: 0.5,
+      toolType: 'axe',
+      solid: false,
+      transparent: true,
+      textures: {
+        all: 'blocks/bamboo_planks'
+      }
+    }));
+  }
+  
+  /**
+   * Create a block instance by type
+   * @param {string} type - Block type
+   * @param {Object} options - Block options
+   * @returns {Block|null} Block instance or null if type not found
    */
   createBlock(type, options = {}) {
-    const blockType = this.getBlock(type);
-    if (!blockType) {
-      console.error(`Block type '${type}' not found`);
-      return null;
-    }
+    if (!type) return null;
     
-    // Create a new instance of this block type
-    // Use the static fromJSON if available, otherwise use constructor
-    if (typeof blockType.constructor.fromJSON === 'function') {
-      return blockType.constructor.fromJSON({
-        ...blockType.toJSON(),
-        ...options
-      });
-    }
+    // Get block class from registry
+    const blockClass = this.blocks.get(type);
+    if (!blockClass) return null;
     
-    // Default to creating a new instance with merged options
-    return new blockType.constructor({
-      ...blockType,
-      ...options
-    });
+    // Create a new instance with the same properties
+    const newBlock = Object.create(blockClass);
+    Object.assign(newBlock, blockClass, options);
+    
+    return newBlock;
   }
 }
 
-// Export the registry
+// Export singleton instance
 module.exports = new BlockRegistry(); 
