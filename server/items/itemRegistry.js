@@ -13,6 +13,8 @@ const PotionRegistry = require('./potionRegistry');
 const RecoveryCompassItem = require('./recoveryCompassItem');
 const EchoShardItem = require('./echoShardItem');
 const CompassItem = require('./compassItem');
+const BrushItem = require('./brushItem');
+const PotterySherdItem = require('./potterySherdItem');
 
 class ItemRegistry {
   /**
@@ -136,6 +138,9 @@ class ItemRegistry {
     // Register Wild Update items
     this.registerWildUpdateItems();
     
+    // Register Trails & Tales Update items
+    this.registerTrailsAndTalesItems();
+    
     // Future: Register more items (stone, dirt, etc.)
     
     // Register potion items
@@ -172,6 +177,38 @@ class ItemRegistry {
     
     // Register Recovery Compass
     this.registerItem(new RecoveryCompassItem());
+  }
+  
+  /**
+   * Register Trails & Tales Update items
+   * @private
+   */
+  registerTrailsAndTalesItems() {
+    // Register Brush item
+    this.registerItem(new BrushItem());
+    this.registerItem(new BrushItem({ id: 'copper_brush', name: 'Copper Brush', brushType: 'copper', durability: 96, maxDurability: 96 }));
+    this.registerItem(new BrushItem({ id: 'iron_brush', name: 'Iron Brush', brushType: 'iron', durability: 128, maxDurability: 128 }));
+    this.registerItem(new BrushItem({ id: 'gold_brush', name: 'Gold Brush', brushType: 'gold', durability: 32, maxDurability: 32 }));
+    this.registerItem(new BrushItem({ id: 'netherite_brush', name: 'Netherite Brush', brushType: 'netherite', durability: 256, maxDurability: 256 }));
+    
+    // Register Pottery Sherds
+    this.registerSherdItems();
+  }
+  
+  /**
+   * Register Pottery Sherd items
+   * @private
+   */
+  registerSherdItems() {
+    const patterns = [
+      'arms_up', 'skull', 'explorer', 'archer', 'prize', 
+      'heartbreak', 'brewer', 'friend', 'howl', 'angler', 
+      'shelter', 'danger', 'miner'
+    ];
+    
+    for (const pattern of patterns) {
+      this.registerItem(new PotterySherdItem({ pattern }));
+    }
   }
   
   /**

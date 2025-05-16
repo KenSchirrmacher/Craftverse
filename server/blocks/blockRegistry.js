@@ -6,8 +6,7 @@
 const SporeBlossomBlock = require('./sporeBlossomBlock');
 const SculkSensorBlock = require('./sculkSensorBlock');
 const LightningRodBlock = require('./lightningRodBlock');
-const SuspiciousSandBlock = require('../archaeology/suspiciousSandBlock');
-const SuspiciousGravelBlock = require('../archaeology/suspiciousGravelBlock');
+const { SuspiciousSandBlock, SuspiciousGravelBlock } = require('./suspiciousBlocks');
 const Block = require('./block');
 const PointedDripstoneBlock = require('./pointedDripstoneBlock');
 const DripstoneBlock = require('./dripstoneBlock');
