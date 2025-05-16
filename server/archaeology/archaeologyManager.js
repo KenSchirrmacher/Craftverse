@@ -158,26 +158,45 @@ class ArchaeologyManager {
     const chunkSeed = this.getChunkSeed(chunk.x, chunk.z);
     const random = this.seededRandom(chunkSeed);
     
-    // About 1 in 20 chunks have an archaeology site
-    if (random() > 0.05) return;
-    
-    // Determine site type based on biome and chunk position
+    // Get biome for this chunk
     const biome = this.getBiomeForChunk(chunk);
     if (!biome) return;
     
-    let siteType;
-    if (biome.type.includes('desert')) {
+    // Determine site type and spawn chance based on biome
+    let siteType = 'plains';
+    let siteChance = 0.05; // Default 5% chance (1 in 20 chunks)
+    
+    if (biome.id === 'desert') {
       siteType = 'desert';
-    } else if (biome.type.includes('ocean') || biome.type.includes('river')) {
-      siteType = 'underwater';
-    } else if (biome.type.includes('jungle')) {
+      siteChance = 0.08; // Higher chance in deserts (8%)
+    } else if (biome.id === 'jungle' || biome.id === 'bamboo_jungle') {
       siteType = 'jungle';
-    } else {
+      siteChance = 0.07; // Higher chance in jungles (7%)
+    } else if (biome.id.includes('ocean') || biome.id.includes('river') || biome.id.includes('beach')) {
+      siteType = 'underwater';
+      siteChance = 0.06; // Slightly higher chance underwater (6%)
+    } else if (biome.id.includes('plains') || biome.id.includes('savanna')) {
       siteType = 'plains';
+      siteChance = 0.05; // Regular chance in plains (5%)
+    } else {
+      // Other biomes have lower chance
+      siteChance = 0.03; // Lower chance in other biomes (3%)
     }
     
-    // Generate 1-3 sites per chunk that has archaeology
-    const numSites = Math.floor(random() * 3) + 1;
+    // Check if we should generate sites in this chunk
+    if (random() > siteChance) return;
+    
+    // Generate 1-3 sites per chunk that has archaeology, weighted by biome
+    let maxSites;
+    if (siteType === 'desert') {
+      maxSites = 4; // Deserts can have more sites
+    } else if (siteType === 'jungle') {
+      maxSites = 3; // Jungles can have a moderate number of sites
+    } else {
+      maxSites = 2; // Other biomes have fewer sites
+    }
+    
+    const numSites = Math.floor(random() * maxSites) + 1;
     
     for (let i = 0; i < numSites; i++) {
       const x = (chunk.x * 16) + Math.floor(random() * 16);
@@ -559,7 +578,7 @@ class ArchaeologyManager {
   }
   
   /**
-   * Get the biome for a chunk
+   * Get the biome for a chunk with multiple sample points for accuracy
    * @private
    * @param {Object} chunk - Chunk data
    * @returns {Object|null} Biome object or null
@@ -567,11 +586,51 @@ class ArchaeologyManager {
   getBiomeForChunk(chunk) {
     if (!this.world || !this.world.getBiomeAt) return null;
     
-    // Sample the biome at the center of the chunk
-    const x = (chunk.x * 16) + 8;
-    const z = (chunk.z * 16) + 8;
+    // Sample the biome at multiple points in the chunk for better accuracy
+    const samplePoints = [
+      { x: (chunk.x * 16) + 4, z: (chunk.z * 16) + 4 },
+      { x: (chunk.x * 16) + 12, z: (chunk.z * 16) + 4 },
+      { x: (chunk.x * 16) + 4, z: (chunk.z * 16) + 12 },
+      { x: (chunk.x * 16) + 12, z: (chunk.z * 16) + 12 },
+      { x: (chunk.x * 16) + 8, z: (chunk.z * 16) + 8 } // Center point
+    ];
     
-    return this.world.getBiomeAt(x, z);
+    // Count occurrences of each biome
+    const biomeCounts = new Map();
+    let mostCommonBiome = null;
+    
+    for (const point of samplePoints) {
+      const biome = this.world.getBiomeAt(point.x, point.z);
+      if (!biome) continue;
+      
+      // If no biomes found yet, use the first one
+      if (!mostCommonBiome) {
+        mostCommonBiome = biome;
+      }
+      
+      // Count this biome
+      const count = biomeCounts.get(biome.id) || 0;
+      biomeCounts.set(biome.id, count + 1);
+    }
+    
+    // Find the most common biome
+    let highestCount = 0;
+    
+    for (const [biomeId, count] of biomeCounts.entries()) {
+      if (count > highestCount) {
+        // Find a sample that matches this biome ID
+        for (const point of samplePoints) {
+          const biome = this.world.getBiomeAt(point.x, point.z);
+          if (biome && biome.id === biomeId) {
+            mostCommonBiome = biome;
+            break;
+          }
+        }
+        highestCount = count;
+      }
+    }
+    
+    return mostCommonBiome;
   }
   
   /**
