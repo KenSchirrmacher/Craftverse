@@ -30,6 +30,7 @@ const MangrovePropaguleBlock = require('./mangrovePropaguleBlock');
 const CherryLog = require('./cherryLog');
 const CherryLeaves = require('./cherryLeaves');
 const CherrySapling = require('./cherrySapling');
+const DecoratedPot = require('./decoratedPot');
 
 class BlockRegistry {
   /**
@@ -169,6 +170,9 @@ class BlockRegistry {
     this.registerBlock(new CherryLog({ id: 'stripped_cherry_log', name: 'Stripped Cherry Log', stripped: true }));
     this.registerBlock(new CherryLeaves());
     this.registerBlock(new CherrySapling());
+    
+    // Register Pottery System blocks (Trails & Tales Update)
+    this.registerBlock(new DecoratedPot());
     
     // Future: Register vanilla blocks (stone, dirt, etc.)
     // this.registerBlock(new StoneBlock());

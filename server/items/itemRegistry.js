@@ -15,6 +15,10 @@ const EchoShardItem = require('./echoShardItem');
 const CompassItem = require('./compassItem');
 const BrushItem = require('./brushItem');
 const PotterySherdItem = require('./potterySherdItem');
+const { ArmorItem, ArmorType, ArmorMaterial } = require('./armorItem');
+const { ArmorTrimItem, createAllArmorTrimTemplates } = require('./armorTrimItem');
+const PotBase = require('./potBase');
+const DecoratedPotItem = require('./decoratedPotItem');
 
 class ItemRegistry {
   /**
@@ -120,8 +124,34 @@ class ItemRegistry {
    * @private
    */
   registerDefaultItems() {
+    // Register unknown item as fallback
+    this.registerItem(new Item({
+      id: 'unknown_item',
+      name: 'Unknown Item',
+      type: 'unknown_item',
+      description: 'An unknown item.',
+      stackable: false
+    }));
+    
     // Register Caves & Cliffs items
     this.registerItem(new GlowBerryItem());
+    
+    // Register special test items
+    this.registerItem(new Item({
+      id: 'test_item',
+      name: 'Test Item',
+      type: 'test_item',
+      description: 'Used for testing.',
+      stackable: true,
+      maxStackSize: 16
+    }));
+    
+    // Register tools
+    this.registerItem(new SwordItem());
+    this.registerItem(new PickaxeItem());
+    this.registerItem(new AxeItem());
+    this.registerItem(new ShovelItem());
+    this.registerItem(new HoeItem());
     
     // Register tool items
     this.registerItem(new FlintAndSteelItem());
@@ -140,6 +170,9 @@ class ItemRegistry {
     
     // Register Trails & Tales Update items
     this.registerTrailsAndTalesItems();
+    
+    // Register Pottery System items
+    this.registerPotteryItems();
     
     // Future: Register more items (stone, dirt, etc.)
     
@@ -193,6 +226,9 @@ class ItemRegistry {
     
     // Register Pottery Sherds
     this.registerSherdItems();
+    
+    // Register Armor Trim Templates
+    this.registerArmorTrimItems();
   }
   
   /**
@@ -209,6 +245,85 @@ class ItemRegistry {
     for (const pattern of patterns) {
       this.registerItem(new PotterySherdItem({ pattern }));
     }
+  }
+  
+  /**
+   * Register Armor Trim items
+   * @private
+   */
+  registerArmorTrimItems() {
+    // Register all armor trim templates
+    const armorTrimTemplates = createAllArmorTrimTemplates();
+    for (const template of armorTrimTemplates) {
+      this.registerItem(template);
+    }
+    
+    // Register basic armor items for testing if needed
+    this.registerBasicArmorItems();
+  }
+  
+  /**
+   * Register basic armor items for testing
+   * @private
+   */
+  registerBasicArmorItems() {
+    // Register a set of each armor material for testing
+    const materials = [
+      ArmorMaterial.LEATHER, 
+      ArmorMaterial.CHAINMAIL,
+      ArmorMaterial.IRON,
+      ArmorMaterial.GOLD,
+      ArmorMaterial.DIAMOND,
+      ArmorMaterial.NETHERITE
+    ];
+    
+    for (const material of materials) {
+      // Create helmet
+      this.registerItem(new ArmorItem({
+        id: `${material.toLowerCase()}_helmet`,
+        name: `${material.charAt(0) + material.slice(1).toLowerCase()} Helmet`,
+        armorType: ArmorType.HELMET,
+        armorMaterial: material
+      }));
+      
+      // Create chestplate
+      this.registerItem(new ArmorItem({
+        id: `${material.toLowerCase()}_chestplate`,
+        name: `${material.charAt(0) + material.slice(1).toLowerCase()} Chestplate`,
+        armorType: ArmorType.CHESTPLATE,
+        armorMaterial: material
+      }));
+      
+      // Create leggings
+      this.registerItem(new ArmorItem({
+        id: `${material.toLowerCase()}_leggings`,
+        name: `${material.charAt(0) + material.slice(1).toLowerCase()} Leggings`,
+        armorType: ArmorType.LEGGINGS,
+        armorMaterial: material
+      }));
+      
+      // Create boots
+      this.registerItem(new ArmorItem({
+        id: `${material.toLowerCase()}_boots`,
+        name: `${material.charAt(0) + material.slice(1).toLowerCase()} Boots`,
+        armorType: ArmorType.BOOTS,
+        armorMaterial: material
+      }));
+    }
+  }
+  
+  /**
+   * Register Pottery System items
+   * @private
+   */
+  registerPotteryItems() {
+    // Register the pot base item
+    this.registerItem(new PotBase());
+    
+    // Register the decorated pot item
+    this.registerItem(new DecoratedPotItem());
+    
+    console.log('Registered Pottery System items');
   }
   
   /**

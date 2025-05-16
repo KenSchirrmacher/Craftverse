@@ -12,15 +12,37 @@ class CraftingManager {
   }
   
   /**
+   * Register a recipe (can be shaped or shapeless)
+   * @param {Object} recipe - Recipe definition
+   * @returns {boolean} Success
+   */
+  registerRecipe(recipe) {
+    if (!recipe || !recipe.type || !recipe.result) {
+      console.error('Invalid recipe:', recipe);
+      return false;
+    }
+    
+    if (recipe.type === 'shaped') {
+      return this.registerShapedRecipe(recipe);
+    } else if (recipe.type === 'shapeless') {
+      return this.registerShapelessRecipe(recipe);
+    } else {
+      console.error('Unknown recipe type:', recipe.type);
+      return false;
+    }
+  }
+  
+  /**
    * Register a shaped recipe (items must be in specific pattern)
    * @param {Object} recipe - Recipe definition
-   * @param {Array<Array<String>>} recipe.pattern - 2D array representing crafting grid pattern
-   * @param {Object} recipe.result - Result item { id, count }
-   * @param {String} recipe.category - Recipe category (MISC, BUILDING, etc.)
+   * @param {Array<String>} recipe.pattern - Array of strings representing crafting grid pattern
+   * @param {Object} recipe.ingredients - Map of characters in pattern to item types
+   * @param {Object} recipe.result - Result item { item, count }
+   * @param {String} recipe.id - Recipe ID
    * @returns {boolean} Success
    */
   registerShapedRecipe(recipe) {
-    if (!recipe || !recipe.pattern || !recipe.result || !recipe.result.id) {
+    if (!recipe || !recipe.pattern || !recipe.ingredients || !recipe.result) {
       console.error('Invalid shaped recipe:', recipe);
       return false;
     }
@@ -32,13 +54,13 @@ class CraftingManager {
   /**
    * Register a shapeless recipe (items can be in any position)
    * @param {Object} recipe - Recipe definition
-   * @param {Array<Object>} recipe.ingredients - Array of items { id, count }
-   * @param {Object} recipe.result - Result item { id, count }
-   * @param {String} recipe.category - Recipe category (MISC, BUILDING, etc.)
+   * @param {Array<Object>} recipe.ingredients - Array of items { type, count }
+   * @param {Object} recipe.result - Result item { item, count }
+   * @param {String} recipe.id - Recipe ID
    * @returns {boolean} Success
    */
   registerShapelessRecipe(recipe) {
-    if (!recipe || !recipe.ingredients || !recipe.result || !recipe.result.id) {
+    if (!recipe || !recipe.ingredients || !recipe.result) {
       console.error('Invalid shapeless recipe:', recipe);
       return false;
     }
@@ -132,6 +154,9 @@ class CraftingManager {
   registerDefaultRecipes() {
     // Register Wild Update recipes
     this.registerWildUpdateRecipes();
+    
+    // Register Trails & Tales Update recipes
+    this.registerTrailsAndTalesRecipes();
   }
   
   /**
@@ -140,14 +165,29 @@ class CraftingManager {
   registerWildUpdateRecipes() {
     // Register Recovery Compass recipe (8 Echo Shards + 1 Compass)
     this.registerShapedRecipe({
+      id: 'recovery_compass_recipe',
+      type: 'shaped',
       pattern: [
         ['echo_shard', 'echo_shard', 'echo_shard'],
         ['echo_shard', 'compass', 'echo_shard'],
         ['echo_shard', 'echo_shard', 'echo_shard']
       ],
-      result: { id: 'recovery_compass', count: 1 },
+      ingredients: {
+        'echo_shard': { type: 'echo_shard' },
+        'compass': { type: 'compass' }
+      },
+      result: { item: 'recovery_compass', count: 1 },
       category: 'TOOLS'
     });
+  }
+  
+  /**
+   * Register Trails & Tales Update recipes
+   */
+  registerTrailsAndTalesRecipes() {
+    // Register pottery system recipes
+    const { registerPotteryRecipes } = require('./potteryRecipes');
+    registerPotteryRecipes(this);
   }
 }
 
