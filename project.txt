@@ -263,7 +263,8 @@
 
 ## Current Tasks
 1. ~~Implement Calibrated Sculk Sensor for the 1.20 Update~~
-2. Review all 1.20 Update features for completeness
+2. ~~Review all 1.20 Update features for completeness~~
+3. Plan for future game updates and enhancements
 
 ## Completed Features (Trails & Tales Update)
 - [COMPLETED] Archaeology system
