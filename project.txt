@@ -317,6 +317,12 @@
 4. ~~Add Wind Charge item~~
 5. ~~Implement new copper and tuff block variants~~
 6. ~~Add Mace weapon~~
+7. Begin implementation of Minecraft 1.22 (Sorcery Update) features
+   - Implement Wind Turbine structure
+   - Create Wolf armor mechanics
+   - Add Ominous Bottles
+   - Implement Armadillo mob
+   - Add new redstone-like spell mechanics
 
 ## Completed Tasks
 1. Implemented CrafterBlock with 3x3 crafting grid and automated crafting functionality
@@ -352,3 +358,44 @@
 31. Added special properties for Netherite Mace (fire resistance, floating in lava)
 32. Created comprehensive test suite for Mace weapon testing all aspects of functionality
 33. Verified all tests pass for the Mace weapon implementation
+
+# Current Project: 1.22 Update (Sorcery Update) Implementation
+
+## Feature Status
+- [ ] Wind Turbine structure
+  - [ ] Basic structure implementation
+  - [ ] Energy generation mechanics
+  - [ ] Structure generation placement rules
+  - [ ] Integration with world generation
+  - [ ] Comprehensive tests
+- [ ] Wolf armor
+  - [ ] Wolf armor item implementation
+  - [ ] Wolf entity enhancement for armor capability
+  - [ ] Armor application and removal mechanics
+  - [ ] Different armor material variants
+  - [ ] Comprehensive tests
+- [ ] Ominous Bottles
+  - [ ] Bottle item implementation
+  - [ ] Capturing/storing mechanics
+  - [ ] Usage effects
+  - [ ] Integration with other game systems
+  - [ ] Comprehensive tests
+- [ ] Armadillo mob
+  - [ ] Basic mob implementation
+  - [ ] Rolling defense mechanism
+  - [ ] Scute drops implementation
+  - [ ] AI behaviors
+  - [ ] Comprehensive tests
+- [ ] Spell mechanics
+  - [ ] Spell system foundation
+  - [ ] Redstone-like spell conductors
+  - [ ] Various spell types
+  - [ ] Crafting and casting systems
+  - [ ] Comprehensive tests
+
+## Current Tasks
+1. Research and plan implementation of Wind Turbine structure
+2. Design Wolf armor system integrated with existing entity system
+3. Analyze Ominous Bottles functionality from Minecraft Wiki
+4. Plan Armadillo mob implementation with rolling defense behavior
+5. Design spell mechanics foundation for future spell implementations
