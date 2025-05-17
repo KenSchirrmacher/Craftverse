@@ -413,10 +413,22 @@ class ItemRegistry {
     // Register Wind Charge item
     this.registerItem(new WindChargeItem());
     
-    // To be added later:
-    // - Mace weapons
-    // - Copper blocks-related items
-    // - Tuff variants
+    // Register Mace weapons
+    const { 
+      WoodenMaceItem, 
+      StoneMaceItem, 
+      IronMaceItem, 
+      GoldenMaceItem, 
+      DiamondMaceItem, 
+      NetheriteMaceItem 
+    } = require('./maceItem');
+    
+    this.registerItem(new WoodenMaceItem());
+    this.registerItem(new StoneMaceItem());
+    this.registerItem(new IronMaceItem());
+    this.registerItem(new GoldenMaceItem());
+    this.registerItem(new DiamondMaceItem());
+    this.registerItem(new NetheriteMaceItem());
   }
   
   /**

@@ -25,6 +25,9 @@ class CombatManager extends EventEmitter {
     // Track active shields
     this.activeShields = new Map();
     
+    // Track heavy attack charging
+    this.heavyAttackCharges = new Map();
+    
     // Configuration
     this.config = {
       // Attack cooldown in ticks (20 ticks = 1 second)
@@ -45,6 +48,7 @@ class CombatManager extends EventEmitter {
         pickaxe: 14,    // 0.7 seconds
         shovel: 12,     // 0.6 seconds
         hoe: 10,        // 0.5 seconds
+        mace: 18,       // 0.9 seconds
         default: 10     // 0.5 seconds
       },
       
@@ -55,6 +59,15 @@ class CombatManager extends EventEmitter {
         cooldownAfterBreakBlock: 100,  // 5 seconds cooldown after shield is disabled by axe
         durabilityLossPerHit: 1,       // Durability lost per hit blocked
         maxUsageTicks: 400             // Maximum shield usage time (20 seconds)
+      },
+      
+      // Heavy attack configuration
+      heavyAttack: {
+        chargeFeedbackTicks: 5,        // Send feedback every 5 ticks during charging
+        maxChargeTicks: 20,            // 1 second max charge time
+        cooldownTicks: 30,             // 1.5 second cooldown after heavy attack
+        damageMultiplier: 2.5,         // Default damage multiplier
+        knockbackMultiplier: 1.5       // Default knockback multiplier
       }
     };
     
@@ -97,6 +110,45 @@ class CombatManager extends EventEmitter {
         }
       }
     }
+    
+    // Update heavy attack charging
+    for (const [playerId, chargeData] of this.heavyAttackCharges.entries()) {
+      chargeData.chargeTicks += deltaTicks;
+      
+      // Send periodic feedback during charging
+      if (Math.floor(chargeData.chargeTicks / this.config.heavyAttack.chargeFeedbackTicks) >
+          Math.floor((chargeData.chargeTicks - deltaTicks) / this.config.heavyAttack.chargeFeedbackTicks)) {
+        
+        const chargePercent = Math.min(100, Math.floor((chargeData.chargeTicks / this.config.heavyAttack.maxChargeTicks) * 100));
+        this.emit('heavyAttackCharging', { 
+          playerId, 
+          itemId: chargeData.itemId,
+          chargeTicks: chargeData.chargeTicks,
+          maxChargeTicks: this.config.heavyAttack.maxChargeTicks,
+          chargePercent 
+        });
+      }
+      
+      // Check if fully charged
+      if (chargeData.chargeTicks >= this.config.heavyAttack.maxChargeTicks && !chargeData.ready) {
+        chargeData.ready = true;
+        this.emit('heavyAttackReady', { 
+          playerId, 
+          itemId: chargeData.itemId
+        });
+      }
+    }
+    
+    // Update heavy attack cooldowns
+    for (const [playerId, cooldownData] of (this.heavyAttackCooldowns || new Map()).entries()) {
+      cooldownData.ticksRemaining -= deltaTicks;
+      
+      if (cooldownData.ticksRemaining <= 0) {
+        // Heavy attack is available again
+        this.heavyAttackCooldowns.delete(playerId);
+        this.emit('heavyAttackAvailable', { playerId, itemId: cooldownData.itemId });
+      }
+    }
   }
   
   /**
@@ -112,6 +164,7 @@ class CombatManager extends EventEmitter {
     if (itemId.includes('pickaxe')) return 'pickaxe';
     if (itemId.includes('shovel')) return 'shovel';
     if (itemId.includes('hoe')) return 'hoe';
+    if (itemId.includes('mace')) return 'mace';
     
     return 'default';
   }
@@ -249,17 +302,135 @@ class CombatManager extends EventEmitter {
       usageTicks: 0
     });
     
-    this.emit('shieldActivated', { playerId, shieldItem });
+    this.emit('shieldActivated', { playerId });
     return true;
   }
   
   /**
-   * Deactivate a player's shield
+   * Start charging a heavy attack
+   * @param {string} playerId - Player ID
+   * @param {string} itemId - The item ID of the mace
+   * @returns {Object} - Charge data
+   */
+  startHeavyAttackCharge(playerId, itemId) {
+    // Check if player already has a heavy attack cooldown
+    if (this.heavyAttackCooldowns && this.heavyAttackCooldowns.has(playerId)) {
+      const cooldown = this.heavyAttackCooldowns.get(playerId);
+      if (cooldown.itemId === itemId && cooldown.ticksRemaining > 0) {
+        // Still on cooldown
+        return { cooldown: true, ticksRemaining: cooldown.ticksRemaining };
+      }
+    }
+    
+    // Initialize cooldowns map if needed
+    if (!this.heavyAttackCooldowns) {
+      this.heavyAttackCooldowns = new Map();
+    }
+    
+    // Start charging
+    const chargeData = {
+      itemId,
+      startTime: Date.now(),
+      chargeTicks: 0,
+      maxChargeTicks: this.config.heavyAttack.maxChargeTicks,
+      ready: false
+    };
+    
+    this.heavyAttackCharges.set(playerId, chargeData);
+    this.emit('heavyAttackChargeStarted', { playerId, itemId });
+    
+    return chargeData;
+  }
+  
+  /**
+   * Get current heavy attack charge progress
+   * @param {string} playerId - Player ID
+   * @returns {Object|null} - Charge info or null if not charging
+   */
+  getHeavyAttackCharge(playerId) {
+    const charge = this.heavyAttackCharges.get(playerId);
+    if (!charge) return null;
+    
+    return {
+      chargeTicks: charge.chargeTicks,
+      maxChargeTicks: charge.maxChargeTicks,
+      progress: Math.min(1, charge.chargeTicks / charge.maxChargeTicks),
+      ready: charge.ready,
+      itemId: charge.itemId
+    };
+  }
+  
+  /**
+   * Release a heavy attack
+   * @param {string} playerId - Player ID
+   * @param {string} targetId - Target entity ID
+   * @param {Object} attackData - Attack data from weapon
+   * @returns {Object|null} - Attack result or null if failed
+   */
+  releaseHeavyAttack(playerId, targetId, attackData) {
+    const charge = this.heavyAttackCharges.get(playerId);
+    if (!charge) return null;
+    
+    // Remove charge data
+    this.heavyAttackCharges.delete(playerId);
+    
+    // If not ready, return null
+    if (!charge.ready) {
+      this.emit('heavyAttackFailed', { playerId, reason: 'not_charged' });
+      return null;
+    }
+    
+    // Set cooldown
+    this.heavyAttackCooldowns.set(playerId, {
+      itemId: charge.itemId,
+      ticksRemaining: this.config.heavyAttack.cooldownTicks
+    });
+    
+    // Apply attack effects
+    const damageMultiplier = attackData.damageMultiplier || this.config.heavyAttack.damageMultiplier;
+    const knockbackMultiplier = attackData.knockbackMultiplier || this.config.heavyAttack.knockbackMultiplier;
+    
+    // Calculate armor piercing effect
+    const armorPiercing = attackData.armorPiercing || 0;
+    
+    // Process attack
+    const result = this.processAttack(playerId, targetId, {
+      ...attackData,
+      damageMultiplier,
+      knockbackMultiplier,
+      armorPiercing,
+      isHeavyAttack: true
+    });
+    
+    this.emit('heavyAttackReleased', { 
+      playerId, 
+      targetId,
+      damage: result.finalDamage,
+      armorPiercing
+    });
+    
+    return result;
+  }
+  
+  /**
+   * Cancel a heavy attack charge
+   * @param {string} playerId - Player ID
+   */
+  cancelHeavyAttackCharge(playerId) {
+    const charge = this.heavyAttackCharges.get(playerId);
+    if (!charge) return;
+    
+    this.heavyAttackCharges.delete(playerId);
+    this.emit('heavyAttackCancelled', { playerId });
+  }
+  
+  /**
+   * Deactivate a shield
    * @param {string} playerId - Player ID
    */
   deactivateShield(playerId) {
     const shieldData = this.activeShields.get(playerId);
-    if (shieldData) {
+    if (shieldData && shieldData.active) {
       shieldData.active = false;
       shieldData.usageTicks = 0;
       this.emit('shieldDeactivated', { playerId });
@@ -267,7 +438,7 @@ class CombatManager extends EventEmitter {
   }
   
   /**
-   * Disable a player's shield (after axe hit)
+   * Disable a shield (after being hit by an axe)
    * @param {string} playerId - Player ID
    */
   disableShield(playerId) {
@@ -276,52 +447,58 @@ class CombatManager extends EventEmitter {
       shieldData.active = false;
       shieldData.disabled = true;
       shieldData.cooldown = this.config.shield.cooldownAfterBreakBlock;
-      this.emit('shieldDisabled', { playerId });
+      shieldData.usageTicks = 0;
+      this.emit('shieldDisabled', { playerId, cooldownTicks: shieldData.cooldown });
     }
   }
   
   /**
-   * Check if a player's shield is active
+   * Check if shield is active for a player
    * @param {string} playerId - Player ID
    * @returns {boolean} - Whether shield is active
    */
   isShieldActive(playerId) {
     const shieldData = this.activeShields.get(playerId);
-    return shieldData ? shieldData.active : false;
+    return !!(shieldData && shieldData.active && !shieldData.disabled);
   }
   
   /**
-   * Handle a shield blocking an attack
+   * Handle shield blocking an attack
    * @param {string} playerId - Player ID
-   * @param {number} damage - Incoming damage amount
-   * @returns {Object} - Modified damage and shield data
+   * @param {number} damage - Incoming damage
+   * @returns {Object} - Blocked damage info
    */
   handleShieldBlock(playerId, damage) {
     const shieldData = this.activeShields.get(playerId);
-    if (!shieldData || !shieldData.active) {
-      return { damage, blocked: false };
+    if (!shieldData || !shieldData.active || shieldData.disabled) {
+      return { blocked: false, damage };
     }
     
     // Calculate reduced damage
     const reducedDamage = damage * (1 - this.config.shield.blockingDamageReduction);
     
-    // Apply durability loss to shield
-    const shield = shieldData.item;
-    if (shield.durability) {
-      shield.durability = Math.max(0, shield.durability - this.config.shield.durabilityLossPerHit);
+    // Reduce shield durability
+    if (shieldData.item && shieldData.item.reduceDurability) {
+      const durabilityLoss = this.config.shield.durabilityLossPerHit;
+      const shieldBroke = shieldData.item.reduceDurability(durabilityLoss);
       
-      // Check if shield broke
-      if (shield.durability <= 0) {
+      if (shieldBroke) {
         this.deactivateShield(playerId);
-        this.offhandItems.delete(playerId);
         this.emit('shieldBroken', { playerId });
       }
     }
     
+    this.emit('shieldBlocked', { 
+      playerId, 
+      originalDamage: damage, 
+      reducedDamage 
+    });
+    
     return {
-      damage: reducedDamage,
       blocked: true,
-      knockbackReduction: this.config.shield.knockbackReduction
+      damage: reducedDamage,
+      reduction: damage - reducedDamage,
+      reductionPercent: this.config.shield.blockingDamageReduction * 100
     };
   }
   
@@ -329,56 +506,84 @@ class CombatManager extends EventEmitter {
    * Handle a player attacking with a tipped arrow
    * @param {string} playerId - Player ID
    * @param {Object} arrowData - Arrow data
-   * @param {Object} arrowData.effects - Effects to apply
-   * @returns {Object} - Modified arrow data
    */
   processTippedArrow(playerId, arrowData) {
-    // Just pass through for now - will be enhanced when implementing tipped arrows
-    return arrowData;
+    // Add status effects to the target if hit
+    if (arrowData.hit && arrowData.targetId && this.statusEffectsManager) {
+      const effects = arrowData.effects || [];
+      
+      for (const effect of effects) {
+        this.statusEffectsManager.addEffect(arrowData.targetId, effect.type, effect.level, effect.duration);
+      }
+    }
   }
   
   /**
-   * Process an attack by a player
+   * Process an attack
    * @param {string} playerId - Attacking player ID
    * @param {string} targetId - Target entity ID
    * @param {Object} attackData - Attack data
-   * @returns {Object} - Modified attack data
+   * @returns {Object} - Attack result
    */
   processAttack(playerId, targetId, attackData) {
-    // Apply attack cooldown damage multiplier
-    const damageMultiplier = this.getDamageMultiplier(playerId);
-    
-    // Start a new cooldown
-    this.startAttackCooldown(playerId, attackData.itemId);
-    
-    // Apply damage multiplier
-    attackData.damage = attackData.baseDamage * damageMultiplier;
-    
-    // Check if target is blocking with shield
-    if (this.isShieldActive(targetId)) {
-      const blockResult = this.handleShieldBlock(targetId, attackData.damage);
-      
-      // Update damage and knockback
-      attackData.damage = blockResult.damage;
-      if (blockResult.blocked) {
-        attackData.knockback *= (1 - blockResult.knockbackReduction);
-        
-        // Check if attacking with axe to disable shield
-        if (this.getWeaponType(attackData.itemId) === 'axe') {
-          this.disableShield(targetId);
-        }
-      }
+    // Start attack cooldown if not a heavy attack
+    if (!attackData.isHeavyAttack) {
+      this.startAttackCooldown(playerId, attackData.itemId);
     }
     
-    return attackData;
+    // Get damage multiplier from cooldown (only for regular attacks)
+    let damageMultiplier = attackData.isHeavyAttack ? 
+      (attackData.damageMultiplier || 1.0) : 
+      this.getDamageMultiplier(playerId);
+    
+    // Base damage
+    let damage = attackData.damage || 1;
+    
+    // Apply damage multiplier
+    damage *= damageMultiplier;
+    
+    // Check for critical hit
+    const isCritical = attackData.isCritical || false;
+    if (isCritical) {
+      damage *= 1.5; // 50% more damage for critical hits
+    }
+    
+    // Apply knockback
+    const knockbackMultiplier = attackData.knockbackMultiplier || 1.0;
+    
+    // Calculate final damage accounting for armor piercing
+    let finalDamage = damage;
+    const armorPiercing = attackData.armorPiercing || 0;
+    
+    // Emit attack event
+    this.emit('attackProcessed', {
+      playerId,
+      targetId,
+      damage: finalDamage,
+      isCritical,
+      knockbackMultiplier,
+      armorPiercing: armorPiercing * 100, // Convert to percentage
+      isHeavyAttack: attackData.isHeavyAttack || false
+    });
+    
+    return {
+      finalDamage,
+      isCritical,
+      knockbackMultiplier,
+      armorPiercing
+    };
   }
   
   /**
-   * Reset all cooldowns (e.g., for testing)
+   * Reset all cooldowns (for testing)
    */
   resetAllCooldowns() {
     this.attackCooldowns.clear();
     this.activeShields.clear();
+    this.heavyAttackCharges.clear();
+    if (this.heavyAttackCooldowns) {
+      this.heavyAttackCooldowns.clear();
+    }
   }
 }
 
