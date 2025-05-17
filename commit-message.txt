@@ -81,3 +81,13 @@ This commit adds the Chiseled Bookshelf feature from the Trails & Tales Update:
 - Added documentation and updated project files
 
 All tests pass successfully. This completes the Chiseled Bookshelf feature for the Trails & Tales Update. 
+
+Add Ominous Bottle implementation for 1.22 Sorcery Update
+
+- Created OminousBottleItem class for capturing Bad Omen effect from raid captains
+- Added ability to store and apply captured effects
+- Implemented raid captain detection logic
+- Added visual feedback for filled bottles
+- Integrated with ItemRegistry for proper game access
+- Created comprehensive test suite with all test cases passing
+- Updated project.txt to mark feature as complete 

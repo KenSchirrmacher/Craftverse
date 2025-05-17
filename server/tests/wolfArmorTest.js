@@ -80,6 +80,10 @@ function testWolfArmorEquipping() {
   const wolf = new Wolf({ x: 0, y: 0, z: 0 });
   const player = new MockPlayer('player1');
   
+  // Initialize wolf properties
+  wolf.id = 'wolf1';
+  wolf.angry = false;
+  
   // Tame the wolf
   wolf.tamed = true;
   wolf.owner = player.id;
@@ -126,9 +130,16 @@ function testArmorDamageReduction() {
   
   // Create a wolf and tame it
   const wolf = new Wolf({ x: 0, y: 0, z: 0 });
-  const attacker = new MockPlayer('attacker');
   
-  // Tame the wolf and set full health
+  // Create a proper attacker object with required properties
+  const attacker = {
+    id: 'attacker1',
+    type: 'player',
+    position: { x: 5, y: 0, z: 5 }
+  };
+  
+  // Initialize wolf properties
+  wolf.id = 'wolf1';
   wolf.tamed = true;
   wolf.health = wolf.maxHealth = 10;
   
@@ -167,15 +178,23 @@ function testArmorDurability() {
   
   // Create a wolf and equip armor with low durability
   const wolf = new Wolf({ x: 0, y: 0, z: 0 });
+  wolf.id = 'wolf1';
   wolf.tamed = true;
+  wolf.health = wolf.maxHealth = 10;
   
   const armor = new IronWolfArmorItem();
   armor.durability = 2; // Set low durability for testing
   
   wolf.equipArmor(armor);
   
+  // Create a proper attacker object with required properties
+  const attacker = {
+    id: 'attacker1',
+    type: 'player',
+    position: { x: 5, y: 0, z: 5 }
+  };
+  
   // Take damage to reduce durability
-  const attacker = new MockPlayer('attacker');
   wolf.takeDamage(5, attacker);
   
   // Armor should still be equipped with durability 1

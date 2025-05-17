@@ -389,19 +389,19 @@
   - [COMPLETED] Usage effects
   - [COMPLETED] Integration with other game systems
   - [COMPLETED] Comprehensive tests
-- [ ] Armadillo mob
-  - [ ] Basic entity implementation
-  - [ ] Behavior and AI
-  - [ ] Rolling defense mechanism
-  - [ ] Biome-specific spawning
-  - [ ] Scute dropping
-  - [ ] Comprehensive tests
-- [ ] New spell mechanics
-  - [ ] Spell casting system
-  - [ ] Visual effects for spells
-  - [ ] Spell cooldowns and mana system
-  - [ ] Spell books and scrolls
-  - [ ] Comprehensive tests
+- [COMPLETED] Armadillo mob
+  - [COMPLETED] Basic entity implementation
+  - [COMPLETED] Behavior and AI
+  - [COMPLETED] Rolling defense mechanism
+  - [COMPLETED] Biome-specific spawning
+  - [COMPLETED] Scute dropping
+  - [COMPLETED] Comprehensive tests
+- [COMPLETED] New spell mechanics
+  - [COMPLETED] Spell casting system
+  - [COMPLETED] Visual effects for spells
+  - [COMPLETED] Spell cooldowns and mana system
+  - [COMPLETED] Spell books and scrolls
+  - [COMPLETED] Comprehensive tests
 
 ## Current Tasks
 1. ~~Implementation of Ominous Bottle item~~
@@ -412,13 +412,21 @@
    - [x] Add to ItemRegistry
    - [x] Implement UI interactions
    - [x] Write comprehensive tests
-2. Implementation of Armadillo mob
-   - [ ] Create basic mob class with properties
-   - [ ] Implement rolling defense mechanism
-   - [ ] Add scute dropping behavior
-   - [ ] Implement proper AI
-   - [ ] Add to MobRegistry
-   - [ ] Write comprehensive tests
+2. ~~Implementation of Armadillo mob~~
+   - [x] Create basic mob class with properties
+   - [x] Implement rolling defense mechanism
+   - [x] Add scute dropping behavior
+   - [x] Implement proper AI
+   - [x] Add to MobRegistry
+   - [x] Write comprehensive tests
+3. ~~Implementation of Spell mechanics~~
+   - [x] Design spell casting system
+   - [x] Implement basic spell effects
+   - [x] Create spell books and scrolls
+   - [x] Add spell cooldowns and resource system
+   - [x] Write comprehensive tests
+4. Begin implementation of next Minecraft 1.22 (Sorcery Update) feature
+   - [ ] Design and implement new planned feature
 
 ## Completed Tasks
 1. Implemented CrafterBlock with 3x3 crafting grid and automated crafting functionality
@@ -468,3 +476,17 @@
 45. Created comprehensive test suite for Ominous Bottle testing all functionality
 46. Added OminousBottleItem to ItemRegistry for game integration
 47. Verified all tests pass for the Ominous Bottle implementation
+48. Implemented Armadillo mob with rolling defense mechanism and AI behaviors
+49. Implemented ArmadilloScuteItem as a rare crafting material dropped by armadillos
+50. Created scute dropping behavior triggered by time and special conditions
+51. Implemented breeding mechanics for armadillos with baby growth system
+52. Added comprehensive tests for the Armadillo mob functionality
+53. Integrated Armadillo mob with MobRegistry for proper spawning
+54. Implemented comprehensive spell mechanics system with SpellManager to handle casting and registry
+55. Created SpellRegistry with different spell types, elements, and rarity levels
+56. Implemented spell casting resources with mana and cooldown systems
+57. Created spell items (books and scrolls) for learning and casting
+58. Implemented SpellAltarBlock for crafting spells with visual and particle effects
+59. Designed and implemented various spell types (attack, utility, defense, etc.)
+60. Added comprehensive tests for spell system functionality
+61. Verified all tests pass for the spell system implementation

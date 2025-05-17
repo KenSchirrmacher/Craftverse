@@ -38,6 +38,8 @@ const {
 } = require('./wolfArmorItem');
 // Import Ominous Bottle for 1.22 Sorcery Update
 const OminousBottleItem = require('./ominousBottleItem');
+// Import Armadillo Scute for 1.22 Sorcery Update
+const ArmadilloScuteItem = require('./armadilloScuteItem');
 
 class ItemRegistry {
   /**
@@ -454,6 +456,9 @@ class ItemRegistry {
     
     // Register Ominous Bottle item
     this.registerItem(new OminousBottleItem());
+    
+    // Register Armadillo Scute item
+    this.registerItem(new ArmadilloScuteItem());
     
     // Future: Register spell-related items
   }

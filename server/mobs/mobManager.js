@@ -1,4 +1,18 @@
-// Mob Manager - handles spawning, updating, and interactions with all mobsconst passiveMobs = require('./passiveMobs');const neutralMobs = require('./neutralMobs');const hostileMobs = require('./hostileMobs');const netherMobs = require('./netherMobs');const aquaticMobs = require('./aquaticMobs');const VillagerNPC = require('./villagerNPC');const ZombieVillager = require('./zombieVillager');const Warden = require('./warden');const { Frog, Tadpole } = require('./frogAndTadpole');const Allay = require('./allay');const Sniffer = require('./sniffer');const Camel = require('./camel');const Breeze = require('./breeze');
+// Mob Manager - handles spawning, updating, and interactions with all mobs
+const passiveMobs = require('./passiveMobs');
+const neutralMobs = require('./neutralMobs');
+const hostileMobs = require('./hostileMobs');
+const netherMobs = require('./netherMobs');
+const aquaticMobs = require('./aquaticMobs');
+const VillagerNPC = require('./villagerNPC');
+const ZombieVillager = require('./zombieVillager');
+const Warden = require('./warden');
+const { Frog, Tadpole } = require('./frogAndTadpole');
+const Allay = require('./allay');
+const Sniffer = require('./sniffer');
+const Camel = require('./camel');
+const Breeze = require('./breeze');
+const Armadillo = require('./armadillo'); // Import Armadillo mob for 1.22 Sorcery Update
 
 class MobManager {
   constructor() {
@@ -29,6 +43,7 @@ class MobManager {
       'allay': Allay,
       'sniffer': Sniffer,
       'camel': Camel,
+      'armadillo': Armadillo,
       
       // Neutral mobs
       'wolf': neutralMobs.Wolf,
