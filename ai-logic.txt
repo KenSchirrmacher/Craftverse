@@ -2715,36 +2715,108 @@ Implemented the Wind Charge feature with the following components:
 
 All tests are now passing, verifying the complete implementation of Wind Charges for the Minecraft 1.21 Tricky Trials update. This feature adds a projectile that can push blocks and entities, creating interesting gameplay dynamics for combat and puzzle solving.
 
-/**
- * Copper and Tuff Block Variants for Minecraft 1.21 (Tricky Trials)
- * 
- * After examining the existing codebase, I need to implement the following new block variants:
- * 
- * 1. Copper Variants:
- *    - Copper Bulb: A redstone-compatible light source with oxidation mechanics
- *      - Should emit light when powered by redstone
- *      - Should exist in all four oxidation states (normal, exposed, weathered, oxidized)
- *      - Should support waxing to prevent oxidation
- * 
- *    - Copper Grate: An entity filtering block with oxidation mechanics
- *      - Should allow certain small entities to pass through (items, arrows, etc.)
- *      - Should exist in all four oxidation states (normal, exposed, weathered, oxidized)
- *      - Should support waxing to prevent oxidation
- * 
- * 2. Tuff Variants:
- *    - Chiseled Tuff: Decorative variant
- *    - Tuff Bricks: Building block variant
- *    - Tuff Brick Stairs: Stair variant of tuff bricks
- *    - Tuff Brick Slab: Slab variant of tuff bricks
- *    - Tuff Brick Wall: Wall variant of tuff bricks
- * 
- * Implementation approach:
- * 1. Extend the existing CopperBlock class to create CopperBulbBlock and CopperGrateBlock
- * 2. Extend the existing TuffBlock class to create the tuff variants
- * 3. Implement the specific functionality for each block type
- * 4. Update the BlockRegistry to include these new blocks
- * 5. Create tests to verify functionality
- * 
- * I'll start by implementing the copper variants since they have more complex functionality,
- * then move to the tuff variants.
- */
+### 2024-08-28: Copper and Tuff Variants Implementation (1.21 Tricky Trials Update) ###
+Implemented the Copper and Tuff variant blocks for the Minecraft 1.21 Tricky Trials update with the following features:
+
+1. Created CopperBulbBlock class with:
+   - Redstone-powered light source functionality
+   - Four oxidation states (normal, exposed, weathered, oxidized)
+   - Waxed variants for each oxidation state to prevent further oxidation
+   - Base light level that's emitted when powered
+   - Redstone signal detection and response
+   - Proper texture updates based on state changes
+   - Serialization/deserialization for persistence
+
+2. Created CopperGrateBlock class with:
+   - Entity filtering ability based on entity size
+   - Four oxidation states with decreasing filter efficiency
+   - Waxed variants to prevent further oxidation
+   - Entity collision modification for entities passing through
+   - Proper texture updates based on state changes
+   - Serialization/deserialization for persistence
+
+3. Created Tuff Variant Blocks:
+   - ChiseledTuffBlock with decorative carved patterns
+   - TuffBricksBlock for building
+   - TuffBrickSlabBlock with top/bottom/double variants
+   - TuffBrickStairsBlock with direction and shape properties
+   - TuffBrickWallBlock with connection properties
+   - Proper textures for all variants
+   - Serialization/deserialization for persistence
+
+4. Fixed Common Implementation Issues:
+   - Added missing serialize and deserialize methods to the base Block class
+   - Fixed oxidation state maintenance during updates
+   - Corrected filter efficiency calculations based on oxidation state
+   - Fixed serialization issues with parent-child inheritance chains
+   - Ensured proper state updates when blocks change
+
+5. Created Comprehensive Tests:
+   - Tests for CopperBulbBlock's lighting properties and redstone interaction
+   - Tests for CopperBulbBlock's oxidation mechanics and waxing
+   - Tests for CopperGrateBlock's entity filtering based on entity size and type
+   - Tests for CopperGrateBlock's oxidation effects on filter efficiency
+   - Tests for all Tuff variant blocks' properties and behaviors
+   - Tests for serialization and deserialization of all blocks
+
+6. Added to BlockRegistry:
+   - Registered all copper variants with proper IDs
+   - Registered all tuff variants with proper IDs
+   - Added oxidation mappings for copper blocks
+
+All tests are now passing, verifying the complete implementation of the Copper and Tuff variant blocks for the Minecraft 1.21 Tricky Trials update. These blocks add new redstone mechanics, decorative options, and functional building blocks to the game.
+
+### 2024-08-30: Mace Weapon Implementation (1.21 Tricky Trials Update) ###
+Implemented the Mace weapon system with the following features:
+
+1. Created MaceItem class with:
+   - Heavy attack mechanics with charging system
+   - Armor piercing capabilities
+   - Material-based properties (damage, durability)
+   - Fall damage bonus when attacking while falling
+   - Cooldown system for heavy attacks
+   - Serialization/deserialization for persistence
+
+2. Created material variants:
+   - WoodenMaceItem: Low damage, durability, and armor piercing
+   - StoneMaceItem: Medium damage, low durability, medium armor piercing
+   - IronMaceItem: Medium damage, medium durability, medium armor piercing
+   - GoldenMaceItem: Low damage, very low durability, high enchantability
+   - DiamondMaceItem: High damage, high durability, high armor piercing
+   - NetheriteMaceItem: Highest damage, durability, and armor piercing with fire resistance
+
+3. Implemented heavy attack mechanics:
+   - Charging system that requires holding before release
+   - Visual feedback during charging
+   - Damage multiplier for fully charged attacks
+   - Cooldown period after heavy attack to prevent spam
+   - Increased knockback on heavy attacks
+
+4. Implemented armor piercing effect:
+   - Percentage-based armor penetration
+   - Different percentages based on material quality
+   - Reduced effect for regular attacks
+   - Full effect for heavy attacks
+
+5. Added CombatManager integration:
+   - Methods for tracking heavy attack charging
+   - Cooldown management
+   - Attack processing with armor piercing
+   - Damage calculation
+
+6. Created comprehensive test suite:
+   - Tests for basic properties of each material variant
+   - Tests for heavy attack charging and release mechanics
+   - Tests for armor piercing functionality
+   - Tests for durability consumption
+   - Tests for Netherite-specific properties (fire resistance, lava floating)
+   - Tests for CombatManager integration
+   - Tests for serialization and deserialization
+
+7. Fixed implementation issues:
+   - Fixed class inheritance issues with toJSON and fromJSON methods
+   - Fixed serialization to properly save and restore durability
+   - Corrected Netherite-specific properties to prevent inheritance by other variants
+   - Ensured proper durability reduction on different attack types
+
+All tests are now passing, verifying the complete implementation of the Mace weapon for the Minecraft 1.21 Tricky Trials update. This weapon adds a new combat mechanic that rewards players for charging attacks and provides an alternative combat style with armor penetration capabilities.

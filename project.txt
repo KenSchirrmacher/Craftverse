@@ -305,10 +305,10 @@
   - [COMPLETED] Copper Bulb
   - [COMPLETED] Copper Grate
   - [COMPLETED] Tuff variants (chiseled, bricks, etc.)
-- [ ] Mace weapon
-  - [ ] Basic weapon implementation
-  - [ ] Heavy attack mechanics
-  - [ ] Armor piercing capability
+- [COMPLETED] Mace weapon
+  - [COMPLETED] Basic weapon implementation
+  - [COMPLETED] Heavy attack mechanics
+  - [COMPLETED] Armor piercing capability
 
 ## Current Tasks
 1. ~~Implement Crafter block for the 1.21 Update~~
@@ -316,7 +316,7 @@
 3. ~~Create The Breeze mob~~
 4. ~~Add Wind Charge item~~
 5. ~~Implement new copper and tuff block variants~~
-6. Add Mace weapon
+6. ~~Add Mace weapon~~
 
 ## Completed Tasks
 1. Implemented CrafterBlock with 3x3 crafting grid and automated crafting functionality
@@ -346,3 +346,9 @@
 25. Created comprehensive test suites for all copper and tuff variant blocks
 26. Integrated all new blocks with the BlockRegistry for proper game integration
 27. Verified all tests pass for the copper and tuff variant implementations
+28. Implemented Mace weapon with heavy attack mechanics and armor piercing capability
+29. Created multiple material variants (wooden, stone, iron, gold, diamond, netherite)
+30. Integrated Mace with the CombatManager for proper gameplay functionality
+31. Added special properties for Netherite Mace (fire resistance, floating in lava)
+32. Created comprehensive test suite for Mace weapon testing all aspects of functionality
+33. Verified all tests pass for the Mace weapon implementation
