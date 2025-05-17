@@ -28,6 +28,14 @@ const WindChargeItem = require('./windChargeItem');
 const { BambooItem, BambooSignItem, BambooButtonItem, BambooPressurePlateItem } = require('./bambooItem');
 const BambooRaftItem = require('./bambooRaftItem');
 const RaftItem = require('./raftItem');
+// Import wolf armor items for 1.22 Sorcery Update
+const { 
+  LeatherWolfArmorItem, 
+  IronWolfArmorItem, 
+  GoldWolfArmorItem, 
+  DiamondWolfArmorItem, 
+  NetheriteWolfArmorItem 
+} = require('./wolfArmorItem');
 
 class ItemRegistry {
   /**
@@ -191,6 +199,9 @@ class ItemRegistry {
     
     // Register 1.21 (Tricky Trials) Update items
     this.register121Items();
+    
+    // Register 1.22 (Sorcery Update) items
+    this.register122Items();
     
     // Future: Register more items (stone, dirt, etc.)
     
@@ -429,6 +440,32 @@ class ItemRegistry {
     this.registerItem(new GoldenMaceItem());
     this.registerItem(new DiamondMaceItem());
     this.registerItem(new NetheriteMaceItem());
+  }
+  
+  /**
+   * Register items for the 1.22 (Sorcery Update)
+   * @private
+   */
+  register122Items() {
+    // Register Wolf armor items
+    this.registerWolfArmorItems();
+    
+    // Future: Register Ominous Bottle item
+    
+    // Future: Register spell-related items
+  }
+  
+  /**
+   * Register Wolf armor items
+   * @private
+   */
+  registerWolfArmorItems() {
+    // Register various Wolf armor materials
+    this.registerItem(new LeatherWolfArmorItem());
+    this.registerItem(new IronWolfArmorItem());
+    this.registerItem(new GoldWolfArmorItem());
+    this.registerItem(new DiamondWolfArmorItem());
+    this.registerItem(new NetheriteWolfArmorItem());
   }
   
   /**

@@ -593,6 +593,49 @@ class MobManager {
             success: success,
             color: mob.collarColor
           };
+        } else if (data.action === 'equip_armor' && mob.tamed) {
+          // Wolf armor interaction - part of 1.22 Sorcery Update
+          // Get the armor item from player inventory (handled on client side)
+          const armorItem = data.armorItem;
+          
+          // Check if wolf is owned by this player
+          if (mob.owner !== playerId) {
+            return {
+              success: false,
+              error: 'You can only equip armor on your own wolf'
+            };
+          }
+          
+          // Try to equip the armor
+          const success = mob.equipArmor(armorItem);
+          return {
+            success: success,
+            armorInfo: mob.getArmorInfo()
+          };
+        } else if (data.action === 'remove_armor' && mob.tamed) {
+          // Wolf armor removal - part of 1.22 Sorcery Update
+          // Check if wolf is owned by this player
+          if (mob.owner !== playerId) {
+            return {
+              success: false,
+              error: 'You can only remove armor from your own wolf'
+            };
+          }
+          
+          // Check if wolf has armor equipped
+          if (!mob.hasArmor()) {
+            return {
+              success: false,
+              error: 'This wolf has no armor equipped'
+            };
+          }
+          
+          // Remove the armor
+          const armorItem = mob.removeArmor();
+          return {
+            success: true,
+            armorItem: armorItem
+          };
         }
         break;
     }

@@ -377,12 +377,12 @@
   - [COMPLETED] Structure generation placement rules
   - [COMPLETED] Integration with world generation
   - [COMPLETED] Comprehensive tests
-- [ ] Wolf armor
-  - [ ] Wolf armor item implementation
-  - [ ] Wolf entity enhancement for armor capability
-  - [ ] Armor application and removal mechanics
-  - [ ] Different armor material variants
-  - [ ] Comprehensive tests
+- [COMPLETED] Wolf armor
+  - [COMPLETED] Wolf armor item implementation
+  - [COMPLETED] Wolf entity enhancement for armor capability
+  - [COMPLETED] Armor application and removal mechanics
+  - [COMPLETED] Different armor material variants
+  - [COMPLETED] Comprehensive tests
 - [ ] Ominous Bottles
   - [ ] Bottle item implementation
   - [ ] Capturing/storing mechanics
@@ -390,32 +390,28 @@
   - [ ] Integration with other game systems
   - [ ] Comprehensive tests
 - [ ] Armadillo mob
-  - [ ] Basic mob implementation
+  - [ ] Basic entity implementation
+  - [ ] Behavior and AI
   - [ ] Rolling defense mechanism
-  - [ ] Scute drops implementation
-  - [ ] AI behaviors
+  - [ ] Biome-specific spawning
+  - [ ] Scute dropping
   - [ ] Comprehensive tests
-- [ ] Spell mechanics
-  - [ ] Spell system foundation
-  - [ ] Redstone-like spell conductors
-  - [ ] Various spell types
-  - [ ] Crafting and casting systems
+- [ ] New spell mechanics
+  - [ ] Spell casting system
+  - [ ] Visual effects for spells
+  - [ ] Spell cooldowns and mana system
+  - [ ] Spell books and scrolls
   - [ ] Comprehensive tests
 
 ## Current Tasks
-1. ~~Complete implementation of Wind Turbine structure~~
-   - ~~Add structure generation placement rules~~
-   - ~~Integrate with world generation~~
-   - ~~Complete comprehensive testing~~
-2. Design Wolf armor system integrated with existing entity system
-   - Implement Wolf armor items
-   - Enhance Wolf entity for armor capability
-   - Add armor application/removal mechanics
-   - Create different material variants
-   - Develop comprehensive tests
-3. Analyze Ominous Bottles functionality from Minecraft Wiki
-4. Plan Armadillo mob implementation with rolling defense behavior
-5. Design spell mechanics foundation for future spell implementations
+1. Implementation of Ominous Bottle item
+   - [ ] Create OminousBottleItem class
+   - [ ] Implement capturing mechanic for raid captains
+   - [ ] Add Bad Omen effect application
+   - [ ] Create visual effects for bottle
+   - [ ] Add to ItemRegistry
+   - [ ] Implement UI interactions
+   - [ ] Write comprehensive tests
 
 ## Completed Tasks
 1. Implemented CrafterBlock with 3x3 crafting grid and automated crafting functionality

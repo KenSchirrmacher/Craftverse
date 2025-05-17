@@ -13,6 +13,10 @@ class Wolf extends MobBase {
     this.attackRange = 1.5;
     this.aggroRange = 8;
     this.collarColor = 'red'; // Default collar color
+    
+    // Wolf armor properties - part of 1.22 Sorcery Update
+    this.armor = null; // The equipped armor item
+    this.armorValue = 0; // Current armor protection value
   }
 
   update(world, players, mobs, deltaTime) {
@@ -104,6 +108,70 @@ class Wolf extends MobBase {
     return true;
   }
 
+  /**
+   * Equip armor on the wolf
+   * @param {WolfArmorItem} armorItem - The armor item to equip
+   * @returns {boolean} Whether the armor was successfully equipped
+   */
+  equipArmor(armorItem) {
+    // Can only equip armor if tamed
+    if (!this.tamed) return false;
+    
+    // Check if it's a valid wolf armor item
+    if (!armorItem || armorItem.type !== 'wolf_armor') return false;
+    
+    // Remove current armor if any
+    const oldArmor = this.armor;
+    
+    // Equip the new armor
+    this.armor = armorItem;
+    this.armorValue = armorItem.armorValue;
+    
+    // Return the old armor if any
+    return true;
+  }
+  
+  /**
+   * Remove armor from the wolf
+   * @returns {Object|null} The removed armor item or null if no armor was equipped
+   */
+  removeArmor() {
+    // Can only remove armor if tamed
+    if (!this.tamed || !this.armor) return null;
+    
+    const oldArmor = this.armor;
+    this.armor = null;
+    this.armorValue = 0;
+    
+    return oldArmor;
+  }
+  
+  /**
+   * Check if the wolf has armor equipped
+   * @returns {boolean} Whether the wolf has armor equipped
+   */
+  hasArmor() {
+    return this.armor !== null;
+  }
+  
+  /**
+   * Get information about the equipped armor
+   * @returns {Object|null} Armor information or null if no armor is equipped
+   */
+  getArmorInfo() {
+    if (!this.armor) return null;
+    
+    return {
+      id: this.armor.id,
+      name: this.armor.name,
+      armorValue: this.armor.armorValue,
+      durability: this.armor.durability,
+      maxDurability: this.armor.maxDurability,
+      material: this.armor.armorMaterial,
+      trim: this.armor.trim
+    };
+  }
+
   takeDamage(amount, attacker) {
     // If tamed, become angry at attacker unless it's the owner
     if (this.tamed && attacker.id !== this.owner) {
@@ -119,7 +187,27 @@ class Wolf extends MobBase {
       this.state = 'attack';
     }
     
-    return super.takeDamage(amount, attacker);
+    // Apply damage reduction from armor if equipped
+    let reducedAmount = amount;
+    if (this.armorValue > 0) {
+      // Calculate damage reduction (similar to player armor formula)
+      // Each armor point reduces damage by 4%
+      const damageReduction = Math.min(0.8, this.armorValue * 0.04); // Cap at 80% reduction
+      reducedAmount = Math.max(1, Math.floor(amount * (1 - damageReduction)));
+      
+      // Damage the armor
+      if (this.armor) {
+        const armorDamaged = this.armor.reduceDurability(1);
+        
+        // If armor broke, remove it
+        if (armorDamaged) {
+          this.armor = null;
+          this.armorValue = 0;
+        }
+      }
+    }
+    
+    return super.takeDamage(reducedAmount, attacker);
   }
 
   getDrops() {
@@ -131,14 +219,42 @@ class Wolf extends MobBase {
   }
 
   serialize() {
+    const armorData = this.armor ? this.armor.toJSON() : null;
+    
     return {
       ...super.serialize(),
       tamed: this.tamed,
       owner: this.owner,
       sitting: this.sitting,
       angry: this.angry,
-      collarColor: this.collarColor
+      collarColor: this.collarColor,
+      armor: armorData,
+      armorValue: this.armorValue
     };
+  }
+  
+  /**
+   * Deserialize wolf data
+   * @param {Object} data - The serialized data
+   */
+  static deserialize(data) {
+    const wolf = new Wolf(data.position);
+    wolf.id = data.id;
+    wolf.tamed = data.tamed;
+    wolf.owner = data.owner;
+    wolf.sitting = data.sitting;
+    wolf.angry = data.angry;
+    wolf.collarColor = data.collarColor;
+    wolf.health = data.health;
+    wolf.maxHealth = data.maxHealth;
+    
+    // Deserialize armor if present
+    if (data.armor) {
+      // Temporarily set armor value (armor item will be loaded separately)
+      wolf.armorValue = data.armorValue;
+    }
+    
+    return wolf;
   }
 }
 
