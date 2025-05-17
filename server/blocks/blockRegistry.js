@@ -42,6 +42,8 @@ const TrialSpawnerBlock = require('./trialSpawner');
 const CopperBulbBlock = require('./copperBulbBlock');
 const CopperGrateBlock = require('./copperGrateBlock');
 const { ChiseledTuffBlock, TuffBricksBlock, TuffBrickSlabBlock, TuffBrickStairsBlock, TuffBrickWallBlock } = require('./tuffVariantsBlocks');
+// Import 1.22 Sorcery Update blocks
+const WindEnergyTransmitter = require('./windEnergyTransmitter');
 // Import bamboo blocks
 const { 
   BambooBlock, 
@@ -216,6 +218,9 @@ class BlockRegistry {
     // Register 1.21 Copper and Tuff blocks
     this.register121CopperAndTuffBlocks();
     
+    // Register 1.22 Sorcery Update blocks
+    this.register122SorceryBlocks();
+    
     // Future: Register more blocks
   }
   
@@ -350,6 +355,17 @@ class BlockRegistry {
     this.registerBlock(new TuffBrickSlabBlock());
     this.registerBlock(new TuffBrickStairsBlock());
     this.registerBlock(new TuffBrickWallBlock());
+  }
+  
+  /**
+   * Register blocks from the 1.22 Sorcery Update
+   * @private
+   */
+  register122SorceryBlocks() {
+    // Register Wind Energy Transmitter
+    this.registerBlock(new WindEnergyTransmitter());
+    
+    // More 1.22 blocks will be added here as they are implemented
   }
   
   /**

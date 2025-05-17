@@ -3,6 +3,7 @@
  */
 const VillageGenerator = require('./villageGenerator');
 const AncientCityGenerator = require('./structures/ancientCityGenerator');
+const WindTurbineGenerator = require('./structures/windTurbineGenerator');
 
 class StructureGenerator {
   /**
@@ -59,6 +60,9 @@ class StructureGenerator {
     this.registerStructure('stronghold', this.generateStronghold);
     this.registerStructure('mineshaft', this.generateMineshaft);
     this.registerStructure('ocean_monument', this.generateOceanMonument);
+    
+    // 1.22 Sorcery Update structures
+    this.registerStructure('wind_turbine', this.generateWindTurbine);
   }
   
   /**
@@ -651,6 +655,27 @@ class StructureGenerator {
       options,
       blockSetter,
       this.entitySpawner
+    );
+  }
+  
+  /**
+   * Generate a Wind Turbine structure
+   * @param {Object} position - Position to generate the structure
+   * @param {Object} options - Additional options
+   * @param {Function} blockSetter - Function to set blocks
+   * @returns {Object} Generated structure data
+   */
+  generateWindTurbine(position, options, blockSetter) {
+    // Initialize Wind Turbine Generator if not already created
+    if (!this.windTurbineGenerator) {
+      this.windTurbineGenerator = new WindTurbineGenerator(this);
+    }
+    
+    // Use the Wind Turbine Generator to create the structure
+    return this.windTurbineGenerator.generate(
+      position,
+      options,
+      blockSetter
     );
   }
 }
