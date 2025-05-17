@@ -9,6 +9,7 @@ const Boat = require('./boat');
 const Raft = require('./raft');
 const Firefly = require('./firefly');
 const EndCrystal = require('./endCrystal');
+const WindChargeEntity = require('./windChargeEntity');
 const { v4: uuidv4 } = require('uuid');
 
 /**
@@ -42,6 +43,10 @@ function createEntity(type, id = null, options = {}) {
     
     case 'boat':
       return new Boat(options.world, { id: entityId, ...options });
+      
+    // Wind Charge entity for 1.21 Tricky Trials update
+    case 'wind_charge_entity':
+      return new WindChargeEntity(entityId, options);
       
     // Handle raft types (including wood variants and chest variants)
     case 'raft':
@@ -95,7 +100,7 @@ function createEntity(type, id = null, options = {}) {
     
     default:
       console.warn(`Unknown entity type: ${type}`);
-      return new Entity(entityId, { type: 'unknown', ...options });
+      return new Entity(options.world, { id: entityId, type: 'unknown', ...options });
   }
 }
 

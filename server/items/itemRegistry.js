@@ -23,6 +23,7 @@ const HangingSignItem = require('./hangingSignItem');
 const ChiseledBookshelfItem = require('./chiseledBookshelfItem');
 const { NetheriteUpgradeTemplate } = require('./netheriteUpgradeTemplate');
 const CrafterItem = require('./crafterItem');
+const WindChargeItem = require('./windChargeItem');
 // Import bamboo items
 const { BambooItem, BambooSignItem, BambooButtonItem, BambooPressurePlateItem } = require('./bambooItem');
 const BambooRaftItem = require('./bambooRaftItem');
@@ -409,8 +410,10 @@ class ItemRegistry {
     // Register Crafter item
     this.registerItem(new CrafterItem());
     
+    // Register Wind Charge item
+    this.registerItem(new WindChargeItem());
+    
     // To be added later:
-    // - Wind Charge
     // - Mace weapons
     // - Copper blocks-related items
     // - Tuff variants

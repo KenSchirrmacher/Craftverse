@@ -37,6 +37,7 @@
 - server/entities/endCrystal.js - Implementation of end crystals for the Ender Dragon fight.
 - server/entities/enderDragon.js - Implementation of the Ender Dragon boss.
 - server/entities/statusEffectManager.js - Manages status effects on entities.
+- server/entities/windChargeEntity.js - Implementation of Wind Charge projectile entity that moves blocks and entities
 
 ### Items
 - server/items/item.js - Base class for all items in the game. Provides common functionality like durability, use actions, serialization, and event handling.
@@ -54,6 +55,7 @@
 - server/items/itemRegistry.js - Central registry for all items in the game
 - server/items/boatItem.js - Implementation of boat items, including boats with chests for the Wild Update
 - server/items/netheriteUpgradeTemplate.js - Implementation of the smithing template required for upgrading diamond equipment to netherite in the 1.20 update
+- server/items/windChargeItem.js - Implementation of Wind Charge item from the 1.21 Tricky Trials update, thrown to push entities and blocks
 
 ### Blocks
 - server/blocks/amethystBlock.js - Implementation of amethyst block and amethyst cluster growth
@@ -166,6 +168,8 @@
 - server/tests/runNetheriteUpgradeTemplateTest.js - Test runner for the Netherite Upgrade Template tests
 - server/tests/breezeTest.js - Tests for the Breeze mob implementation with flying mechanics and wind attacks
 - server/tests/runBreezeTest.js - Test runner for the Breeze mob tests
+- server/tests/windChargeTest.js - Tests for the Wind Charge item and entity implementation with block and entity pushing mechanics
+- server/tests/runWindChargeTest.js - Test runner for the Wind Charge tests
 
 ## Client
 - public/index.html - Main client page

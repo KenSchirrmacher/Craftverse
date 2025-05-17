@@ -295,10 +295,12 @@
   - [COMPLETED] Flying and hovering behaviors
   - [COMPLETED] Drops (breeze rods and wind charges)
   - [COMPLETED] Comprehensive tests
-- [ ] Wind Charge
-  - [ ] Item implementation
-  - [ ] Entity implementation when thrown
-  - [ ] Block-moving capabilities
+- [COMPLETED] Wind Charge
+  - [COMPLETED] Item implementation
+  - [COMPLETED] Entity implementation when thrown
+  - [COMPLETED] Block-moving capabilities
+  - [COMPLETED] Entity-pushing mechanics
+  - [COMPLETED] Comprehensive tests
 - [ ] Copper and Tuff variants
   - [ ] Copper Bulb
   - [ ] Copper Grate
@@ -312,7 +314,7 @@
 1. ~~Implement Crafter block for the 1.21 Update~~
 2. ~~Implement Trial Chambers structure~~
 3. ~~Create The Breeze mob~~
-4. Add Wind Charge item
+4. ~~Add Wind Charge item~~
 5. Implement new copper and tuff block variants
 6. Add Mace weapon
 
@@ -332,3 +334,8 @@
 13. Implemented Breeze mob with flying mechanics and wind-based attacks
 14. Created comprehensive test suite for Breeze mob testing all behavior aspects
 15. Verified all tests pass for the Breeze mob implementation
+16. Implemented WindChargeItem with proper properties and throwing mechanics
+17. Implemented WindChargeEntity with physics simulation and block/entity interaction
+18. Integrated Wind Charge with the ItemRegistry and EntityFactory
+19. Created comprehensive test suite for Wind Charge testing all functionality
+20. Verified all tests pass for the Wind Charge implementation
