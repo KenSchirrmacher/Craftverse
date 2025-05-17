@@ -288,10 +288,13 @@
   - [COMPLETED] Unique loot and rewards
   - [COMPLETED] Procedural room and corridor generation
   - [COMPLETED] Comprehensive tests
-- [ ] The Breeze mob
-  - [ ] Basic mob implementation
-  - [ ] Wind-based attack mechanics
-  - [ ] AI and movement patterns
+- [COMPLETED] The Breeze mob
+  - [COMPLETED] Basic mob implementation
+  - [COMPLETED] Wind-based attack mechanics
+  - [COMPLETED] AI and movement patterns
+  - [COMPLETED] Flying and hovering behaviors
+  - [COMPLETED] Drops (breeze rods and wind charges)
+  - [COMPLETED] Comprehensive tests
 - [ ] Wind Charge
   - [ ] Item implementation
   - [ ] Entity implementation when thrown
@@ -308,7 +311,7 @@
 ## Current Tasks
 1. ~~Implement Crafter block for the 1.21 Update~~
 2. ~~Implement Trial Chambers structure~~
-3. Create The Breeze mob
+3. ~~Create The Breeze mob~~
 4. Add Wind Charge item
 5. Implement new copper and tuff block variants
 6. Add Mace weapon
@@ -326,3 +329,6 @@
 10. Implemented TrialChamber structure with serialization and world integration
 11. Created comprehensive test suite for Trial Chambers testing all components
 12. Verified all tests pass for the Trial Chambers implementation
+13. Implemented Breeze mob with flying mechanics and wind-based attacks
+14. Created comprehensive test suite for Breeze mob testing all behavior aspects
+15. Verified all tests pass for the Breeze mob implementation

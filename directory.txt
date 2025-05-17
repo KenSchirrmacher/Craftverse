@@ -25,6 +25,7 @@
 - server/mobs/zombieVillager.js - Implementation of Zombie Villagers with curing mechanics
 - server/mobs/warden.js - Implementation of Warden mob with vibration-based sensing AI
 - server/mobs/allay.js - Implementation of Allay mob with flying, item collection, and note block interaction
+- server/mobs/breeze.js - Implementation of Breeze mob with wind-based attacks and flying mechanics for 1.21 Tricky Trials update
 
 ### Entities
 - server/entities/entity.js - Base class for all entities in the game. Provides common functionality like physics, collision detection, serialization, and event handling.
@@ -163,6 +164,8 @@
 - server/tests/chiseledBookshelfTest.js - Tests for the Chiseled Bookshelf implementation
 - server/tests/netheriteUpgradeTemplateTest.js - Tests for the Netherite Upgrade Template implementation
 - server/tests/runNetheriteUpgradeTemplateTest.js - Test runner for the Netherite Upgrade Template tests
+- server/tests/breezeTest.js - Tests for the Breeze mob implementation with flying mechanics and wind attacks
+- server/tests/runBreezeTest.js - Test runner for the Breeze mob tests
 
 ## Client
 - public/index.html - Main client page
@@ -259,4 +262,65 @@ This document outlines the future development roadmap for the Craftverse project
 - Gameplay enhancement plans for combat, UI/UX, and modding support
 - Prioritized feature backlog for upcoming development
 - Technical debt reduction strategies
-- Timeline estimates for future development phases 
+- Timeline estimates for future development phases
+
+# 1.21 Update (Tricky Trials) Files
+
+## server/blocks/crafterBlock.js
+This file implements the Crafter block from the 1.21 Update, which provides automated crafting functionality:
+- 3x3 crafting grid for item placement
+- Redstone-powered automation
+- Directional placement (faces the player when placed)
+- Cooldown system to prevent rapid crafting
+- Inventory management for crafting ingredients and results
+
+## server/items/crafterItem.js
+This file implements the item that places the Crafter block:
+- Places CrafterBlock with correct player-facing orientation
+- Includes descriptive tooltip
+- Handles placement validation
+
+## server/tests/crafterBlockTest.js
+This file contains comprehensive tests for the Crafter block implementation:
+- Tests basic properties (hardness, tool type)
+- Tests inventory management
+- Tests crafting behavior and ingredient consumption
+- Tests facing direction
+- Tests registry integration
+- Tests serialization/deserialization
+- Tests item dropping when broken
+
+## server/tests/runCrafterBlockTest.js
+This is a test runner for the Crafter block tests.
+
+## server/structures/trialChamber.js
+This file implements the Trial Chamber structure for the 1.21 Update:
+- Structure layout and room generation
+- Treasure room placement
+- Mob spawner placement
+- Corridor generation
+- Decoration and loot placement
+
+## server/blocks/trialSpawner.js
+This file implements the Trial Spawner block:
+- Mob wave spawning mechanics
+- Reward chest generation
+- Interaction with Trial Chambers
+
+## server/utils/structures/trialChamberGenerator.js
+This file contains the generation logic for Trial Chambers:
+- Procedural room generation
+- Structure component assembly
+- Loot table integration
+- Trial spawner placement
+
+## server/tests/trialChamberTest.js
+This file contains tests for the Trial Chamber implementation:
+- Tests structure generation
+- Tests room layouts
+- Tests trial spawner functionality
+- Tests loot generation
+- Tests integration with world generation
+
+## server/tests/runTrialChamberTest.js
+This is a test runner for the Trial Chamber tests. 
