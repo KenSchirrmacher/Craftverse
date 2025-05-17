@@ -5,6 +5,7 @@
 // Import blocks
 const SporeBlossomBlock = require('./sporeBlossomBlock');
 const SculkSensorBlock = require('./sculkSensorBlock');
+const CalibratedSculkSensorBlock = require('./calibratedSculkSensorBlock');
 const LightningRodBlock = require('./lightningRodBlock');
 const { SuspiciousSandBlock, SuspiciousGravelBlock } = require('./suspiciousBlocks');
 const Block = require('./block');
@@ -145,6 +146,7 @@ class BlockRegistry {
     // Register Caves & Cliffs blocks
     this.registerBlock(new SporeBlossomBlock());
     this.registerBlock(new SculkSensorBlock());
+    this.registerBlock(new CalibratedSculkSensorBlock());
     this.registerBlock(new LightningRodBlock());
     this.registerBlock(new CaveVineHeadBlock());
     this.registerBlock(new CaveVineBodyBlock());

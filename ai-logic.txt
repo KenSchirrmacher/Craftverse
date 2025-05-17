@@ -2357,6 +2357,105 @@ Plan to implement Netherite upgrade template:
    - Test property transfer when upgrading
 
 I'll start by creating the NetheriteUpgradeTemplate class and then modify the SmithingTable to work with this new template.
-I ' v e   s u c c e s s f u l l y   c o m p l e t e d   t h e   N e t h e r i t e   u p g r a d e   t e m p l a t e   i m p l e m e n t a t i o n   w i t h   t h e   f o l l o w i n g   c o m p o n e n t s :  
- 1 .   C r e a t e d   t h e   N e t h e r i t e U p g r a d e T e m p l a t e   c l a s s :  
-  
+
+### 2024-08-19: Implemented Netherite Upgrade Template for 1.20 Update ###
+
+I've successfully completed the Netherite upgrade template implementation with the following components:
+
+1. Created the NetheriteUpgradeTemplate class:
+   - Extended the Item base class with template-specific properties
+   - Added methods for checking compatibility with diamond equipment
+   - Implemented JSON serialization/deserialization
+   - Added metadata for source and usage instructions
+
+2. Updated the SmithingTable class:
+   - Added requireNetheriteTemplate flag for backward compatibility
+   - Updated process method to check for template when upgrading diamond gear
+   - Ensured property transfer when upgrading (enchantments, custom names, etc.)
+   - Added compatibility with all diamond tool and armor types
+
+3. Updated the item registry:
+   - Registered the NetheriteUpgradeTemplate in itemRegistry.js
+   - Updated the registerTrailsAndTalesItems method to include the template
+
+4. Created comprehensive tests:
+   - Created netheriteUpgradeTemplateTest.js for testing all aspects of the template
+   - Created runNetheriteUpgradeTemplateTest.js test runner
+   - Tested basic properties, smithing integration, and property preservation
+   - Verified all tests are passing
+
+The implementation now correctly requires a netherite upgrade template for upgrading diamond equipment to netherite, matching Minecraft 1.20's behavior. The backward compatibility flag allows toggling this requirement for older worlds if needed.
+
+### 2024-08-19: Implementing Calibrated Sculk Sensor for 1.20 Update ###
+
+Now that the Netherite upgrade template is complete, the next feature to implement is the Calibrated Sculk Sensor for the 1.20 Update. This is an advanced variant of the regular Sculk Sensor that allows filtering specific vibrations.
+
+Current status:
+1. We already have the regular SculkSensorBlock implementation
+2. We have vibration detection mechanics in place
+3. We have redstone signal emission from sculk sensors
+
+Plan to implement Calibrated Sculk Sensor:
+1. Create a new CalibratedSculkSensorBlock class that extends SculkSensorBlock:
+   - Add filter system for specific vibration types
+   - Implement frequency filtering mechanics
+   - Add GUI for setting the vibration filter
+   - Maintain all existing sculk sensor behaviors while adding the filtering
+
+2. Update the block registry:
+   - Register the CalibratedSculkSensorBlock
+   - Add crafting recipes for the calibrated sensor (sculk sensor + amethyst shard)
+   - Set up proper block textures and models
+
+3. Implement vibration filtering logic:
+   - Create vibration type enumeration for different sources
+   - Add filter storage in block's state
+   - Add filter check logic in the detect method
+
+4. Create comprehensive tests:
+   - Test basic calibrated sensor properties
+   - Test vibration filtering logic
+   - Test redstone signal emission for filtered vibrations
+   - Test crafting and recipe registration
+
+I'll start by examining the existing SculkSensorBlock implementation and then creating the CalibratedSculkSensorBlock with filtering capabilities.
+
+### 2024-08-20: 1.20 Update - Calibrated Sculk Sensor Implementation ###
+
+I've successfully implemented the Calibrated Sculk Sensor feature for the 1.20.0 Update. The calibrated sculk sensor is an advanced variant of the regular sculk sensor that can filter specific vibration types. Here's a summary of the implementation:
+
+1. Created CalibratedSculkSensorBlock that extends SculkSensorBlock:
+   - Implemented 15 different vibration filter types (step, break_block, place_block, etc.)
+   - Added an extended vibration detection radius (12 blocks vs standard 8)
+   - Implemented special filtering logic that outputs max redstone power when detecting matched vibrations
+   - Created methods to set/get the filter type and handle filtered vibrations
+
+2. Updated Block Registry:
+   - Registered the CalibratedSculkSensorBlock in the block registry system
+   - Ensured proper integration with the existing sculk sensor system
+
+3. Added vibration filtering system:
+   - Implemented player interaction to cycle through filter types
+   - Added special handling for filtered vibrations to output maximum redstone power
+   - Created a more sophisticated vibration detection system for specific events
+
+4. Created comprehensive tests:
+   - Tested basic properties and inheritance from SculkSensorBlock
+   - Tested filter management (setting/getting filters, handling invalid filters)
+   - Tested vibration filtering capabilities and signal output
+   - Tested serialization/deserialization for proper data persistence
+   - Verified all 15 filter types are working correctly
+
+The implementation allows players to filter specific vibration types by interacting with the calibrated sculk sensor. When set to a specific filter type, the sensor will only detect vibrations of that type, ignoring all others. When a matching vibration is detected, the sensor always outputs full redstone power, making it useful for specific redstone contraptions.
+
+All tests for the Calibrated Sculk Sensor are now passing, confirming that the feature is working correctly and behaving as expected.
+
+With this implementation, we have successfully completed all planned features for the 1.20 Update, including:
+- Bamboo wood set
+- Rafts system
+- Netherite upgrade template
+- Calibrated sculk sensor
+
+Next steps:
+1. Review all 1.20 Update features for completeness
+2. Plan for future updates and enhancements

@@ -255,14 +255,15 @@
   - [COMPLETED] Smithing table integration
   - [COMPLETED] Upgrade mechanics
   - [COMPLETED] Tests
-- [TODO] Calibrated sculk sensor
-  - [TODO] Block implementation
-  - [TODO] Filter system
-  - [TODO] Redstone mechanics
-  - [TODO] Tests
+- [COMPLETED] Calibrated sculk sensor
+  - [COMPLETED] Block implementation
+  - [COMPLETED] Filter system
+  - [COMPLETED] Redstone mechanics
+  - [COMPLETED] Tests
 
 ## Current Tasks
-1. Implement Calibrated Sculk Sensor for the 1.20 Update
+1. ~~Implement Calibrated Sculk Sensor for the 1.20 Update~~
+2. Review all 1.20 Update features for completeness
 
 ## Completed Features (Trails & Tales Update)
 - [COMPLETED] Archaeology system
