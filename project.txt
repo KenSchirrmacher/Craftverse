@@ -53,6 +53,12 @@
 1. ~~Implement Echo Shards as chest loot in Ancient Cities~~
 2. Implement Fireflies for the Mangrove Swamp biome
 3. Implement Netherite upgrade template for the 1.20 Update
+4. Begin implementation of Minecraft 1.21 Update (Tricky Trials)
+   - Implement Trial Chambers structure
+   - Create The Breeze mob
+   - Add Wind Charge item
+   - Implement new copper and tuff block variants
+   - Add Mace weapon
 
 ## Completed Tasks
 1. Analyzed and verified Weather System implementation
@@ -264,7 +270,8 @@
 ## Current Tasks
 1. ~~Implement Calibrated Sculk Sensor for the 1.20 Update~~
 2. ~~Review all 1.20 Update features for completeness~~
-3. Plan for future game updates and enhancements
+3. ~~Plan for future game updates and enhancements~~
+4. Begin implementation of Minecraft 1.21 Update (Tricky Trials)
 
 ## Completed Features (Trails & Tales Update)
 - [COMPLETED] Archaeology system
