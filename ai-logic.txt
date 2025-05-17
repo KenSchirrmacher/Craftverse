@@ -2895,3 +2895,40 @@ Implemented the Wind Turbine structure for the 1.22 Sorcery Update with the foll
 All tests are now passing, verifying the complete implementation of the Wind Turbine structure for the Minecraft 1.22 Sorcery Update. This renewable energy source adds interesting redstone-based power generation that varies with height and weather conditions, creating new possibilities for automation and technical builds.
 
 The implementation is complete with proper world generation integration and placement rules, making Wind Turbines a naturally occurring structure that players can find while exploring the world. The energy transmission system provides a new redstone power source that functions differently from traditional mechanisms.
+
+### 2024-09-02: Wolf Armor Implementation (1.22 Sorcery Update) ###
+Implemented Wolf armor for the 1.22 Sorcery Update with the following components:
+
+1. Created WolfArmorItem class and material variants:
+   - Leather, Iron, Gold, Diamond, and Netherite wolf armor
+   - Material-based armor values and durabilities
+   - Support for armor trims (using existing trim patterns/materials)
+   - Serialization/deserialization for persistence
+
+2. Enhanced Wolf class with armor capabilities:
+   - Added equipArmor and removeArmor methods
+   - Implemented armor-based damage reduction (4% per armor point)
+   - Added armor durability reduction when taking damage
+   - Updated serialization to include armor data
+   - Added visual indicators for equipped armor
+
+3. Updated MobManager to handle wolf armor interactions:
+   - Added 'equip_armor' action for applying armor to wolves
+   - Added 'remove_armor' action for removing armor from wolves
+   - Added ownership verification (only owner can modify armor)
+   - Created proper response data for client updates
+
+4. Added wolf armor items to ItemRegistry:
+   - Registered all armor material variants
+   - Created proper item descriptions and properties
+   - Included in 1.22 Sorcery Update items
+
+5. Created comprehensive tests for all wolf armor functionality:
+   - Armor item creation and properties
+   - Equipping and removing armor
+   - Damage reduction calculations
+   - Armor durability and breaking
+   - Serialization and persistence
+   - Armor trim application and removal
+
+The Wolf armor system is now fully functional, allowing players to equip their tamed wolves with protective armor of various materials.

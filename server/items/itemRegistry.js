@@ -36,6 +36,8 @@ const {
   DiamondWolfArmorItem, 
   NetheriteWolfArmorItem 
 } = require('./wolfArmorItem');
+// Import Ominous Bottle for 1.22 Sorcery Update
+const OminousBottleItem = require('./ominousBottleItem');
 
 class ItemRegistry {
   /**
@@ -450,7 +452,8 @@ class ItemRegistry {
     // Register Wolf armor items
     this.registerWolfArmorItems();
     
-    // Future: Register Ominous Bottle item
+    // Register Ominous Bottle item
+    this.registerItem(new OminousBottleItem());
     
     // Future: Register spell-related items
   }

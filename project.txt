@@ -383,12 +383,12 @@
   - [COMPLETED] Armor application and removal mechanics
   - [COMPLETED] Different armor material variants
   - [COMPLETED] Comprehensive tests
-- [ ] Ominous Bottles
-  - [ ] Bottle item implementation
-  - [ ] Capturing/storing mechanics
-  - [ ] Usage effects
-  - [ ] Integration with other game systems
-  - [ ] Comprehensive tests
+- [COMPLETED] Ominous Bottles
+  - [COMPLETED] Bottle item implementation
+  - [COMPLETED] Capturing/storing mechanics
+  - [COMPLETED] Usage effects
+  - [COMPLETED] Integration with other game systems
+  - [COMPLETED] Comprehensive tests
 - [ ] Armadillo mob
   - [ ] Basic entity implementation
   - [ ] Behavior and AI
@@ -404,13 +404,20 @@
   - [ ] Comprehensive tests
 
 ## Current Tasks
-1. Implementation of Ominous Bottle item
-   - [ ] Create OminousBottleItem class
-   - [ ] Implement capturing mechanic for raid captains
-   - [ ] Add Bad Omen effect application
-   - [ ] Create visual effects for bottle
-   - [ ] Add to ItemRegistry
-   - [ ] Implement UI interactions
+1. ~~Implementation of Ominous Bottle item~~
+   - [x] Create OminousBottleItem class
+   - [x] Implement capturing mechanic for raid captains
+   - [x] Add Bad Omen effect application
+   - [x] Create visual effects for bottle
+   - [x] Add to ItemRegistry
+   - [x] Implement UI interactions
+   - [x] Write comprehensive tests
+2. Implementation of Armadillo mob
+   - [ ] Create basic mob class with properties
+   - [ ] Implement rolling defense mechanism
+   - [ ] Add scute dropping behavior
+   - [ ] Implement proper AI
+   - [ ] Add to MobRegistry
    - [ ] Write comprehensive tests
 
 ## Completed Tasks
@@ -455,3 +462,9 @@
 39. Integrated WindTurbine with world generation system for natural structure generation
 40. Enhanced test suite with placement rule and world generation integration tests
 41. Verified all Wind Turbine implementation tests are passing
+42. Implemented OminousBottleItem with capturing mechanics for Bad Omen effect from raid captains
+43. Added effect storage and application systems for Ominous Bottle
+44. Implemented client-side effects for filled bottles (glow effects, texture changes)
+45. Created comprehensive test suite for Ominous Bottle testing all functionality
+46. Added OminousBottleItem to ItemRegistry for game integration
+47. Verified all tests pass for the Ominous Bottle implementation
