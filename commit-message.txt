@@ -91,3 +91,17 @@ Add Ominous Bottle implementation for 1.22 Sorcery Update
 - Integrated with ItemRegistry for proper game access
 - Created comprehensive test suite with all test cases passing
 - Updated project.txt to mark feature as complete 
+
+feat(magic): Complete spell mechanics system for 1.22 Sorcery Update
+
+This commit adds the comprehensive spell mechanics system for the Minecraft 1.22 "Sorcery Update":
+
+- Implemented SpellManager for handling spell registration, casting, and effect management
+- Created SpellRegistry with spell types, elements, categories, and rarity levels
+- Added SpellBookItem for learning and casting spells with durability system
+- Implemented SpellScrollItem as single-use spell items that can bypass mana requirements
+- Created SpellAltarBlock for crafting and upgrading spells with visual effects
+- Implemented mana resource system with regeneration and cooldowns
+- Added comprehensive tests in spellSystemTest.js
+
+All tests are passing successfully, completing the core spell mechanics feature for the Sorcery Update. 

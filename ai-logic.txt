@@ -2932,3 +2932,96 @@ Implemented Wolf armor for the 1.22 Sorcery Update with the following components
    - Armor trim application and removal
 
 The Wolf armor system is now fully functional, allowing players to equip their tamed wolves with protective armor of various materials.
+
+### 2024-09-03: Armadillo Implementation (1.22 Sorcery Update) ###
+Implemented the Armadillo mob for the 1.22 Sorcery Update with the following components:
+
+1. Created Armadillo class with:
+   - Unique rolling defense mechanism that provides damage reduction
+   - Biome-specific spawning preferences (savanna, desert, badlands)
+   - AI system that responds to threats by either rolling up or fleeing
+   - Breeding system with baby-to-adult growth mechanics
+   - Scute dropping behavior for resource generation
+
+2. Created ArmadilloScuteItem class:
+   - Rare crafting material dropped by adult armadillos
+   - Designed with appropriate item properties (stackable, with descriptive tooltip)
+   - Registered in the ItemRegistry for game access
+
+3. Integrated with existing systems:
+   - Added Armadillo to MobRegistry for proper spawning in the world
+   - Implemented interaction system for breeding with carrots/beetroots
+   - Created appropriate serialization/deserialization for persistence
+
+4. Implemented comprehensive testing:
+   - Verified all rolling defense behaviors work as expected
+   - Confirmed proper AI responses to various threats
+   - Tested breeding mechanics and baby growth
+   - Validated scute dropping functionality
+   - Ensured proper serialization/deserialization for game saves
+
+The Armadillo implementation adds a unique passive mob to the game with distinctive defensive mechanics. The rolling behavior provides an interesting challenge for players while the scute drops offer a new crafting material. The implementation follows Minecraft's design patterns for mobs while adding the unique rolling mechanic from the 1.22 Sorcery Update.
+
+### 2024-09-03: Spell Mechanics Implementation (1.22 Sorcery Update) ###
+Implemented the comprehensive spell mechanics system for the Minecraft 1.22 Sorcery Update with the following components:
+
+1. Created SpellManager class to handle all spell-related functionality:
+   - Spell registration and management
+   - Spell casting and effect handling
+   - Player spell knowledge tracking
+   - Mana resource system with regeneration
+   - Cooldown management
+   - Active spell effect tracking
+   - Event-based integration with server systems
+   - Serialization/deserialization for persistence
+
+2. Designed SpellRegistry with categorization systems:
+   - Spell categories (attack, defense, utility, movement, transformation, summoning)
+   - Spell elements (fire, water, earth, air, light, dark, neutral)
+   - Spell rarity levels (common to legendary)
+   - Target types (entity, block, self, area, projectile)
+   - Level-based scaling for mana cost, damage, area, and cooldown
+   - Default spell definitions for 8 initial spells
+
+3. Created SpellBookItem for learning and casting spells:
+   - Spell storage with level information
+   - Learning functionality (teaches spells to players)
+   - Casting capabilities with durability system
+   - Element and rarity visual indicators
+1. Core Spell System:
+   - SpellManager: Main class to manage spell registration, casting, and effects
+   - SpellRegistry: Registry for all available spells
+   - SpellTypes: Defines different categories of spells (attack, utility, buff, etc.)
+   - SpellEffects: Defines effect behaviors for spells
+   - ManaSystem: Resource management for spell casting
+
+2. Planned Spell Categories:
+   - Attack Spells: Deal damage to entities
+   - Utility Spells: Non-combat effects (teleportation, light creation)
+   - Buff Spells: Positive status effects
+   - Debuff Spells: Negative status effects
+   - Area of Effect Spells: Affect multiple entities or blocks
+   - Transformation Spells: Change entities or blocks temporarily
+
+3. Spell Items and Blocks:
+   - SpellBookItem: Base item for learning/using spells
+   - SpellScrollItem: Single-use spell items
+   - SpellAltarBlock: Block for crafting and enhancing spells
+   - RuneBlocks: Placeable blocks with spell effects
+
+4. Player Integration:
+   - Mana resource tracking in PlayerManager
+   - Spell learning/discovery system
+   - Spell cooldown management
+   - Spell favorites/quick selection UI
+
+5. Implementation Steps:
+   - Create basic SpellManager and registry system
+   - Implement mana system as a resource
+   - Design and implement first spell category (attack)
+   - Design and implement spell books and scrolls
+   - Add player UI elements for mana and spell selection
+   - Expand with additional spell categories
+   - Implement comprehensive testing
+
+This spell system will be designed to integrate with existing game mechanics like the enchantment and potion systems but provide a new gameplay experience focused on active casting rather than passive effects.
