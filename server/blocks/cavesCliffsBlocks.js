@@ -837,14 +837,13 @@ class MossBlock extends Block {
   }
 }
 
-// Export all block classes
+// Export the block classes
 module.exports = {
   CopperBlock,
   BuddingAmethystBlock,
   AmethystClusterBlock,
   DeepslateBlock,
   PointedDripstoneBlock,
-  PowderSnowBlock: require('./powderSnowBlock'),
-  MossBlock: require('./mossBlock'),
-  DripLeafBlock: require('./dripleafBlock')
+  PowderSnowBlock,
+  MossBlock
 }; 

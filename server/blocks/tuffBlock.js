@@ -3,7 +3,7 @@
  * A stone-like block found near amethyst geodes and in dripstone caves
  */
 
-const Block = require('./blockBase');
+const Block = require('./block');
 
 /**
  * Tuff Block
@@ -116,8 +116,22 @@ class TuffBlock extends Block {
    */
   serialize() {
     return {
-      ...super.serialize()
+      ...this.toJSON()
     };
+  }
+  
+  /**
+   * Deserialize data to restore the block's state
+   * @param {Object} data - Saved data
+   */
+  deserialize(data) {
+    // Handle base Block properties
+    if (data.id) this.id = data.id;
+    if (data.name) this.name = data.name;
+    if (data.hardness !== undefined) this.hardness = data.hardness;
+    if (data.toolType !== undefined) this.toolType = data.toolType;
+    if (data.stackSize !== undefined) this.stackSize = data.stackSize;
+    if (data.lightLevel !== undefined) this.lightLevel = data.lightLevel;
   }
   
   /**
@@ -126,8 +140,12 @@ class TuffBlock extends Block {
    * @returns {TuffBlock} New block instance
    */
   static deserialize(data) {
-    const block = new TuffBlock();
-    block.deserialize(data);
+    const block = new TuffBlock({
+      id: data.id,
+      name: data.name,
+      hardness: data.hardness,
+      toolType: data.toolType
+    });
     return block;
   }
 }

@@ -2673,3 +2673,78 @@ Implemented The Breeze mob with the following features:
    - Tests for drops and serialization
 
 All tests are now passing, verifying the complete implementation of The Breeze mob for the Minecraft 1.21 Tricky Trials update. This mob adds a unique flying enemy with interesting wind-based attack mechanics that challenges players to adapt their combat strategies.
+
+### 2024-08-27: Wind Charge Implementation (1.21 Tricky Trials Update) ###
+Implemented the Wind Charge feature with the following components:
+
+1. Created WindChargeItem class with:
+   - Proper item properties (category, stack size, tooltip)
+   - Throwing mechanics that spawns a WindChargeEntity
+   - Cooldown system to prevent rapid firing
+   - Support for creative mode (not consuming items)
+   - Serialization/deserialization for persistence
+
+2. Created WindChargeEntity class with:
+   - Physics-based movement with velocity and direction
+   - Collision detection for blocks and entities
+   - Entity damaging on direct hit
+   - Block-moving capabilities for movable blocks (sand, gravel, etc.)
+   - Entity pushing with knockback in explosion radius
+   - Visual trail particles as it moves
+   - Limited lifetime with automatic explosion
+   - Serialization/deserialization for persistence
+
+3. Updated registry integration:
+   - Added WindChargeItem to ItemRegistry in register121Items()
+   - Added WindChargeEntity to EntityFactory for proper creation
+
+4. Fixed implementation challenges:
+   - Properly handled velocity initialization for both scalar and vector inputs
+   - Implemented custom intersection detection for entity collisions
+   - Created a tracking system to prevent blocks from being moved multiple times
+   - Made block movement directional (away from explosion center)
+   - Fixed particle system for visual effects
+
+5. Created comprehensive test suite:
+   - Tests for WindChargeItem properties and functionality
+   - Tests for WindChargeEntity movement and physics
+   - Tests for collision detection and explosion behavior
+   - Tests for entity damage and knockback effects
+   - Tests for block-moving capabilities
+   - Tests for serialization and deserialization
+
+All tests are now passing, verifying the complete implementation of Wind Charges for the Minecraft 1.21 Tricky Trials update. This feature adds a projectile that can push blocks and entities, creating interesting gameplay dynamics for combat and puzzle solving.
+
+/**
+ * Copper and Tuff Block Variants for Minecraft 1.21 (Tricky Trials)
+ * 
+ * After examining the existing codebase, I need to implement the following new block variants:
+ * 
+ * 1. Copper Variants:
+ *    - Copper Bulb: A redstone-compatible light source with oxidation mechanics
+ *      - Should emit light when powered by redstone
+ *      - Should exist in all four oxidation states (normal, exposed, weathered, oxidized)
+ *      - Should support waxing to prevent oxidation
+ * 
+ *    - Copper Grate: An entity filtering block with oxidation mechanics
+ *      - Should allow certain small entities to pass through (items, arrows, etc.)
+ *      - Should exist in all four oxidation states (normal, exposed, weathered, oxidized)
+ *      - Should support waxing to prevent oxidation
+ * 
+ * 2. Tuff Variants:
+ *    - Chiseled Tuff: Decorative variant
+ *    - Tuff Bricks: Building block variant
+ *    - Tuff Brick Stairs: Stair variant of tuff bricks
+ *    - Tuff Brick Slab: Slab variant of tuff bricks
+ *    - Tuff Brick Wall: Wall variant of tuff bricks
+ * 
+ * Implementation approach:
+ * 1. Extend the existing CopperBlock class to create CopperBulbBlock and CopperGrateBlock
+ * 2. Extend the existing TuffBlock class to create the tuff variants
+ * 3. Implement the specific functionality for each block type
+ * 4. Update the BlockRegistry to include these new blocks
+ * 5. Create tests to verify functionality
+ * 
+ * I'll start by implementing the copper variants since they have more complex functionality,
+ * then move to the tuff variants.
+ */

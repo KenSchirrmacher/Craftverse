@@ -1,4 +1,4 @@
-// Mob Manager - handles spawning, updating, and interactions with all mobsconst passiveMobs = require('./passiveMobs');const neutralMobs = require('./neutralMobs');const hostileMobs = require('./hostileMobs');const netherMobs = require('./netherMobs');const aquaticMobs = require('./aquaticMobs');const VillagerNPC = require('./villagerNPC');const ZombieVillager = require('./zombieVillager');const Warden = require('./warden');const { Frog, Tadpole } = require('./frogAndTadpole');const Allay = require('./allay');const Sniffer = require('./sniffer');const Camel = require('./camel');
+// Mob Manager - handles spawning, updating, and interactions with all mobsconst passiveMobs = require('./passiveMobs');const neutralMobs = require('./neutralMobs');const hostileMobs = require('./hostileMobs');const netherMobs = require('./netherMobs');const aquaticMobs = require('./aquaticMobs');const VillagerNPC = require('./villagerNPC');const ZombieVillager = require('./zombieVillager');const Warden = require('./warden');const { Frog, Tadpole } = require('./frogAndTadpole');const Allay = require('./allay');const Sniffer = require('./sniffer');const Camel = require('./camel');const Breeze = require('./breeze');
 
 class MobManager {
   constructor() {
@@ -44,6 +44,7 @@ class MobManager {
       'elder_guardian': hostileMobs.ElderGuardian,
       'silverfish': hostileMobs.Silverfish,
       'warden': Warden,
+      'breeze': Breeze,
       
       // Nether mobs
       'piglin': netherMobs.Piglin,

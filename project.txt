@@ -301,10 +301,10 @@
   - [COMPLETED] Block-moving capabilities
   - [COMPLETED] Entity-pushing mechanics
   - [COMPLETED] Comprehensive tests
-- [ ] Copper and Tuff variants
-  - [ ] Copper Bulb
-  - [ ] Copper Grate
-  - [ ] Tuff variants (chiseled, bricks, etc.)
+- [COMPLETED] Copper and Tuff variants
+  - [COMPLETED] Copper Bulb
+  - [COMPLETED] Copper Grate
+  - [COMPLETED] Tuff variants (chiseled, bricks, etc.)
 - [ ] Mace weapon
   - [ ] Basic weapon implementation
   - [ ] Heavy attack mechanics
@@ -315,7 +315,7 @@
 2. ~~Implement Trial Chambers structure~~
 3. ~~Create The Breeze mob~~
 4. ~~Add Wind Charge item~~
-5. Implement new copper and tuff block variants
+5. ~~Implement new copper and tuff block variants~~
 6. Add Mace weapon
 
 ## Completed Tasks
@@ -339,3 +339,10 @@
 18. Integrated Wind Charge with the ItemRegistry and EntityFactory
 19. Created comprehensive test suite for Wind Charge testing all functionality
 20. Verified all tests pass for the Wind Charge implementation
+21. Implemented CopperBulbBlock with redstone-powered light functionality and oxidation states
+22. Implemented CopperGrateBlock with entity filtering functionality and oxidation states
+23. Implemented Tuff variant blocks (Chiseled Tuff, Tuff Bricks, Tuff Brick Slabs, Stairs, and Walls)
+24. Fixed serialization and inheritance issues in Block class to ensure proper functionality
+25. Created comprehensive test suites for all copper and tuff variant blocks
+26. Integrated all new blocks with the BlockRegistry for proper game integration
+27. Verified all tests pass for the copper and tuff variant implementations

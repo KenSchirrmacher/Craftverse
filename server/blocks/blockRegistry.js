@@ -37,6 +37,11 @@ const SignBlock = require('./signBlock');
 const HangingSignBlock = require('./hangingSignBlock');
 const ChiseledBookshelfBlock = require('./chiseledBookshelfBlock');
 const CrafterBlock = require('./crafterBlock');
+const TrialSpawnerBlock = require('./trialSpawner');
+// Import 1.21 Copper and Tuff blocks
+const CopperBulbBlock = require('./copperBulbBlock');
+const CopperGrateBlock = require('./copperGrateBlock');
+const { ChiseledTuffBlock, TuffBricksBlock, TuffBrickSlabBlock, TuffBrickStairsBlock, TuffBrickWallBlock } = require('./tuffVariantsBlocks');
 // Import bamboo blocks
 const { 
   BambooBlock, 
@@ -206,6 +211,10 @@ class BlockRegistry {
     
     // Register 1.21 (Tricky Trials) blocks
     this.registerBlock(new CrafterBlock());
+    this.registerBlock(new TrialSpawnerBlock());
+    
+    // Register 1.21 Copper and Tuff blocks
+    this.register121CopperAndTuffBlocks();
     
     // Future: Register more blocks
   }
@@ -304,6 +313,43 @@ class BlockRegistry {
         all: 'blocks/bamboo_planks'
       }
     }));
+  }
+  
+  /**
+   * Register copper bulbs, copper grates, and tuff variants from 1.21 update
+   * @private
+   */
+  register121CopperAndTuffBlocks() {
+    // Register Copper Bulb blocks in different oxidation states
+    this.registerBlock(new CopperBulbBlock({ oxidationState: 'none' }));
+    this.registerBlock(new CopperBulbBlock({ oxidationState: 'exposed', id: 'exposed_copper_bulb', name: 'Exposed Copper Bulb' }));
+    this.registerBlock(new CopperBulbBlock({ oxidationState: 'weathered', id: 'weathered_copper_bulb', name: 'Weathered Copper Bulb' }));
+    this.registerBlock(new CopperBulbBlock({ oxidationState: 'oxidized', id: 'oxidized_copper_bulb', name: 'Oxidized Copper Bulb' }));
+    
+    // Register waxed versions of Copper Bulb blocks
+    this.registerBlock(new CopperBulbBlock({ waxed: true, id: 'waxed_copper_bulb', name: 'Waxed Copper Bulb' }));
+    this.registerBlock(new CopperBulbBlock({ oxidationState: 'exposed', waxed: true, id: 'waxed_exposed_copper_bulb', name: 'Waxed Exposed Copper Bulb' }));
+    this.registerBlock(new CopperBulbBlock({ oxidationState: 'weathered', waxed: true, id: 'waxed_weathered_copper_bulb', name: 'Waxed Weathered Copper Bulb' }));
+    this.registerBlock(new CopperBulbBlock({ oxidationState: 'oxidized', waxed: true, id: 'waxed_oxidized_copper_bulb', name: 'Waxed Oxidized Copper Bulb' }));
+    
+    // Register Copper Grate blocks in different oxidation states
+    this.registerBlock(new CopperGrateBlock({ oxidationState: 'none' }));
+    this.registerBlock(new CopperGrateBlock({ oxidationState: 'exposed', id: 'exposed_copper_grate', name: 'Exposed Copper Grate' }));
+    this.registerBlock(new CopperGrateBlock({ oxidationState: 'weathered', id: 'weathered_copper_grate', name: 'Weathered Copper Grate' }));
+    this.registerBlock(new CopperGrateBlock({ oxidationState: 'oxidized', id: 'oxidized_copper_grate', name: 'Oxidized Copper Grate' }));
+    
+    // Register waxed versions of Copper Grate blocks
+    this.registerBlock(new CopperGrateBlock({ waxed: true, id: 'waxed_copper_grate', name: 'Waxed Copper Grate' }));
+    this.registerBlock(new CopperGrateBlock({ oxidationState: 'exposed', waxed: true, id: 'waxed_exposed_copper_grate', name: 'Waxed Exposed Copper Grate' }));
+    this.registerBlock(new CopperGrateBlock({ oxidationState: 'weathered', waxed: true, id: 'waxed_weathered_copper_grate', name: 'Waxed Weathered Copper Grate' }));
+    this.registerBlock(new CopperGrateBlock({ oxidationState: 'oxidized', waxed: true, id: 'waxed_oxidized_copper_grate', name: 'Waxed Oxidized Copper Grate' }));
+    
+    // Register Tuff variants
+    this.registerBlock(new ChiseledTuffBlock());
+    this.registerBlock(new TuffBricksBlock());
+    this.registerBlock(new TuffBrickSlabBlock());
+    this.registerBlock(new TuffBrickStairsBlock());
+    this.registerBlock(new TuffBrickWallBlock());
   }
   
   /**

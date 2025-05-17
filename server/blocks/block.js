@@ -151,6 +151,47 @@ class Block {
       render: this.render
     };
   }
+
+  /**
+   * Serialize the block for saving
+   * @returns {Object} - Serialized data
+   */
+  serialize() {
+    return this.toJSON();
+  }
+
+  /**
+   * Deserialize data to restore the block's state
+   * @param {Object} data - Saved data
+   */
+  deserialize(data) {
+    if (data.id) this.id = data.id;
+    if (data.name) this.name = data.name;
+    if (data.hardness !== undefined) this.hardness = data.hardness;
+    if (data.toolType !== undefined) this.toolType = data.toolType;
+    if (data.stackSize !== undefined) this.stackSize = data.stackSize;
+    if (data.flammable !== undefined) this.flammable = data.flammable;
+    if (data.lightLevel !== undefined) this.lightLevel = data.lightLevel;
+    if (data.opacity !== undefined) this.opacity = data.opacity;
+    if (data.solid !== undefined) this.solid = data.solid;
+    if (data.gravity !== undefined) this.gravity = data.gravity;
+    if (data.render !== undefined) this.render = data.render;
+  }
+
+  /**
+   * Get the block's data for client
+   * @returns {Object} - Block data for the client
+   */
+  getState() {
+    return {
+      id: this.id,
+      name: this.name,
+      solid: this.solid,
+      render: this.render,
+      textures: this.textures,
+      lightLevel: this.lightLevel
+    };
+  }
 }
 
 module.exports = Block; 
