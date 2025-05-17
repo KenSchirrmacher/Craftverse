@@ -327,4 +327,92 @@ This file contains tests for the Trial Chamber implementation:
 - Tests integration with world generation
 
 ## server/tests/runTrialChamberTest.js
-This is a test runner for the Trial Chamber tests. 
+This is a test runner for the Trial Chamber tests.
+
+# 1.22 Update (Sorcery Update) Files
+
+## server/magic/spellManager.js
+This is the main manager for the spell mechanics system:
+- Handles spell registration and management
+- Processes spell casting and effects
+- Manages player spell knowledge
+- Tracks mana resources and cooldowns
+- Handles active spell effects
+- Integrates with server event system
+
+## server/magic/spellRegistry.js
+This file defines and categorizes different spell types:
+- Defines spell categories (attack, defense, utility, etc.)
+- Defines spell elements (fire, water, earth, air, etc.)
+- Defines spell rarity levels and target types
+- Registers default spells with properties
+- Provides methods for retrieving and filtering spells
+
+## server/magic/items/spellBookItem.js
+This file implements spell books that can teach and cast spells:
+- Contains specific spells with level information
+- Provides learning functionality
+- Enables spell casting with durability
+- Includes visual elements for different rarities and elements
+- Supports serialization for persistence
+
+## server/magic/items/spellScrollItem.js
+This file implements single-use spell scrolls:
+- Contains spells for one-time use
+- Can bypass mana requirements
+- Can bypass spell knowledge requirements
+- Provides visual distinction based on contained spell
+- Supports stackability
+
+## server/magic/blocks/spellAltarBlock.js
+This file implements the block used for crafting spells:
+- Provides 5-slot inventory system
+- Implements recipe-based crafting
+- Creates timed crafting process with effects
+- Validates ingredients and requirements
+- Supports upgrading existing spells
+
+## server/tests/spellSystemTest.js
+This file contains comprehensive tests for the spell system:
+- Tests for SpellRegistry
+- Tests for SpellManager
+- Tests for SpellBookItem
+- Tests for SpellScrollItem
+- Tests for SpellAltarBlock
+- Integration tests for the full spell system
+
+## server/tests/runSpellSystemTest.js
+This is a test runner for the spell system tests.
+
+# 1.23 Update Planning Files
+
+## server/docs/minecraft-1.23-research.md
+This document contains research on the announced features for Minecraft 1.23:
+- Describes the Trailblazer villager profession
+- Outlines Decorated Pots Expansion features
+- Details Tamed Animal Improvements
+- Explains the Copper Golem implementation
+- Discusses Ancient Seeds mechanics
+- Analyzes technical requirements for each feature
+- Proposes implementation priorities
+
+## server/docs/minecraft-1.23-implementation-plan.md
+This document outlines the implementation plan for Minecraft 1.23 features:
+- Provides a phased implementation roadmap
+- Details technical approaches for each feature
+- Identifies dependencies and risks
+- Defines success criteria
+- Includes a week-by-week development schedule
+
+## server/tests/minecraft123TestFramework.js
+This file contains the test framework for Minecraft 1.23 features:
+- Test suite for Copper Golem
+- Test suite for Trailblazer villager profession
+- Test suite for Tamed Animal Improvements
+- Test suite for Decorated Pots Expansion
+- Test suite for Ancient Seeds
+- Integration test suite
+- Main test runner function
+
+## server/tests/runMinecraft123Tests.js
+This is a test runner for the Minecraft 1.23 test framework. 
