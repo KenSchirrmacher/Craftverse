@@ -22,6 +22,7 @@ const DecoratedPotItem = require('./decoratedPotItem');
 const HangingSignItem = require('./hangingSignItem');
 const ChiseledBookshelfItem = require('./chiseledBookshelfItem');
 const { NetheriteUpgradeTemplate } = require('./netheriteUpgradeTemplate');
+const CrafterItem = require('./crafterItem');
 // Import bamboo items
 const { BambooItem, BambooSignItem, BambooButtonItem, BambooPressurePlateItem } = require('./bambooItem');
 const BambooRaftItem = require('./bambooRaftItem');
@@ -186,6 +187,9 @@ class ItemRegistry {
     
     // Register Bamboo items for 1.20 Update
     this.registerBambooItems();
+    
+    // Register 1.21 (Tricky Trials) Update items
+    this.register121Items();
     
     // Future: Register more items (stone, dirt, etc.)
     
@@ -395,6 +399,21 @@ class ItemRegistry {
         durability: 165
       }));
     }
+  }
+  
+  /**
+   * Register items for the 1.21 (Tricky Trials) Update
+   * @private
+   */
+  register121Items() {
+    // Register Crafter item
+    this.registerItem(new CrafterItem());
+    
+    // To be added later:
+    // - Wind Charge
+    // - Mace weapons
+    // - Copper blocks-related items
+    // - Tuff variants
   }
   
   /**

@@ -36,6 +36,7 @@ const DecoratedPot = require('./decoratedPot');
 const SignBlock = require('./signBlock');
 const HangingSignBlock = require('./hangingSignBlock');
 const ChiseledBookshelfBlock = require('./chiseledBookshelfBlock');
+const CrafterBlock = require('./crafterBlock');
 // Import bamboo blocks
 const { 
   BambooBlock, 
@@ -190,22 +191,23 @@ class BlockRegistry {
     this.registerBlock(new CherryLeaves());
     this.registerBlock(new CherrySapling());
     
-    // Register Pottery System blocks (Trails & Tales Update)
+    // Register Pottery blocks
     this.registerBlock(new DecoratedPot());
     
-    // Register Sign and Hanging Sign blocks (Trails & Tales Update)
-    this.registerSignBlocks();
+    // Register Sign blocks
+    this.registerBlock(new SignBlock());
+    this.registerBlock(new HangingSignBlock());
     
-    // Register Chiseled Bookshelf block (Trails & Tales Update)
+    // Register Chiseled Bookshelf
     this.registerBlock(new ChiseledBookshelfBlock());
     
     // Register Bamboo blocks (1.20 Update)
     this.registerBambooBlocks();
     
-    // Future: Register vanilla blocks (stone, dirt, etc.)
-    // this.registerBlock(new StoneBlock());
-    // this.registerBlock(new DirtBlock());
-    // etc.
+    // Register 1.21 (Tricky Trials) blocks
+    this.registerBlock(new CrafterBlock());
+    
+    // Future: Register more blocks
   }
   
   /**

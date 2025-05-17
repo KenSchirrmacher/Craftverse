@@ -267,18 +267,51 @@
   - [COMPLETED] Redstone mechanics
   - [COMPLETED] Tests
 
-## Current Tasks
-1. ~~Implement Calibrated Sculk Sensor for the 1.20 Update~~
-2. ~~Review all 1.20 Update features for completeness~~
-3. ~~Plan for future game updates and enhancements~~
-4. Begin implementation of Minecraft 1.21 Update (Tricky Trials)
+# Current Project: 1.21 Update (Tricky Trials) Implementation
 
-## Completed Features (Trails & Tales Update)
-- [COMPLETED] Archaeology system
-- [COMPLETED] Sniffer mob
-- [COMPLETED] Cherry blossom biome
-- [COMPLETED] Camel mob
-- [COMPLETED] Armor trims
-- [COMPLETED] Complete pottery system
-- [COMPLETED] Hanging signs
-- [COMPLETED] Chiseled bookshelf
+## Feature Status
+- [COMPLETED] Crafter block
+  - [COMPLETED] CrafterBlock implementation with 3x3 crafting grid
+  - [COMPLETED] Redstone power detection and interaction
+  - [COMPLETED] Directional placement (faces player when placed)
+  - [COMPLETED] Inventory management system
+  - [COMPLETED] Automated crafting mechanics
+  - [COMPLETED] CrafterItem implementation
+  - [COMPLETED] Registry integration
+  - [COMPLETED] Comprehensive tests
+- [ ] Trial Chambers
+  - [ ] Structure generation
+  - [ ] Unique loot and rewards
+  - [ ] Special blocks and decorations
+- [ ] The Breeze mob
+  - [ ] Basic mob implementation
+  - [ ] Wind-based attack mechanics
+  - [ ] AI and movement patterns
+- [ ] Wind Charge
+  - [ ] Item implementation
+  - [ ] Entity implementation when thrown
+  - [ ] Block-moving capabilities
+- [ ] Copper and Tuff variants
+  - [ ] Copper Bulb
+  - [ ] Copper Grate
+  - [ ] Tuff variants (chiseled, bricks, etc.)
+- [ ] Mace weapon
+  - [ ] Basic weapon implementation
+  - [ ] Heavy attack mechanics
+  - [ ] Armor piercing capability
+
+## Current Tasks
+1. ~~Implement Crafter block for the 1.21 Update~~
+2. Implement Trial Chambers structure
+3. Create The Breeze mob
+4. Add Wind Charge item
+5. Implement new copper and tuff block variants
+6. Add Mace weapon
+
+## Completed Tasks
+1. Implemented CrafterBlock with 3x3 crafting grid and automated crafting functionality
+2. Implemented CrafterItem for placing the block with player-facing orientation
+3. Integrated Crafter with BlockRegistry and ItemRegistry
+4. Fixed serialization issues to ensure proper item handling in CrafterBlock
+5. Created comprehensive test suite for CrafterBlock testing all aspects of functionality
+6. Verified all tests pass for the CrafterBlock implementation

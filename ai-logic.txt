@@ -51,75 +51,14 @@ You MUST NOT create work arounds, or hacks to make the feature or service work. 
 6. ~~Combat update~~
 7. ~~Nether update~~
 8. ~~Caves & Cliffs update~~
-9. The Wild Update
-   - Deep Dark biome
-   - Warden mob
-   - Sculk blocks and mechanics
-   - Mangrove swamp biome
-   - Frogs and tadpoles
-   - Boat with chest
-   - Recovery compass
-   - Echo shards
-10. Trails & Tales Update
-   - Archaeology system
-   - Sniffer mob
-   - Cherry blossom biome
-   - Camel mob
-   - Armor trims
-   - Pottery system
-   - Hanging signs
-   - Chiseled bookshelf
-11. 1.20 Update
-   - Bamboo wood set
-   - Rafts
-   - Hanging signs
-   - Chiseled bookshelf
-   - Netherite upgrade template
-   - Calibrated sculk sensor
-   - Cherry blossom biome
-   - Camel mob
-   - Sniffer mob
-   - Armor trims
-   - Pottery system
+9. Implement 1.21 (Tricky Trials) update features
+   - [x] Crafter block
+   - [ ] Wind Charge
+   - [ ] Mace weapons
+   - [ ] Trial Chambers
+   - [ ] Copper Blocks related features
+   - [ ] Tuff variants
 
-### Current Focus ###
-Implementing Trails & Tales Update, which includes:
-- [x] Archaeology system
-  - [x] Brush tool implementation
-  - [x] Suspicious blocks implementation
-  - [x] Pottery sherds and reconstruction
-  - [x] Archaeological site generation
-- [x] Sniffer mob
-  - [x] Basic mob implementation
-  - [x] Sniffing behavior
-  - [x] Breeding mechanics
-  - [x] Plant seed finding
-- [x] Cherry Blossom biome
-  - [x] Cherry Grove biome with pink aesthetic
-  - [x] Cherry trees with distinctive curved branches
-  - [x] Cherry wood blocks (logs, stripped logs)
-  - [x] Cherry leaves with petal particles
-  - [x] Cherry saplings with proper growth mechanics
-  - [x] Integration with world generation
-  - [x] Feature registry system for world features
-- [ ] Camel mob
-- [ ] Armor trims
-- [ ] Hanging signs
-- [ ] Chiseled bookshelf
-
-### Test Cases ###
-Each feature will have its own test case to ensure proper functionality. Test cases will be documented here as they are created.
-
-### Progress Tracking ###
-- [x] Redstone system
-  - [x] Basic redstone dust
-  - [x] Redstone torches
-  - [x] Redstone repeaters
-  - [x] Redstone comparators
-  - [x] Redstone lamps
-  - [x] Redstone blocks
-  - [x] Logic gates
-  - [x] Circuit testing
 - [x] Mobs and AI
   - [x] Passive mobs (animals)
   - [x] Hostile mobs (monsters)
@@ -1599,7 +1538,7 @@ I have successfully implemented the Mangrove Swamp biome and related mud blocks 
      - Particle effects for a wet, bubbling appearance
      - Tool interactions (faster mining with shovels)
      - Interactions with water bottles and other tools
-   - Proper serialization/deserialization
+     - Proper serialization/deserialization
 
    - Created `PackedMudBlock` as a dried variant:
      - Harder and more resistant than regular mud
@@ -2584,3 +2523,71 @@ After successfully completing the implementation of all features for the 1.20 Up
 The plan has been documented in server/docs/future-updates-plan.txt with detailed feature breakdowns, prioritization, and timeline estimates. This will serve as a roadmap for continued development of the Craftverse project beyond the current implemented updates.
 
 With this plan in place, the project is well-positioned to continue evolving with high-quality implementations that match the official Minecraft experience while also addressing technical improvements and gameplay enhancements.
+
+### 2024-08-22: Planning for Future Game Updates and Enhancements ###
+
+After successfully completing the implementation of all features for the 1.20 Update, I've created a comprehensive plan for future development of the Craftverse project. This document outlines the roadmap for upcoming features, technical improvements, and quality enhancements.
+
+The plan focuses on three main areas:
+
+1. **Minecraft 1.21 (Tricky Trials) Implementation**:
+   - Trial Chambers with unique challenges and wave-based mob encounters
+   - The Breeze mob with wind-based attacks and aerial movement
+   - Wind Charge item crafted from breeze rods with block-moving capabilities
+   - New blocks including Copper Bulb, Copper Grate, Tuff variants, and the Crafter block
+   - Mace weapon with heavy attack mechanics and armor piercing capability
+
+2. **Technical Improvements**:
+   - Performance optimization for block updates and chunk loading
+   - Multiplayer enhancements for better network synchronization
+   - World generation improvements for better performance and larger worlds
+   - Combat system refinements and UI/UX improvements
+   - Modding support with a plugin API
+
+3. **Technical Debt Reduction**:
+   - Block system refactoring for more consistent inheritance hierarchy
+   - Entity system enhancements for better physics and collision detection
+   - World generation optimizations for cleaner structure generation
+   - Improved documentation and test coverage
+
+The plan includes a prioritized feature backlog and timeline estimates for implementation phases:
+- Phase 1: Minecraft 1.21 Core Features - 3 months
+- Phase 2: Technical Improvements - 2 months
+- Phase 3: Gameplay Enhancements - 2 months
+- Ongoing: Technical Debt Reduction - Continuous
+
+This comprehensive planning document has been saved as server/docs/future-updates-plan.txt and will serve as a roadmap for continued development of the Craftverse project.
+
+### 2024-08-20: CrafterBlock Implementation (1.21 Tricky Trials Update) ###
+Implemented the CrafterBlock system with the following features:
+
+1. Created CrafterBlock class with:
+   - 3x3 crafting grid inventory system
+   - Redstone power detection and response
+   - Directional placement (faces player when placed)
+   - Crafting mechanics that run when powered
+   - Cooldown system to prevent rapid crafting
+   - Item consumption mechanics
+   - Support for world crafting recipe lookup
+
+2. Created CrafterItem class with:
+   - Proper block placement based on player orientation
+   - Visual tooltip showing functionality
+
+3. Updated Registry Integration:
+   - Added CrafterBlock to BlockRegistry in registerDefaultBlocks()
+   - Created register121Items() method in ItemRegistry for 1.21 features
+
+4. Fixed serialization issue:
+   - Added null checks and type checking in serialize() method
+   - Ensured serialization works with both item objects with serialize() method and plain objects
+   - Fixed bug where serialize() method was failing when inventory contained items without serialize method
+
+5. Created comprehensive test suite:
+   - Test basic properties (hardness, tool type)
+   - Test inventory management
+   - Test crafting behavior
+   - Test redstone interaction
+   - Test serialization and deserialization
+
+All tests are now passing, verifying full implementation of the Crafter block from Minecraft 1.21.
