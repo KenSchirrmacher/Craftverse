@@ -13,6 +13,7 @@ const Sniffer = require('./sniffer');
 const Camel = require('./camel');
 const Breeze = require('./breeze');
 const Armadillo = require('./armadillo'); // Import Armadillo mob for 1.22 Sorcery Update
+const CopperGolem = require('./copperGolem');
 
 class MobManager {
   constructor() {
@@ -871,6 +872,18 @@ class MobManager {
     });
     
     return zombieVillager;
+  }
+
+  /**
+   * Register all default mob types
+   */
+  registerDefaultMobs() {
+    // ... existing code ...
+
+    // Register Minecraft 1.23 mobs
+    this.registerMob('copper_golem', CopperGolem);
+    
+    // ... rest of the existing code ...
   }
 }
 

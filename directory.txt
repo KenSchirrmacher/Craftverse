@@ -26,6 +26,8 @@
 - server/mobs/warden.js - Implementation of Warden mob with vibration-based sensing AI
 - server/mobs/allay.js - Implementation of Allay mob with flying, item collection, and note block interaction
 - server/mobs/breeze.js - Implementation of Breeze mob with wind-based attacks and flying mechanics for 1.21 Tricky Trials update
+- server/mobs/copperGolem.js - Implementation of Copper Golem mob for the 1.23 Update
+- server/mobs/trailblazerVillager.js - TrailblazerVillager class that extends VillagerNPC with specialized exploration-focused behavior and trades.
 
 ### Entities
 - server/entities/entity.js - Base class for all entities in the game. Provides common functionality like physics, collision detection, serialization, and event handling.
@@ -56,6 +58,14 @@
 - server/items/boatItem.js - Implementation of boat items, including boats with chests for the Wild Update
 - server/items/netheriteUpgradeTemplate.js - Implementation of the smithing template required for upgrading diamond equipment to netherite in the 1.20 update
 - server/items/windChargeItem.js - Implementation of Wind Charge item from the 1.21 Tricky Trials update, thrown to push entities and blocks
+- server/items/potterySherdItem.js - Implementation of pottery sherds, archaeological artifacts
+- server/items/chiseledBookshelfItem.js - Implementation of the Chiseled Bookshelf item that places the bookshelf block
+- server/items/mapItem.js - Base map item implementation that shows the world.
+- server/items/biomeMapItem.js - Specialized map for finding specific biomes.
+- server/items/structureMapItem.js - Specialized map for finding structures.
+- server/items/compassItem.js - Base compass implementation for directional guidance.
+- server/items/explorerCompassItem.js - Specialized compass that points to unexplored areas, biomes, or structures.
+- server/items/trailMarkerItem.js - Placeable markers for creating exploration paths.
 
 ### Blocks
 - server/blocks/amethystBlock.js - Implementation of amethyst block and amethyst cluster growth
@@ -170,6 +180,8 @@
 - server/tests/runBreezeTest.js - Test runner for the Breeze mob tests
 - server/tests/windChargeTest.js - Tests for the Wind Charge item and entity implementation with block and entity pushing mechanics
 - server/tests/runWindChargeTest.js - Test runner for the Wind Charge tests
+- server/tests/trailblazerTest.js - Test suite for Trailblazer villager profession, maps, compass, and markers.
+- server/tests/runTrailblazerTest.js - Test runner for the Trailblazer tests.
 
 ## Client
 - public/index.html - Main client page
@@ -206,13 +218,6 @@ This file contains implementations for suspicious blocks that can be excavated:
 - SuspiciousGravelBlock: Found in plains/mountains/river biomes
 - Logic for converting to normal blocks after excavation
 - Physics behavior (falling) consistent with base block types
-
-## server/items/potterySherdItem.js
-This implements pottery sherds, which are archaeological artifacts:
-- Various patterns for different sherds
-- Categorization (storytelling, decoration, etc.)
-- Crafting compatibility for pottery creation
-- Properties for display in inventory
 
 ## server/world.js
 This is the main World class that integrates all world systems:
@@ -415,4 +420,38 @@ This file contains the test framework for Minecraft 1.23 features:
 - Main test runner function
 
 ## server/tests/runMinecraft123Tests.js
-This is a test runner for the Minecraft 1.23 test framework. 
+This is a test runner for the Minecraft 1.23 test framework.
+
+# 1.23 Update Implementation Files
+
+## server/mobs/copperGolem.js
+This file implements the Copper Golem mob from the 1.23 Update:
+- Base entity implementation with physical properties
+- Oxidation system with 4 states affecting behavior
+- Button detection and interaction capabilities
+- Waxing mechanics to prevent oxidation
+- Scraping mechanics to revert oxidation
+- Construction system from copper blocks and carved pumpkin
+- Serialization/deserialization for persistence
+- Integration with redstone systems
+
+## server/tests/copperGolemTest.js
+This file contains comprehensive tests for the Copper Golem implementation:
+- Tests basic properties and initialization
+- Tests oxidation mechanics through all states
+- Tests button interaction and targeting
+- Tests waxing and scraping functionality
+- Tests statue behavior when fully oxidized
+- Tests construction from blocks
+- Tests serialization/deserialization
+
+## server/tests/runCopperGolemTest.js
+This is a test runner for the Copper Golem tests.
+
+### Additional Directories
+
+- server/magic/ - Contains all magic system components for the Sorcery Update
+- server/copper/ - Contains copper golem components and utility functions
+- server/trailblazer/ - Contains trailblazer villager profession components
+  - server/trailblazer/trailblazerItemRegistry.js - Registry for all Trailblazer-related items and recipes
+  - server/trailblazer/trailblazerManager.js - Manager that integrates Trailblazer villagers and item systems with the game world 
