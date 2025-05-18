@@ -40,6 +40,10 @@ class MockWorld {
   getEntitiesInBounds() {
     return [];
   }
+
+  random() {
+    return Math.random();
+  }
 }
 
 // Run tests
