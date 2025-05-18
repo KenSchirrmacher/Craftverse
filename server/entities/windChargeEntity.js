@@ -55,6 +55,10 @@ class WindChargeEntity extends Entity {
     this.hasExploded = false;
     this.particles = [];
     
+    // Charge level properties
+    this.chargeLevel = options.chargeLevel || 0;
+    this.chargeName = options.chargeName || 'weak';
+    
     // Wind charge trail particles
     this.trailParticleDelay = 2; // Ticks between particle spawns
     this.trailParticleTimer = 0;
@@ -63,14 +67,19 @@ class WindChargeEntity extends Entity {
     this.maxLifetime = 100; // 5 seconds at 20 ticks/second
     this.lifetime = 0;
     
-    // Power level affects push strength
-    this.powerLevel = options.powerLevel || 1.0;
+    // Power level affects push strength (now based on charge level)
+    this.powerLevel = options.powerLevel || (1.0 + (this.chargeLevel * 0.5));
     
     // Track entities already affected to prevent multiple hits
     this.affectedEntities = new Set();
     
     // Calculate bounding box
     this.boundingBox = this.calculateBoundingBox();
+    
+    // Charge level visual effects
+    this.particleColors = ['#a0e6ff', '#80d0ff', '#60b8ff']; // Colors for weak, medium, strong
+    this.particleSizes = [0.2, 0.3, 0.4]; // Sizes for weak, medium, strong
+    this.particleDensity = [1, 1.5, 2]; // Multiplier for particle count
   }
   
   /**
@@ -108,16 +117,39 @@ class WindChargeEntity extends Entity {
   updateTrailParticles(delta) {
     this.trailParticleTimer += delta;
     
-    if (this.trailParticleTimer >= this.trailParticleDelay) {
+    // Adjust particle spawning rate based on charge level
+    const baseDelay = this.trailParticleDelay;
+    const adjustedDelay = baseDelay / (1 + (this.chargeLevel * 0.5));
+    
+    if (this.trailParticleTimer >= adjustedDelay) {
       this.trailParticleTimer = 0;
       
-      // Add a new trail particle at current position
-      this.particles.push({
-        position: { ...this.position },
-        lifetime: 10, // 0.5 seconds at 20 ticks/second
-        size: 0.2,
-        color: '#a0e6ff' // Light blue color for wind particles
-      });
+      // Get particle appearance based on charge level
+      const color = this.particleColors[Math.min(this.chargeLevel, this.particleColors.length - 1)];
+      const size = this.particleSizes[Math.min(this.chargeLevel, this.particleSizes.length - 1)];
+      const density = this.particleDensity[Math.min(this.chargeLevel, this.particleDensity.length - 1)];
+      
+      // Add particles (more particles for higher charge levels)
+      const particleCount = Math.ceil(density);
+      for (let i = 0; i < particleCount; i++) {
+        // Add random offset for multiple particles
+        const offset = particleCount > 1 ? {
+          x: (Math.random() - 0.5) * 0.2,
+          y: (Math.random() - 0.5) * 0.2,
+          z: (Math.random() - 0.5) * 0.2
+        } : { x: 0, y: 0, z: 0 };
+        
+        this.particles.push({
+          position: { 
+            x: this.position.x + offset.x, 
+            y: this.position.y + offset.y, 
+            z: this.position.z + offset.z 
+          },
+          lifetime: 10 + this.chargeLevel * 5, // Particles last longer at higher charge levels
+          size: size,
+          color: color
+        });
+      }
     }
     
     // Update existing particles
@@ -196,7 +228,10 @@ class WindChargeEntity extends Entity {
   getNearbyEntities(radius) {
     if (!this.world) return [];
     
-    return this.world.getEntitiesInRadius(this.position, radius);
+    // Scale radius based on charge level for direct hit detection
+    const scaledRadius = radius * (1 + (this.chargeLevel * 0.2));
+    
+    return this.world.getEntitiesInRadius(this.position, scaledRadius);
   }
   
   /**
@@ -248,8 +283,8 @@ class WindChargeEntity extends Entity {
     entity.velocity.y += (this.direction.y * 0.5 + 0.4) * knockbackPower; // Add upward component
     entity.velocity.z += this.direction.z * knockbackPower;
     
-    // Set entity as affected by wind charge
-    entity.windAffectedTime = 20; // 1 second of being affected
+    // Add to affected entities to prevent multiple hits
+    this.affectedEntities.add(entity.id);
   }
   
   /**
@@ -259,32 +294,37 @@ class WindChargeEntity extends Entity {
     if (this.hasExploded) return;
     
     this.hasExploded = true;
-    this.velocity = { x: 0, y: 0, z: 0 };
     
-    // Apply explosion effects to blocks and entities in radius
-    this.applyExplosionEffects();
+    // Apply explosion effects in the world
+    if (this.world) {
+      this.applyExplosionEffects();
+      
+      // Trigger chain reaction with nearby wind charges
+      this.triggerChainReaction();
+    }
     
-    // Remove after explosion effects are applied
-    setTimeout(() => this.remove(), 1000); // Keep entity around briefly for client effects
-    
-    // Notify clients
+    // Emit update for clients
     this.emitUpdate();
+    
+    // Schedule removal
+    setTimeout(() => {
+      this.remove();
+    }, 500); // Remove after 0.5 seconds
   }
   
   /**
-   * Apply explosion effects to blocks and entities in radius
+   * Apply explosion effects to nearby entities and blocks
    */
   applyExplosionEffects() {
-    if (!this.world) return;
+    // Scale explosion radius based on charge level
+    const scaledRadius = this.explosionRadius;
     
-    // Move nearby blocks if possible
-    this.tryMoveBlocks();
+    // Get affected entities
+    const affectedEntities = this.world.getEntitiesInRadius(this.position, scaledRadius);
     
-    // Affect nearby entities with wind push
-    const entities = this.getNearbyEntities(this.explosionRadius);
-    
-    for (const entity of entities) {
-      // Skip entities that are already affected
+    // Apply explosion effects to entities
+    for (const entity of affectedEntities) {
+      // Skip already affected entities
       if (this.affectedEntities.has(entity.id)) {
         continue;
       }
@@ -294,113 +334,137 @@ class WindChargeEntity extends Entity {
         continue;
       }
       
-      // Calculate distance factor (closer = stronger effect)
+      // Calculate distance factor (1.0 at center, 0.0 at edge)
       const distance = this.distanceTo(entity.position);
-      const distanceFactor = 1.0 - (distance / this.explosionRadius);
+      const distanceFactor = 1.0 - (distance / scaledRadius);
       
-      // Skip if too far away
-      if (distanceFactor <= 0) continue;
+      if (distanceFactor <= 0) {
+        continue;
+      }
       
-      // Apply reduced knockback based on distance
+      // Apply scaled damage based on distance
+      const scaledDamage = this.damage * distanceFactor * 0.5; // Less damage than direct hit
+      
+      if (typeof entity.takeDamage === 'function') {
+        entity.takeDamage(scaledDamage, this);
+      } else if (entity.health !== undefined) {
+        entity.health -= scaledDamage;
+        if (entity.health <= 0) {
+          entity.dead = true;
+        }
+      }
+      
+      // Apply knockback if entity has velocity
       if (entity.velocity) {
-        const knockbackPower = distanceFactor * 0.8 * this.powerLevel;
-        
-        // Direction from explosion center to entity
+        // Calculate direction from explosion to entity
         const dx = entity.position.x - this.position.x;
         const dy = entity.position.y - this.position.y;
         const dz = entity.position.z - this.position.z;
         
         // Normalize direction
-        const length = Math.sqrt(dx * dx + dy * dy + dz * dz) || 1;
+        const length = Math.sqrt(dx * dx + dy * dy + dz * dz);
+        const direction = {
+          x: dx / length,
+          y: dy / length,
+          z: dz / length
+        };
         
-        // Apply knockback
-        entity.velocity.x += (dx / length) * knockbackPower;
-        entity.velocity.y += ((dy / length) * 0.5 + 0.3) * knockbackPower; // Add upward component
-        entity.velocity.z += (dz / length) * knockbackPower;
+        // Calculate knockback power based on distance and charge level
+        const knockbackPower = (1.0 + (this.powerLevel * 0.3)) * distanceFactor;
         
-        // Set entity as affected by wind charge
-        entity.windAffectedTime = 10; // 0.5 seconds of being affected
-        this.affectedEntities.add(entity.id);
+        // Apply knockback in the direction away from explosion
+        entity.velocity.x += direction.x * knockbackPower;
+        entity.velocity.y += (direction.y * 0.5 + 0.4) * knockbackPower; // Add upward component
+        entity.velocity.z += direction.z * knockbackPower;
       }
       
-      // Apply small damage to entities very close to the explosion
-      if (distanceFactor > 0.7 && typeof entity.takeDamage === 'function') {
-        entity.takeDamage(this.damage * distanceFactor * 0.5, this);
-      }
+      // Add to affected entities to prevent multiple hits
+      this.affectedEntities.add(entity.id);
     }
+    
+    // Try to move blocks based on charge level and explosion radius
+    this.tryMoveBlocks();
   }
   
   /**
    * Try to move blocks affected by the wind charge
    */
   tryMoveBlocks() {
-    if (!this.world) return;
+    // Scale move distance based on charge level
+    const scaledMoveDistance = this.moveDistance;
     
-    // Only move certain block types (e.g., sand, gravel, concrete powder)
-    const movableBlockTypes = [
-      'sand', 'red_sand', 'gravel', 'concrete_powder'
-    ];
-    
-    // Get blocks within effect radius
+    // Get block positions within range
+    const blockPositions = [];
     const radius = Math.ceil(this.explosionRadius);
-    const blockPos = this.getBlockPosition();
     
-    // Track blocks that have been moved to prevent moving the same block multiple times
-    const movedBlocks = new Set();
-    
-    for (let x = blockPos.x - radius; x <= blockPos.x + radius; x++) {
-      for (let y = blockPos.y - radius; y <= blockPos.y + radius; y++) {
-        for (let z = blockPos.z - radius; z <= blockPos.z + radius; z++) {
-          const blockKey = `${x},${y},${z}`;
+    for (let x = -radius; x <= radius; x++) {
+      for (let y = -radius; y <= radius; y++) {
+        for (let z = -radius; z <= radius; z++) {
+          const blockX = Math.floor(this.position.x) + x;
+          const blockY = Math.floor(this.position.y) + y;
+          const blockZ = Math.floor(this.position.z) + z;
           
-          // Skip blocks that have already been moved
-          if (movedBlocks.has(blockKey)) continue;
-          
-          // Check if in radius
-          const dx = x - this.position.x;
-          const dy = y - this.position.y;
-          const dz = z - this.position.z;
+          // Calculate distance from explosion center
+          const dx = this.position.x - (blockX + 0.5);
+          const dy = this.position.y - (blockY + 0.5);
+          const dz = this.position.z - (blockZ + 0.5);
           const distance = Math.sqrt(dx * dx + dy * dy + dz * dz);
           
-          if (distance > this.explosionRadius) continue;
-          
-          // Get block and check if movable
-          const block = this.world.getBlock(x, y, z);
-          if (!block || !movableBlockTypes.includes(block.type)) continue;
-          
-          // Calculate move direction (away from explosion center)
-          const direction = {
-            x: Math.sign(dx) || 0, // Ensure we don't get NaN with || 0
-            y: Math.sign(dy) || 0,
-            z: Math.sign(dz) || 0
-          };
-          
-          // Try to move block by up to this.moveDistance blocks
-          let moved = false;
-          for (let i = 1; i <= this.moveDistance && !moved; i++) {
-            const newX = x + direction.x * i;
-            const newY = y + direction.y * i;
-            const newZ = z + direction.z * i;
-            const newBlockKey = `${newX},${newY},${newZ}`;
-            
-            // Skip if this position has already been filled
-            if (movedBlocks.has(newBlockKey)) continue;
-            
-            // Check if target position is air
-            const targetBlock = this.world.getBlock(newX, newY, newZ);
-            if (!targetBlock || targetBlock.type === 'air') {
-              // Move the block
-              this.world.setBlock(newX, newY, newZ, { ...block });
-              this.world.setBlock(x, y, z, { type: 'air' });
-              
-              // Mark source and target as processed
-              movedBlocks.add(blockKey);
-              movedBlocks.add(newBlockKey);
-              
-              moved = true;
-            }
+          // Only consider blocks within the explosion radius
+          if (distance <= this.explosionRadius) {
+            blockPositions.push({
+              x: blockX,
+              y: blockY,
+              z: blockZ,
+              distance: distance,
+              // Moving distance factor - more movement for closer blocks
+              moveFactor: 1.0 - (distance / this.explosionRadius)
+            });
           }
         }
+      }
+    }
+    
+    // Sort blocks by distance (farthest first to avoid overwriting)
+    blockPositions.sort((a, b) => b.distance - a.distance);
+    
+    // Process blocks
+    for (const blockPos of blockPositions) {
+      const block = this.world.getBlock(blockPos.x, blockPos.y, blockPos.z);
+      
+      // Skip air blocks
+      if (!block || block.type === 'air') {
+        continue;
+      }
+      
+      // Skip immovable blocks based on type or properties
+      if (block.immovable || ['bedrock', 'obsidian'].includes(block.type)) {
+        continue;
+      }
+      
+      // Calculate actual move distance for this block based on moveFactor
+      const actualMoveDistance = Math.ceil(scaledMoveDistance * blockPos.moveFactor);
+      
+      if (actualMoveDistance <= 0) {
+        continue;
+      }
+      
+      // Calculate move direction based on explosion direction
+      const moveX = Math.round(this.direction.x * actualMoveDistance);
+      const moveY = Math.round(this.direction.y * actualMoveDistance);
+      const moveZ = Math.round(this.direction.z * actualMoveDistance);
+      
+      // Check if target position is air
+      const targetX = blockPos.x + moveX;
+      const targetY = blockPos.y + moveY;
+      const targetZ = blockPos.z + moveZ;
+      
+      const targetBlock = this.world.getBlock(targetX, targetY, targetZ);
+      
+      if (!targetBlock || targetBlock.type === 'air') {
+        // Move the block
+        this.world.setBlock(targetX, targetY, targetZ, { ...block });
+        this.world.setBlock(blockPos.x, blockPos.y, blockPos.z, { type: 'air' });
       }
     }
   }
@@ -418,23 +482,26 @@ class WindChargeEntity extends Entity {
   }
   
   /**
-   * Emit update event with current state
+   * Emit update to clients
    */
   emitUpdate() {
-    this.emit('update', this.serialize());
+    if (this.world && this.world.emitEntityUpdate) {
+      this.world.emitEntityUpdate(this);
+    }
   }
   
   /**
-   * Remove the entity
+   * Remove the entity from the world
    */
   remove() {
-    this.emit('remove', this.id);
-    super.remove();
+    if (this.world && this.world.removeEntity) {
+      this.world.removeEntity(this.id);
+    }
   }
   
   /**
-   * Serialize the entity for network transmission
-   * @returns {Object} Serialized entity data
+   * Serialize entity data
+   * @returns {Object} Serialized data
    */
   serialize() {
     return {
@@ -444,34 +511,83 @@ class WindChargeEntity extends Entity {
       direction: this.direction,
       moveDistance: this.moveDistance,
       explosionRadius: this.explosionRadius,
-      hasExploded: this.hasExploded,
-      particles: this.particles.map(p => ({ ...p })),
-      powerLevel: this.powerLevel
+      chargeLevel: this.chargeLevel,
+      chargeName: this.chargeName,
+      powerLevel: this.powerLevel,
+      hasExploded: this.hasExploded
     };
   }
   
   /**
-   * Create a wind charge entity from serialized data
-   * @param {Object} data - Serialized entity data
-   * @returns {WindChargeEntity} Wind charge entity instance
+   * Deserialize entity data
+   * @param {Object} data - Serialized data
+   * @returns {WindChargeEntity} Wind charge entity
    */
   static deserialize(data) {
-    const entity = new WindChargeEntity(data.id, {
+    return new WindChargeEntity(data.id, {
+      world: data.world,
       position: data.position,
-      direction: data.direction,
       velocity: data.velocity,
       shooter: data.shooter,
       damage: data.damage,
+      direction: data.direction,
       moveDistance: data.moveDistance,
       radius: data.explosionRadius,
-      powerLevel: data.powerLevel
+      chargeLevel: data.chargeLevel,
+      chargeName: data.chargeName,
+      powerLevel: data.powerLevel,
+      hasExploded: data.hasExploded
+    });
+  }
+  
+  /**
+   * Trigger chain reactions with other wind charges
+   */
+  triggerChainReaction() {
+    // Find nearby wind charges that could be triggered
+    const chainReactionRadius = this.explosionRadius * 2; // Larger radius for chain reactions
+    const nearbyEntities = this.world.getEntitiesInRadius(this.position, chainReactionRadius);
+    
+    // Filter for wind charge entities that haven't exploded yet
+    const nearbyWindCharges = nearbyEntities.filter(entity => 
+      entity.type === 'wind_charge_entity' && 
+      entity.id !== this.id && 
+      !entity.hasExploded
+    );
+    
+    // For each nearby wind charge, trigger explosion with a short delay for cascading effect
+    nearbyWindCharges.forEach((windCharge, index) => {
+      // Calculate delay based on distance (further = more delay)
+      const distance = this.distanceTo(windCharge.position);
+      const delayFactor = distance / chainReactionRadius; // 0 to 1 based on distance
+      const baseDelay = 100; // Base delay in milliseconds
+      const delay = baseDelay + (delayFactor * 150); // 100-250ms delay based on distance
+      
+      // Schedule explosion
+      setTimeout(() => {
+        if (!windCharge.hasExploded) {
+          // Set direction toward this explosion for visual effect
+          const dx = windCharge.position.x - this.position.x;
+          const dy = windCharge.position.y - this.position.y;
+          const dz = windCharge.position.z - this.position.z;
+          const length = Math.sqrt(dx * dx + dy * dy + dz * dz);
+          
+          if (length > 0) {
+            windCharge.direction = {
+              x: dx / length,
+              y: dy / length,
+              z: dz / length
+            };
+          }
+          
+          // Trigger explosion
+          windCharge.explode();
+        }
+      }, delay);
     });
     
-    entity.hasExploded = data.hasExploded || false;
-    entity.particles = data.particles ? [...data.particles] : [];
-    entity.lifetime = data.lifetime || 0;
-    
-    return entity;
+    // Return number of triggered charges for chaining information
+    return nearbyWindCharges.length;
   }
 }
 

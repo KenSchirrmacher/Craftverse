@@ -3445,3 +3445,86 @@ Next steps:
 1. Research features from the real Minecraft 1.24 Update
 2. Create proper architecture documents for new systems
 3. Begin implementation of highest priority features
+
+### 2024-01-15: Minecraft 1.24 Update (Trail Tales) Planning ###
+- Researched new features for the Minecraft 1.24 Update
+- Defined five key features with implementation priorities:
+  1. Wind Charge Improvements - Enhancing existing implementation with charging mechanics, trajectory prediction, chain reactions, and special block interactions
+  2. Pottery Patterns - Expanding the decorated pots system with new patterns and effect combinations
+  3. Crafter Block Enhancements - Adding automation features to the existing crafter block
+  4. Trail Ruins Structures - New procedural structure generation with unique loot
+  5. Vault Portal - Custom dimension access with special challenges and rewards
+- Created detailed implementation plan for Wind Charge Improvements as the first priority
+- Designed technical requirements and architecture for each feature
+- Implemented comprehensive test framework for all planned features
+  - Created test suites for each feature with specific test cases
+  - Built runner system with command-line arguments for targeted testing
+  - Prepared for TDD approach with tests ahead of implementation
+- Updated project tracking to reflect planning completion and implementation roadmap
+
+Next steps:
+1. Begin implementation of Wind Charge Improvements
+2. Follow TDD approach by implementing one test at a time
+3. Complete the feature with all planned enhancements
+4. Move on to the next priority feature
+
+### 2023-05-25: Wind Charge Charging Mechanics Implementation ###
+Based on the wind-charge-improvements.md document, I notice that we need to implement the charging mechanics for Wind Charges, which is the first planned enhancement. The current Wind Charge implementation already has a solid foundation with the item and entity classes in place, and all tests passing. 
+
+The charging mechanics will allow players to "charge" the wind charge by holding right-click, with three charge levels (weak, medium, strong). Each level will increase power, range, and visual effects.
+
+Implementation steps:
+1. Update WindChargeItem.js to add charge level support
+2. Add visual feedback during charging
+3. Modify use method to account for charge level
+4. Update WindChargeEntity to handle different charge levels with appropriate power scaling
+5. Update the corresponding tests
+
+I will start by implementing these changes to enhance the Wind Charge functionality as part of the Minecraft 1.21 Update (Tricky Trials).
+
+### 2024-01-25: Wind Charge Charging Mechanics Implementation ###
+Based on the wind-charge-improvements.md document, I notice that we need to implement the charging mechanics for Wind Charges, which is the first planned enhancement. The current Wind Charge implementation already has a solid foundation with the item and entity classes in place, and all tests passing. 
+
+The charging mechanics will allow players to "charge" the wind charge by holding right-click, with three charge levels (weak, medium, strong). Each level will increase power, range, and visual effects.
+
+Implementation steps:
+1. Update WindChargeItem.js to add charge level support
+2. Add visual feedback during charging
+3. Modify use method to account for charge level
+4. Update WindChargeEntity to handle different charge levels with appropriate power scaling
+5. Update the corresponding tests
+
+I will start by implementing these changes to enhance the Wind Charge functionality as part of the Minecraft 1.24 Update (Trail Tales).
+
+### 2024-01-26: Wind Charge Trajectory Prediction Implementation ###
+
+After successfully implementing the charging mechanics for Wind Charges, I have now completed the trajectory prediction system as the second enhancement for the Wind Charge Improvements feature in the Minecraft 1.24 Update (Trail Tales).
+
+The trajectory prediction system shows players where their Wind Charge will land when thrown, providing a visual guide for accurate aiming. The implementation includes:
+
+1. Created WindTrajectoryPredictor class in server/utils/windTrajectoryPredictor.js:
+   - Physics-based simulation of Wind Charge flight path
+   - Obstacle detection to predict collisions with blocks
+   - Support for different charge levels affecting prediction accuracy
+   - Customizable simulation parameters (step size, gravity, drag)
+   - Client-side rendering data generation for trajectory visualization
+
+2. Enhanced WindChargeItem to integrate trajectory prediction:
+   - Added trajectory calculation during charging
+   - Added trajectory updates when charge level changes
+   - Added periodic trajectory updates during sustained charging
+   - Added trajectory cancellation when Wind Charge is thrown
+   - Updated tooltip to inform players about the feature
+
+3. Created comprehensive tests in server/tests/windTrajectoryTest.js:
+   - Tests for physics-based trajectory calculation
+   - Tests for obstacle detection
+   - Tests for rendering data generation
+   - Tests for integration with WindChargeItem
+   - Tests for charge level effects on prediction accuracy
+
+The implementation follows a realistic physics model, accounting for gravity, air resistance, and collisions with blocks. The prediction accuracy scales with charge level, with stronger charges providing more accurate and longer-range predictions.
+
+All tests are now passing, confirming that the trajectory prediction system works correctly. This enhancement significantly improves the usability of Wind Charges, allowing players to aim more precisely and visualize the flight path before throwing.
+
+The next step will be to implement the chain reactions capability, allowing Wind Charges to trigger other placed Wind Charges for cascading effects.

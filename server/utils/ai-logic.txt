@@ -1,0 +1,23 @@
+# AI Logic for Craftverse Development
+
+## Current Task: Wind Charge Improvements
+The current task is to improve the Wind Charge feature from Minecraft 1.21 Update with new capabilities from the Minecraft 1.24 Update (Trail Tales).
+
+### Chain Reaction Implementation
+For the chain reaction capability, we need to enhance the Wind Charge entity to detect and trigger nearby Wind Charges when it explodes. This creates a cascade effect similar to TNT in the base game.
+
+Implementation steps:
+1. Added a new triggerChainReaction() method to the WindChargeEntity class
+2. Modified the explode() method to call triggerChainReaction() after applying explosion effects
+3. Implemented radius-based detection for nearby wind charges
+4. Added a delay mechanism for cascading explosions based on distance
+5. Set direction vector for triggered charges to point away from the triggering explosion
+6. Added comprehensive tests to verify chain reaction functionality works correctly
+7. Verified both cases: charges within range trigger, and charges outside range do not trigger
+
+The implementation was successfully tested and works correctly. This completes the chain reaction capability for Wind Charges.
+
+## Next Steps
+The next features to implement for Wind Charge Improvements are:
+1. Block interactions - expand how Wind Charges interact with different block types
+2. Visual and audio enhancements - improve effects for Wind Charge explosions 
