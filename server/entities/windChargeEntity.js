@@ -297,6 +297,10 @@ class WindChargeEntity extends Entity {
     
     // Apply explosion effects in the world
     if (this.world) {
+      // Generate explosion visual and audio effects first
+      this.generateExplosionEffects();
+      
+      // Apply explosion effects to entities and blocks
       this.applyExplosionEffects();
       
       // Trigger chain reaction with nearby wind charges
@@ -310,6 +314,158 @@ class WindChargeEntity extends Entity {
     setTimeout(() => {
       this.remove();
     }, 500); // Remove after 0.5 seconds
+  }
+  
+  /**
+   * Generate visual and audio effects for the explosion
+   */
+  generateExplosionEffects() {
+    // Create explosion visual effects
+    this.createExplosionVisuals();
+    
+    // Play explosion sound
+    this.playExplosionSound();
+  }
+  
+  /**
+   * Create visual effects for the explosion
+   */
+  createExplosionVisuals() {
+    // Skip if world doesn't support particle effects
+    if (!this.world || !this.world.addParticleEffect) {
+      return;
+    }
+    
+    // Base explosion particle count (scales with charge level)
+    const baseParticleCount = 15;
+    const scaledParticleCount = Math.round(baseParticleCount * (1 + this.chargeLevel * 0.5));
+    
+    // Explosion ring particles
+    const ringParticles = [];
+    for (let i = 0; i < scaledParticleCount; i++) {
+      // Calculate position in a ring around the explosion center
+      const angle = (i / scaledParticleCount) * Math.PI * 2;
+      // Scale radius with charge level
+      const ringRadius = this.explosionRadius * 0.5;
+      
+      // Calculate position on ring
+      const x = this.position.x + Math.cos(angle) * ringRadius;
+      const y = this.position.y + 0.2; // Slightly above ground
+      const z = this.position.z + Math.sin(angle) * ringRadius;
+      
+      // Add ring particle
+      ringParticles.push({
+        type: 'wind_wave',
+        position: { x, y, z },
+        velocity: {
+          x: Math.cos(angle) * 0.2,
+          y: 0.05,
+          z: Math.sin(angle) * 0.2
+        },
+        size: 0.5 + (this.chargeLevel * 0.2),
+        color: this.particleColors[Math.min(this.chargeLevel, this.particleColors.length - 1)],
+        lifetime: 20 + (this.chargeLevel * 5)
+      });
+    }
+    
+    // Center explosion particles
+    const centerParticles = [];
+    for (let i = 0; i < scaledParticleCount * 2; i++) {
+      // Random direction from center
+      const phi = Math.random() * Math.PI * 2;
+      const theta = Math.random() * Math.PI;
+      const radius = Math.random() * this.explosionRadius;
+      
+      // Convert spherical to cartesian coordinates
+      const x = this.position.x + radius * Math.sin(theta) * Math.cos(phi);
+      const y = this.position.y + radius * Math.sin(theta) * Math.sin(phi);
+      const z = this.position.z + radius * Math.cos(theta);
+      
+      // Add center particle
+      centerParticles.push({
+        type: 'wind_burst',
+        position: { x, y, z },
+        velocity: {
+          x: (x - this.position.x) * 0.1,
+          y: (y - this.position.y) * 0.1 + 0.05, // Add slight upward bias
+          z: (z - this.position.z) * 0.1
+        },
+        size: 0.3 + (Math.random() * 0.3),
+        color: this.particleColors[Math.min(this.chargeLevel, this.particleColors.length - 1)],
+        lifetime: 10 + Math.floor(Math.random() * 15)
+      });
+    }
+    
+    // Add all particles to the world
+    const allParticles = [...ringParticles, ...centerParticles];
+    this.world.addParticleEffect({
+      particleType: 'custom',
+      particles: allParticles,
+      position: this.position,
+      radius: this.explosionRadius
+    });
+    
+    // Add wind distortion effect
+    this.world.addParticleEffect({
+      particleType: 'wind_distortion',
+      position: this.position,
+      radius: this.explosionRadius * 1.5,
+      duration: 15 + (this.chargeLevel * 5),
+      intensity: 0.7 + (this.chargeLevel * 0.3)
+    });
+    
+    // Air pressure ripple effect (visual only)
+    this.world.addParticleEffect({
+      particleType: 'pressure_ripple',
+      position: this.position,
+      startRadius: 0.1,
+      endRadius: this.explosionRadius * 1.5,
+      duration: 10,
+      color: '#ffffff',
+      opacity: 0.3
+    });
+  }
+  
+  /**
+   * Play explosion sound with appropriate variations
+   */
+  playExplosionSound() {
+    // Skip if world doesn't support sound
+    if (!this.world || !this.world.playSound) {
+      return;
+    }
+    
+    // Primary explosion sound
+    this.world.playSound({
+      sound: 'entity.wind_charge.explode',
+      position: this.position,
+      volume: 1.0 + (this.chargeLevel * 0.2), // Scale volume with charge level
+      pitch: 1.0 - (this.chargeLevel * 0.1), // Lower pitch for higher charge levels
+      radius: this.explosionRadius * 5 // Sound travels further than explosion
+    });
+    
+    // Secondary whoosh sound
+    this.world.playSound({
+      sound: 'entity.wind_charge.whoosh', 
+      position: this.position,
+      volume: 0.7 + (this.chargeLevel * 0.2),
+      pitch: 1.2 - (this.chargeLevel * 0.2),
+      radius: this.explosionRadius * 4,
+      delay: 50 // Slight delay for this sound
+    });
+    
+    // Add ambient wind sound that lingers
+    this.world.playSound({
+      sound: 'ambient.wind',
+      position: this.position,
+      volume: 0.4 + (this.chargeLevel * 0.2),
+      pitch: 0.8,
+      radius: this.explosionRadius * 3,
+      delay: 100,
+      fadeIn: 50,
+      fadeOut: 1000,
+      duration: 1500 + (this.chargeLevel * 500)
+    });
   }
   
   /**
@@ -439,11 +595,6 @@ class WindChargeEntity extends Entity {
         continue;
       }
       
-      // Skip immovable blocks based on type or properties
-      if (block.immovable || ['bedrock', 'obsidian'].includes(block.type)) {
-        continue;
-      }
-      
       // Calculate actual move distance for this block based on moveFactor
       const actualMoveDistance = Math.ceil(scaledMoveDistance * blockPos.moveFactor);
       
@@ -456,165 +607,148 @@ class WindChargeEntity extends Entity {
       const moveY = Math.round(this.direction.y * actualMoveDistance);
       const moveZ = Math.round(this.direction.z * actualMoveDistance);
       
-      // Special interaction based on block type
-      const interaction = this.getBlockInteraction(block.type, blockPos, {
-        x: blockPos.x + moveX,
-        y: blockPos.y + moveY,
-        z: blockPos.z + moveZ
-      }, blockPos.moveFactor);
+      // Skip immovable blocks based on type or properties, unless they are specifically handled
+      const immovableBlocks = ['bedrock', 'obsidian', 'reinforced_deepslate', 'end_portal_frame'];
+      if (block.immovable || immovableBlocks.includes(block.type)) {
+        // Skip movement but check for other interactions
+        if (!this.handleSpecialBlockInteraction(block, blockPos, blockPos.moveFactor)) {
+          continue;
+        }
+      }
       
-      // Apply interaction result
-      if (interaction.action === 'move') {
-        // Standard move behavior - move block to target position
-        const targetX = blockPos.x + moveX;
-        const targetY = blockPos.y + moveY;
-        const targetZ = blockPos.z + moveZ;
-        
-        const targetBlock = this.world.getBlock(targetX, targetY, targetZ);
-        
-        if (!targetBlock || targetBlock.type === 'air') {
-          // Move the block
-          this.world.setBlock(targetX, targetY, targetZ, { ...block });
-          this.world.setBlock(blockPos.x, blockPos.y, blockPos.z, { type: 'air' });
-          
-          // Track the interaction for visual effects
-          interactionResults.push({
-            type: 'move',
-            from: { x: blockPos.x, y: blockPos.y, z: blockPos.z },
-            to: { x: targetX, y: targetY, z: targetZ },
-            blockType: block.type
-          });
-        }
-      } else if (interaction.action === 'transform') {
-        // Transform the block in place
-        this.world.setBlock(blockPos.x, blockPos.y, blockPos.z, interaction.result);
-        
-        // Track the transformation for visual effects
-        interactionResults.push({
-          type: 'transform',
-          position: { x: blockPos.x, y: blockPos.y, z: blockPos.z },
-          from: block.type,
-          to: interaction.result.type
-        });
-      } else if (interaction.action === 'activate') {
-        // Activate the block (like buttons, levers, etc.)
-        if (this.world.activateBlock) {
-          this.world.activateBlock(blockPos.x, blockPos.y, blockPos.z);
-        }
-        
-        // Track the activation for visual effects
-        interactionResults.push({
-          type: 'activate',
-          position: { x: blockPos.x, y: blockPos.y, z: blockPos.z },
-          blockType: block.type
-        });
-      } else if (interaction.action === 'break') {
-        // Break the block and spawn drops
+      // Handle special block behaviors based on block type
+      if (this.handleSpecialBlockInteraction(block, blockPos, blockPos.moveFactor)) {
+        continue; // Skip regular movement if special interaction was handled
+      }
+      
+      // Default behavior: move the block if target position is air
+      const targetX = blockPos.x + moveX;
+      const targetY = blockPos.y + moveY;
+      const targetZ = blockPos.z + moveZ;
+      
+      const targetBlock = this.world.getBlock(targetX, targetY, targetZ);
+      
+      if (!targetBlock || targetBlock.type === 'air') {
+        // Move the block
+        this.world.setBlock(targetX, targetY, targetZ, { ...block });
         this.world.setBlock(blockPos.x, blockPos.y, blockPos.z, { type: 'air' });
         
-        // Track the breakage for visual effects
-        interactionResults.push({
-          type: 'break',
-          position: { x: blockPos.x, y: blockPos.y, z: blockPos.z },
-          blockType: block.type
-        });
+        // Track for effects
+        if (interactionResults) {
+          interactionResults.push({
+            type: 'move',
+            blockType: block.type,
+            from: { x: blockPos.x, y: blockPos.y, z: blockPos.z },
+            to: { x: targetX, y: targetY, z: targetZ }
+          });
+        }
       }
     }
     
-    // Return interaction results for effects processing
+    // Create block interaction effects
+    this.createBlockInteractionEffects(interactionResults);
+    
     return interactionResults;
   }
   
   /**
-   * Determine special block interaction based on block type
-   * @param {string} blockType - Type of block
-   * @param {Object} position - Current position of the block
-   * @param {Object} targetPosition - Potential target position
-   * @param {number} forceFactor - Force factor (0-1) based on distance from explosion
-   * @returns {Object} Interaction instructions
+   * Handle special interactions for different block types
+   * @param {Object} block - The block to interact with
+   * @param {Object} position - Block position {x,y,z}
+   * @param {number} forceFactor - Force factor based on distance (0-1)
+   * @returns {boolean} True if interaction was handled, false otherwise
    */
-  getBlockInteraction(blockType, position, targetPosition, forceFactor) {
-    // Default is standard movement behavior
-    const defaultInteraction = {
-      action: 'move'
-    };
-    
-    // Light blocks like leaves, flowers, etc. move with more force
+  handleSpecialBlockInteraction(block, position, forceFactor) {
+    // Light blocks - break with high force
     const lightBlocks = [
-      'leaves', 'mangrove_leaves', 'cherry_leaves', 'azalea_leaves', 
-      'flower', 'tall_grass', 'grass', 'fern', 'dead_bush', 'seagrass',
-      'vine', 'lily_pad', 'snow_layer', 'scaffolding', 'bamboo'
+      'leaves', 'vine', 'dead_bush', 'fern', 'grass', 'tall_grass',
+      'seagrass', 'flower', 'sapling', 'mushroom', 'lily_pad',
+      'snow_layer', 'torch', 'lantern'
     ];
     
-    if (lightBlocks.some(type => blockType.includes(type))) {
-      // Light blocks move farther or break with high force
-      if (forceFactor > 0.7) {
-        return { action: 'break' };
+    if (lightBlocks.some(type => block.type.includes(type))) {
+      if (forceFactor > 0.6) {
+        // Break the block
+        this.world.setBlock(position.x, position.y, position.z, { type: 'air' });
+        return true;
       }
-      return defaultInteraction;
     }
     
-    // Heavy blocks like stone require more force to move
-    const heavyBlocks = [
-      'stone', 'cobblestone', 'andesite', 'diorite', 'granite',
-      'deepslate', 'tuff', 'basalt', 'blackstone', 'logs', 'planks'
+    // Fragile blocks - break easily
+    const fragileBlocks = [
+      'glass', 'glass_pane', 'stained_glass', 'ice', 'clay',
+      'flower_pot', 'amethyst_cluster', 'amethyst_bud',
+      'pointed_dripstone', 'candle', 'tinted_glass'
     ];
     
-    if (heavyBlocks.some(type => blockType.includes(type))) {
-      // Heavy blocks need more force to move
-      if (forceFactor < 0.5) {
-        return { action: 'none' }; // Too weak to move
+    if (fragileBlocks.some(type => block.type.includes(type))) {
+      if (forceFactor > 0.3) {
+        // Break the block
+        this.world.setBlock(position.x, position.y, position.z, { type: 'air' });
+        return true;
       }
-      return defaultInteraction;
     }
     
-    // Interactable blocks like buttons, levers, etc.
+    // Interactable blocks - activate instead of moving
     const interactableBlocks = [
-      'button', 'lever', 'pressure_plate', 'tripwire', 'door',
-      'trapdoor', 'fence_gate', 'bell'
+      'button', 'lever', 'pressure_plate', 'tripwire',
+      'door', 'trapdoor', 'fence_gate', 'bell'
     ];
     
-    if (interactableBlocks.some(type => blockType.includes(type))) {
-      // Activate instead of moving
-      return { action: 'activate' };
+    if (interactableBlocks.some(type => block.type.includes(type))) {
+      // Activate the block if world supports it
+      if (this.world.activateBlock) {
+        this.world.activateBlock(position.x, position.y, position.z);
+      }
+      return true;
     }
     
     // Transformable blocks
-    if (blockType === 'dirt' && forceFactor > 0.8) {
-      // High force transforms dirt to path
-      return {
-        action: 'transform',
-        result: { type: 'dirt_path' }
-      };
+    if (block.type === 'dirt' && forceFactor > 0.8) {
+      // Transform dirt to dirt_path with high force
+      this.world.setBlock(position.x, position.y, position.z, { type: 'dirt_path' });
+      return true;
     }
     
-    if (blockType === 'grass_block' && forceFactor > 0.8) {
-      // High force transforms grass to dirt
-      return {
-        action: 'transform',
-        result: { type: 'dirt' }
-      };
+    if (block.type === 'grass_block' && forceFactor > 0.8) {
+      // Transform grass_block to dirt with high force
+      this.world.setBlock(position.x, position.y, position.z, { type: 'dirt' });
+      return true;
     }
     
-    if (blockType === 'sand' || blockType === 'gravel' || blockType === 'powder_snow') {
-      // Always try to move loose materials
-      return defaultInteraction;
+    if (block.type === 'fire') {
+      // Extinguish fire
+      this.world.setBlock(position.x, position.y, position.z, { type: 'air' });
+      return true;
     }
     
-    // Fragile blocks break easily
-    const fragileBlocks = [
-      'glass', 'glass_pane', 'stained_glass', 'ice', 'clay',
-      'candle', 'lantern', 'torch', 'flower_pot', 'amethyst',
-      'calcite', 'tinted_glass', 'amethyst_bud', 'pointed_dripstone'
-    ];
-    
-    if (fragileBlocks.some(type => blockType.includes(type))) {
-      // Fragile blocks break instead of moving
-      return { action: 'break' };
+    if (block.type === 'tnt') {
+      // Activate TNT
+      this.world.setBlock(position.x, position.y, position.z, { type: 'air' });
+      // In a real implementation, we would spawn a primed TNT entity here
+      if (this.world.spawnEntity) {
+        this.world.spawnEntity({
+          type: 'primed_tnt',
+          position: {
+            x: position.x + 0.5,
+            y: position.y + 0.5,
+            z: position.z + 0.5
+          },
+          fuse: 20 // 1 second fuse (20 ticks)
+        });
+      }
+      return true;
     }
     
-    // Default behavior for all other blocks
-    return defaultInteraction;
+    // Redstone-related blocks
+    if (block.type.includes('redstone')) {
+      // Trigger a redstone update if the world supports it
+      if (this.world.updateRedstone) {
+        this.world.updateRedstone(position.x, position.y, position.z);
+      }
+    }
+    
+    return false; // Not handled as a special case
   }
   
   /**
@@ -736,6 +870,253 @@ class WindChargeEntity extends Entity {
     
     // Return number of triggered charges for chaining information
     return nearbyWindCharges.length;
+  }
+  
+  /**
+   * Create visual effects for block interactions
+   * @param {Array} interactionResults - Results from block interactions
+   */
+  createBlockInteractionEffects(interactionResults) {
+    // Skip if world doesn't support effects
+    if (!this.world || !this.world.addParticleEffect || !interactionResults) {
+      return;
+    }
+    
+    // Process each interaction result to create appropriate effects
+    for (const result of interactionResults) {
+      switch (result.type) {
+        case 'move':
+          // Create dust particles along movement path
+          this.createBlockMovementEffect(result.from, result.to, result.blockType);
+          break;
+        case 'break':
+          // Create break particles
+          this.createBlockBreakEffect(result.position, result.blockType);
+          break;
+        case 'transform':
+          // Create transform particles
+          this.createBlockTransformEffect(result.position, result.from, result.to);
+          break;
+        case 'activate':
+          // Create activation particles
+          this.createBlockActivationEffect(result.position, result.blockType);
+          break;
+      }
+    }
+  }
+  
+  /**
+   * Create visual effects for block movement
+   * @param {Object} from - Starting position
+   * @param {Object} to - Ending position
+   * @param {string} blockType - Type of block being moved
+   */
+  createBlockMovementEffect(from, to, blockType) {
+    // Calculate midpoint and direction
+    const mid = {
+      x: (from.x + to.x) / 2 + 0.5,
+      y: (from.y + to.y) / 2 + 0.5,
+      z: (from.z + to.z) / 2 + 0.5
+    };
+    
+    // Calculate direction vector
+    const dir = {
+      x: to.x - from.x,
+      y: to.y - from.y,
+      z: to.z - from.z
+    };
+    
+    // Add dust particles along the path
+    this.world.addParticleEffect({
+      particleType: 'block_dust',
+      blockType: blockType,
+      position: mid,
+      count: 15,
+      spread: {
+        x: Math.abs(dir.x) + 0.5,
+        y: Math.abs(dir.y) + 0.5,
+        z: Math.abs(dir.z) + 0.5
+      },
+      velocity: {
+        x: dir.x * 0.1,
+        y: 0.15,
+        z: dir.z * 0.1
+      },
+      gravity: 0.2
+    });
+    
+    // Play block move sound
+    if (this.world.playSound) {
+      this.world.playSound({
+        sound: this.getBlockMoveSound(blockType),
+        position: from,
+        volume: 0.6,
+        pitch: 1.0,
+        radius: 10
+      });
+    }
+  }
+  
+  /**
+   * Create visual effects for block breaking
+   * @param {Object} position - Block position
+   * @param {string} blockType - Type of block being broken
+   */
+  createBlockBreakEffect(position, blockType) {
+    // Add break particles
+    this.world.addParticleEffect({
+      particleType: 'block_break',
+      blockType: blockType,
+      position: {
+        x: position.x + 0.5,
+        y: position.y + 0.5,
+        z: position.z + 0.5
+      },
+      count: 20,
+      spread: { x: 0.5, y: 0.5, z: 0.5 },
+      velocity: { x: 0, y: 0.1, z: 0 },
+      gravity: 0.2
+    });
+    
+    // Play break sound
+    if (this.world.playSound) {
+      this.world.playSound({
+        sound: this.getBlockBreakSound(blockType),
+        position: position,
+        volume: 0.8,
+        pitch: 1.0,
+        radius: 10
+      });
+    }
+  }
+  
+  /**
+   * Create visual effects for block transformation
+   * @param {Object} position - Block position
+   * @param {string} fromType - Original block type
+   * @param {string} toType - New block type
+   */
+  createBlockTransformEffect(position, fromType, toType) {
+    // Add transform particles (mix of both block types)
+    this.world.addParticleEffect({
+      particleType: 'block_transform',
+      position: {
+        x: position.x + 0.5,
+        y: position.y + 0.5,
+        z: position.z + 0.5
+      },
+      fromType: fromType,
+      toType: toType,
+      count: 15,
+      spread: { x: 0.5, y: 0.5, z: 0.5 },
+      velocity: { x: 0, y: 0.2, z: 0 },
+      gravity: 0.1
+    });
+    
+    // Play transform sound
+    if (this.world.playSound) {
+      this.world.playSound({
+        sound: 'block.grass.step',
+        position: position,
+        volume: 0.7,
+        pitch: 0.8,
+        radius: 10
+      });
+    }
+  }
+  
+  /**
+   * Create visual effects for block activation
+   * @param {Object} position - Block position
+   * @param {string} blockType - Type of block being activated
+   */
+  createBlockActivationEffect(position, blockType) {
+    // Add activation particles
+    this.world.addParticleEffect({
+      particleType: 'block_activate',
+      position: {
+        x: position.x + 0.5,
+        y: position.y + 0.5,
+        z: position.z + 0.5
+      },
+      count: 8,
+      spread: { x: 0.3, y: 0.3, z: 0.3 },
+      velocity: { x: 0, y: 0.1, z: 0 },
+      color: '#ffffff',
+      size: 0.1
+    });
+    
+    // No need to play sound here as the activated block will play its own sound
+  }
+  
+  /**
+   * Get appropriate sound for block movement based on block type
+   * @param {string} blockType - Type of block
+   * @returns {string} Sound name
+   */
+  getBlockMoveSound(blockType) {
+    // Wood type blocks
+    if (blockType.includes('wood') || blockType.includes('log') || blockType.includes('plank')) {
+      return 'block.wood.step';
+    }
+    
+    // Stone type blocks
+    if (blockType.includes('stone') || blockType.includes('rock') || blockType.includes('deepslate')) {
+      return 'block.stone.step';
+    }
+    
+    // Dirt type blocks
+    if (blockType.includes('dirt') || blockType.includes('grass') || blockType.includes('sand')) {
+      return 'block.gravel.step';
+    }
+    
+    // Metal type blocks
+    if (blockType.includes('iron') || blockType.includes('gold') || blockType.includes('copper')) {
+      return 'block.metal.step';
+    }
+    
+    // Glass type blocks
+    if (blockType.includes('glass')) {
+      return 'block.glass.step';
+    }
+    
+    // Default sound
+    return 'block.stone.step';
+  }
+  
+  /**
+   * Get appropriate sound for block breaking based on block type
+   * @param {string} blockType - Type of block
+   * @returns {string} Sound name
+   */
+  getBlockBreakSound(blockType) {
+    // Wood type blocks
+    if (blockType.includes('wood') || blockType.includes('log') || blockType.includes('plank')) {
+      return 'block.wood.break';
+    }
+    
+    // Stone type blocks
+    if (blockType.includes('stone') || blockType.includes('rock') || blockType.includes('deepslate')) {
+      return 'block.stone.break';
+    }
+    
+    // Dirt type blocks
+    if (blockType.includes('dirt') || blockType.includes('grass') || blockType.includes('sand')) {
+      return 'block.gravel.break';
+    }
+    
+    // Metal type blocks
+    if (blockType.includes('iron') || blockType.includes('gold') || blockType.includes('copper')) {
+      return 'block.metal.break';
+    }
+    
+    // Glass type blocks
+    if (blockType.includes('glass')) {
+      return 'block.glass.break';
+    }
+    
+    // Default sound
+    return 'block.stone.break';
   }
 }
 
