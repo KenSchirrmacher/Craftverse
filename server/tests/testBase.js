@@ -1,55 +1,73 @@
 /**
  * Base class for all test suites
+ * Provides common functionality for running tests and reporting results
  */
+
 class TestBase {
   /**
-   * Create a new test suite
-   * @param {string} name - Name of the test suite
+   * Creates a new test suite
+   * @param {string} name - The name of the test suite
    */
   constructor(name) {
     this.name = name;
-    this.testsRun = 0;
-    this.testsPassed = 0;
-    this.testsFailed = 0;
-    this.currentTest = '';
-    
-    // Properties for test result reporting
     this.totalTests = 0;
     this.passedTests = 0;
     this.failedTests = 0;
-  }
-
-  /**
-   * Run a single test
-   * @param {string} testName - Name of the test
-   * @param {Function} testFn - Test function
-   */
-  runTest(testName, testFn) {
-    this.testsRun++;
-    this.totalTests++;
-    this.currentTest = testName;
+    this.skippedTests = 0;
     
-    console.log(`Running test: ${testName}`);
+    console.log(`\n=== ${this.name} ===`);
+  }
+  
+  /**
+   * Runs a test case
+   * @param {string} name - The name of the test case
+   * @param {Function} testFn - The test function to run
+   */
+  runTest(name, testFn) {
+    this.totalTests++;
+    console.log(`\nRunning test: ${name}`);
     
     try {
       testFn();
-      this.testsPassed++;
+      console.log(`✓ Test "${name}" passed`);
       this.passedTests++;
-      console.log(`  ✅ Passed`);
     } catch (error) {
-      this.testsFailed++;
+      console.error(`✗ Test "${name}" failed: ${error.message}`);
+      if (error.stack) {
+        console.error(error.stack.split('\n').slice(1).join('\n'));
+      }
       this.failedTests++;
-      console.error(`  ❌ Failed: ${error.message}`);
-      console.error(`    ${error.stack.split('\n').slice(1, 3).join('\n    ')}`);
     }
   }
-
+  
   /**
-   * Run all tests in the suite
-   * Should be implemented by subclasses
+   * Skips a test case
+   * @param {string} name - The name of the test case
+   * @param {string} reason - The reason for skipping
+   */
+  skipTest(name, reason) {
+    this.totalTests++;
+    this.skippedTests++;
+    console.log(`⚠ Test "${name}" skipped: ${reason}`);
+  }
+  
+  /**
+   * Asserts that the condition is true
+   * @param {boolean} condition - The condition to check
+   * @param {string} message - The error message if the condition is false
+   */
+  assert(condition, message) {
+    if (!condition) {
+      throw new Error(message || 'Assertion failed');
+    }
+  }
+  
+  /**
+   * Runs all tests in the suite
+   * To be implemented by subclasses
    */
   async runTests() {
-    throw new Error('runTests() must be implemented by subclass');
+    throw new Error('runTests() must be implemented by subclasses');
   }
 }
 

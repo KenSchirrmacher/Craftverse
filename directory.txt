@@ -184,8 +184,11 @@
 - server/tests/runWindChargeTest.js - Test runner for the Wind Charge tests
 - server/tests/trailblazerTest.js - Test suite for Trailblazer villager profession, maps, compass, and markers.
 - server/tests/runTrailblazerTest.js - Test runner for the Trailblazer tests.
-- server/tests/ancientSeedsTest.js - Tests for the Ancient Seeds feature
-- server/tests/runAncientSeedsTest.js - Test runner for the Ancient Seeds tests
+- server/tests/ancientSeedsTest.js - Tests for the Ancient Seeds feature, including seed variants, plant growth, crossbreeding, and special effects.
+- server/tests/runAncientSeedsTest.js - Test runner for the Ancient Seeds feature tests.
+- server/tests/minecraft123IntegrationTest.js - Integration tests for all Minecraft 1.23 Update features to ensure they work together correctly.
+- server/tests/runMinecraft123IntegrationTest.js - Test runner for the Minecraft 1.23 Update integration tests.
+- server/tests/testBase.js - Base class for all test suites providing common functionality for running tests and reporting results.
 
 ## Client
 - public/index.html - Main client page
