@@ -514,4 +514,45 @@ Updated to include natural generation of Ancient Plants in appropriate biomes.
 - server/docs/minecraft-1.23-research.md - Research document on the Minecraft 1.23 Update features
 - server/docs/minecraft-1.23-implementation-plan.md - Implementation plan for the Minecraft 1.23 Update features
 - server/docs/minecraft-1.24-research.md - Research document on the Minecraft 1.24 (Trail Tales) Update features
-- server/docs/wind-charge-improvements.md - Detailed implementation plan for Wind Charge Improvements feature 
+- server/docs/wind-charge-improvements.md - Detailed implementation plan for Wind Charge Improvements feature
+
+# Trail Ruins Feature Files
+
+## Structure Files
+- server/structures/trailRuins.js
+  Description: Main Trail Ruins structure class
+  Function: Handles structure creation, validation, and world integration
+  Called by: WorldGenerator, StructureManager
+
+- server/utils/structures/trailRuinsGenerator.js
+  Description: Trail Ruins structure generator
+  Function: Handles procedural generation of Trail Ruins structures
+  Called by: TrailRuins class
+
+## Test Files
+- server/tests/trailRuinsTest.js
+  Description: Comprehensive test suite for Trail Ruins
+  Function: Tests all aspects of Trail Ruins functionality
+  Called by: TestRunner
+
+## Documentation
+- server/structures/docs/trailRuinsResearch.md
+  Description: Research documentation for Trail Ruins
+  Function: Contains design decisions and implementation details
+  Called by: Documentation system
+
+## Loot Tables
+- server/data/loot_tables/trail_ruins/common.json
+  Description: Common loot table for Trail Ruins
+  Function: Defines common items found in Trail Ruins
+  Called by: LootManager
+
+- server/data/loot_tables/trail_ruins/uncommon.json
+  Description: Uncommon loot table for Trail Ruins
+  Function: Defines uncommon items found in Trail Ruins
+  Called by: LootManager
+
+- server/data/loot_tables/trail_ruins/rare.json
+  Description: Rare loot table for Trail Ruins
+  Function: Defines rare items found in Trail Ruins
+  Called by: LootManager 

@@ -523,7 +523,12 @@ All implementations include proper integration with existing game systems, compr
   - [COMPLETED] Chain reactions capability
   - [COMPLETED] Block interactions
   - [COMPLETED] Visual and audio enhancements
-- [PLANNING] Trail Ruins Structures
+- [COMPLETED] Trail Ruins Structures
+  - [COMPLETED] Structure generation with proper layouts
+  - [COMPLETED] Biome-specific variants
+  - [COMPLETED] Archaeology integration
+  - [COMPLETED] Loot tables (common, uncommon, rare)
+  - [COMPLETED] Comprehensive tests
 - [PLANNING] Pottery Patterns
 - [PLANNING] Crafter Block Enhancements
 - [PLANNING] Vault Portal
