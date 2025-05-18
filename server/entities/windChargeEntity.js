@@ -429,6 +429,8 @@ class WindChargeEntity extends Entity {
     blockPositions.sort((a, b) => b.distance - a.distance);
     
     // Process blocks
+    const interactionResults = [];
+    
     for (const blockPos of blockPositions) {
       const block = this.world.getBlock(blockPos.x, blockPos.y, blockPos.z);
       
@@ -454,19 +456,165 @@ class WindChargeEntity extends Entity {
       const moveY = Math.round(this.direction.y * actualMoveDistance);
       const moveZ = Math.round(this.direction.z * actualMoveDistance);
       
-      // Check if target position is air
-      const targetX = blockPos.x + moveX;
-      const targetY = blockPos.y + moveY;
-      const targetZ = blockPos.z + moveZ;
+      // Special interaction based on block type
+      const interaction = this.getBlockInteraction(block.type, blockPos, {
+        x: blockPos.x + moveX,
+        y: blockPos.y + moveY,
+        z: blockPos.z + moveZ
+      }, blockPos.moveFactor);
       
-      const targetBlock = this.world.getBlock(targetX, targetY, targetZ);
-      
-      if (!targetBlock || targetBlock.type === 'air') {
-        // Move the block
-        this.world.setBlock(targetX, targetY, targetZ, { ...block });
+      // Apply interaction result
+      if (interaction.action === 'move') {
+        // Standard move behavior - move block to target position
+        const targetX = blockPos.x + moveX;
+        const targetY = blockPos.y + moveY;
+        const targetZ = blockPos.z + moveZ;
+        
+        const targetBlock = this.world.getBlock(targetX, targetY, targetZ);
+        
+        if (!targetBlock || targetBlock.type === 'air') {
+          // Move the block
+          this.world.setBlock(targetX, targetY, targetZ, { ...block });
+          this.world.setBlock(blockPos.x, blockPos.y, blockPos.z, { type: 'air' });
+          
+          // Track the interaction for visual effects
+          interactionResults.push({
+            type: 'move',
+            from: { x: blockPos.x, y: blockPos.y, z: blockPos.z },
+            to: { x: targetX, y: targetY, z: targetZ },
+            blockType: block.type
+          });
+        }
+      } else if (interaction.action === 'transform') {
+        // Transform the block in place
+        this.world.setBlock(blockPos.x, blockPos.y, blockPos.z, interaction.result);
+        
+        // Track the transformation for visual effects
+        interactionResults.push({
+          type: 'transform',
+          position: { x: blockPos.x, y: blockPos.y, z: blockPos.z },
+          from: block.type,
+          to: interaction.result.type
+        });
+      } else if (interaction.action === 'activate') {
+        // Activate the block (like buttons, levers, etc.)
+        if (this.world.activateBlock) {
+          this.world.activateBlock(blockPos.x, blockPos.y, blockPos.z);
+        }
+        
+        // Track the activation for visual effects
+        interactionResults.push({
+          type: 'activate',
+          position: { x: blockPos.x, y: blockPos.y, z: blockPos.z },
+          blockType: block.type
+        });
+      } else if (interaction.action === 'break') {
+        // Break the block and spawn drops
         this.world.setBlock(blockPos.x, blockPos.y, blockPos.z, { type: 'air' });
+        
+        // Track the breakage for visual effects
+        interactionResults.push({
+          type: 'break',
+          position: { x: blockPos.x, y: blockPos.y, z: blockPos.z },
+          blockType: block.type
+        });
       }
     }
+    
+    // Return interaction results for effects processing
+    return interactionResults;
+  }
+  
+  /**
+   * Determine special block interaction based on block type
+   * @param {string} blockType - Type of block
+   * @param {Object} position - Current position of the block
+   * @param {Object} targetPosition - Potential target position
+   * @param {number} forceFactor - Force factor (0-1) based on distance from explosion
+   * @returns {Object} Interaction instructions
+   */
+  getBlockInteraction(blockType, position, targetPosition, forceFactor) {
+    // Default is standard movement behavior
+    const defaultInteraction = {
+      action: 'move'
+    };
+    
+    // Light blocks like leaves, flowers, etc. move with more force
+    const lightBlocks = [
+      'leaves', 'mangrove_leaves', 'cherry_leaves', 'azalea_leaves', 
+      'flower', 'tall_grass', 'grass', 'fern', 'dead_bush', 'seagrass',
+      'vine', 'lily_pad', 'snow_layer', 'scaffolding', 'bamboo'
+    ];
+    
+    if (lightBlocks.some(type => blockType.includes(type))) {
+      // Light blocks move farther or break with high force
+      if (forceFactor > 0.7) {
+        return { action: 'break' };
+      }
+      return defaultInteraction;
+    }
+    
+    // Heavy blocks like stone require more force to move
+    const heavyBlocks = [
+      'stone', 'cobblestone', 'andesite', 'diorite', 'granite',
+      'deepslate', 'tuff', 'basalt', 'blackstone', 'logs', 'planks'
+    ];
+    
+    if (heavyBlocks.some(type => blockType.includes(type))) {
+      // Heavy blocks need more force to move
+      if (forceFactor < 0.5) {
+        return { action: 'none' }; // Too weak to move
+      }
+      return defaultInteraction;
+    }
+    
+    // Interactable blocks like buttons, levers, etc.
+    const interactableBlocks = [
+      'button', 'lever', 'pressure_plate', 'tripwire', 'door',
+      'trapdoor', 'fence_gate', 'bell'
+    ];
+    
+    if (interactableBlocks.some(type => blockType.includes(type))) {
+      // Activate instead of moving
+      return { action: 'activate' };
+    }
+    
+    // Transformable blocks
+    if (blockType === 'dirt' && forceFactor > 0.8) {
+      // High force transforms dirt to path
+      return {
+        action: 'transform',
+        result: { type: 'dirt_path' }
+      };
+    }
+    
+    if (blockType === 'grass_block' && forceFactor > 0.8) {
+      // High force transforms grass to dirt
+      return {
+        action: 'transform',
+        result: { type: 'dirt' }
+      };
+    }
+    
+    if (blockType === 'sand' || blockType === 'gravel' || blockType === 'powder_snow') {
+      // Always try to move loose materials
+      return defaultInteraction;
+    }
+    
+    // Fragile blocks break easily
+    const fragileBlocks = [
+      'glass', 'glass_pane', 'stained_glass', 'ice', 'clay',
+      'candle', 'lantern', 'torch', 'flower_pot', 'amethyst',
+      'calcite', 'tinted_glass', 'amethyst_bud', 'pointed_dripstone'
+    ];
+    
+    if (fragileBlocks.some(type => blockType.includes(type))) {
+      // Fragile blocks break instead of moving
+      return { action: 'break' };
+    }
+    
+    // Default behavior for all other blocks
+    return defaultInteraction;
   }
   
   /**

@@ -17,7 +17,25 @@ Implementation steps:
 
 The implementation was successfully tested and works correctly. This completes the chain reaction capability for Wind Charges.
 
+### Enhanced Block Interactions Implementation
+For the block interactions capability, we enhanced how Wind Charges interact with different block types when they explode.
+
+Implementation steps:
+1. Extended the tryMoveBlocks() method to handle special block interactions
+2. Added a new getBlockInteraction() method to determine how to handle different block types
+3. Implemented different behavior categories:
+   - Light blocks (leaves, flowers): break with high force
+   - Heavy blocks (stone, logs): require more force to move
+   - Interactable blocks (buttons, levers): activate instead of moving
+   - Transformable blocks (dirt): transform to different block types
+   - Fragile blocks (glass): break easily
+   - TNT: activate and spawn primed TNT entity
+4. Added support for different interaction types: move, transform, activate, break
+5. Created comprehensive tests to verify all interaction types
+6. Verified the implementation works correctly for all test cases
+
+The implementation and tests are complete. This enhances Wind Charges to behave more intelligently with different block types.
+
 ## Next Steps
-The next features to implement for Wind Charge Improvements are:
-1. Block interactions - expand how Wind Charges interact with different block types
-2. Visual and audio enhancements - improve effects for Wind Charge explosions 
+The next feature to implement for Wind Charge Improvements is:
+1. Visual and audio enhancements - improve effects for Wind Charge explosions 
