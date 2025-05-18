@@ -12,6 +12,11 @@ class TestBase {
     this.testsPassed = 0;
     this.testsFailed = 0;
     this.currentTest = '';
+    
+    // Properties for test result reporting
+    this.totalTests = 0;
+    this.passedTests = 0;
+    this.failedTests = 0;
   }
 
   /**
@@ -21,6 +26,7 @@ class TestBase {
    */
   runTest(testName, testFn) {
     this.testsRun++;
+    this.totalTests++;
     this.currentTest = testName;
     
     console.log(`Running test: ${testName}`);
@@ -28,9 +34,11 @@ class TestBase {
     try {
       testFn();
       this.testsPassed++;
+      this.passedTests++;
       console.log(`  ✅ Passed`);
     } catch (error) {
       this.testsFailed++;
+      this.failedTests++;
       console.error(`  ❌ Failed: ${error.message}`);
       console.error(`    ${error.stack.split('\n').slice(1, 3).join('\n    ')}`);
     }

@@ -33,6 +33,7 @@ const StrippedCherryLog = require('./strippedCherryLog');
 const CherryLeaves = require('./cherryLeaves');
 const CherrySapling = require('./cherrySapling');
 const DecoratedPot = require('./decoratedPot');
+const EnhancedPot = require('./enhancedPot');
 const SignBlock = require('./signBlock');
 const HangingSignBlock = require('./hangingSignBlock');
 const ChiseledBookshelfBlock = require('./chiseledBookshelfBlock');
@@ -44,6 +45,8 @@ const CopperGrateBlock = require('./copperGrateBlock');
 const { ChiseledTuffBlock, TuffBricksBlock, TuffBrickSlabBlock, TuffBrickStairsBlock, TuffBrickWallBlock } = require('./tuffVariantsBlocks');
 // Import 1.22 Sorcery Update blocks
 const WindEnergyTransmitter = require('./windEnergyTransmitter');
+// Import 1.23 Ancient Seeds blocks
+const AncientPlantBlock = require('./ancientPlantBlock');
 // Import bamboo blocks
 const { 
   BambooBlock, 
@@ -198,8 +201,11 @@ class BlockRegistry {
     this.registerBlock(new CherryLeaves());
     this.registerBlock(new CherrySapling());
     
-    // Register Pottery blocks
+    // Register decorative blocks
     this.registerBlock(new DecoratedPot());
+    
+    // Register Enhanced Pot for 1.23 Update's Decorated Pots Expansion
+    this.registerBlock(new EnhancedPot());
     
     // Register Sign blocks
     this.registerBlock(new SignBlock());
@@ -220,6 +226,9 @@ class BlockRegistry {
     
     // Register 1.22 Sorcery Update blocks
     this.register122SorceryBlocks();
+    
+    // Register 1.23 Ancient Seeds blocks
+    this.register123AncientSeedsBlocks();
     
     // Future: Register more blocks
   }
@@ -366,6 +375,25 @@ class BlockRegistry {
     this.registerBlock(new WindEnergyTransmitter());
     
     // More 1.22 blocks will be added here as they are implemented
+  }
+  
+  /**
+   * Register blocks for the Ancient Seeds feature (Minecraft 1.23 Update)
+   * @private
+   */
+  register123AncientSeedsBlocks() {
+    // Register the generic ancient plant block
+    this.registerBlock(new AncientPlantBlock());
+    
+    // Register variant-specific plant blocks
+    const variants = ['torchflower', 'pitcher_pod', 'mystic', 'crystal', 'arcane', 'frost'];
+    
+    for (const variant of variants) {
+      this.registerBlock(new AncientPlantBlock({ 
+        variant,
+        growthStage: 0
+      }));
+    }
   }
   
   /**

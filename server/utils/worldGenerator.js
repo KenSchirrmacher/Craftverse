@@ -58,6 +58,9 @@ class WorldGenerator {
     
     // Initialize world generation parameters
     this.initializeWorld();
+    
+    // Initialize biome features
+    this.initializeBiomeFeatures();
   }
 
   /**
@@ -1141,6 +1144,86 @@ class WorldGenerator {
   clearCache() {
     this.chunkCache.clear();
     this.biomeManager.clearCache();
+  }
+
+  /**
+   * Initialize biome features for all biomes
+   * @private
+   */
+  initializeBiomeFeatures() {
+    // Store biome features for lookup
+    this.biomeFeatures = {
+      // Overworld biomes
+      'plains': [
+        { type: 'vegetation', density: 0.8, plants: ['grass', 'flower', 'dandelion', 'poppy'] },
+        { type: 'tree', density: 0.1, treeType: 'oak' }
+      ],
+      'forest': [
+        { type: 'vegetation', density: 0.7, plants: ['grass', 'flower', 'dandelion', 'poppy', 'lily_of_the_valley'] },
+        { type: 'tree', density: 0.6, treeType: 'oak' },
+        { type: 'tree', density: 0.2, treeType: 'birch' }
+      ],
+      'jungle': [
+        { type: 'vegetation', density: 0.9, plants: ['grass', 'fern', 'jungle_bush', 'bamboo'] },
+        { type: 'tree', density: 0.8, treeType: 'jungle' }
+      ],
+      'desert': [
+        { type: 'vegetation', density: 0.1, plants: ['cactus', 'dead_bush'] }
+      ],
+      'swamp': [
+        { type: 'vegetation', density: 0.8, plants: ['grass', 'fern', 'lily_pad', 'blue_orchid'] },
+        { type: 'tree', density: 0.4, treeType: 'swamp_oak' }
+      ],
+      'mushroom_fields': [
+        { type: 'vegetation', density: 0.8, plants: ['red_mushroom', 'brown_mushroom'] },
+        { type: 'feature', density: 0.2, feature: 'huge_mushroom' }
+      ],
+      'lush_caves': [
+        { type: 'vegetation', density: 0.9, plants: ['moss', 'flowering_azalea', 'spore_blossom', 'glow_berry_vine', 'ancient_plant'] },
+        { type: 'feature', density: 0.4, feature: 'clay_pool' },
+        { type: 'feature', density: 0.3, feature: 'moss_patch' }
+      ],
+      'dripstone_caves': [
+        { type: 'feature', density: 0.7, feature: 'dripstone_cluster' },
+        { type: 'feature', density: 0.3, feature: 'dripstone_pool' }
+      ],
+      'frozen_peaks': [
+        { type: 'vegetation', density: 0.2, plants: ['snow_grass', 'frozen_bush', 'ancient_plant_frost'] },
+        { type: 'feature', density: 0.6, feature: 'ice_patch' }
+      ],
+      'snowy_plains': [
+        { type: 'vegetation', density: 0.4, plants: ['snow_grass', 'frozen_bush'] },
+        { type: 'tree', density: 0.1, treeType: 'spruce' }
+      ],
+      'flower_forest': [
+        { type: 'vegetation', density: 1.0, plants: ['grass', 'flower', 'dandelion', 'poppy', 'allium', 'azure_bluet', 'tulip', 'sunflower', 'ancient_plant_torchflower'] },
+        { type: 'tree', density: 0.4, treeType: 'oak' },
+        { type: 'tree', density: 0.2, treeType: 'birch' }
+      ],
+      'mangrove_swamp': [
+        { type: 'vegetation', density: 0.8, plants: ['mangrove_roots', 'lily_pad', 'seagrass', 'ancient_plant_pitcher_pod'] },
+        { type: 'tree', density: 0.5, treeType: 'mangrove' }
+      ],
+      'deep_dark': [
+        { type: 'vegetation', density: 0.3, plants: ['sculk', 'sculk_vein', 'ancient_plant_mystic'] },
+        { type: 'feature', density: 0.5, feature: 'sculk_patch' }
+      ],
+      'cherry_grove': [
+        { type: 'vegetation', density: 0.9, plants: ['grass', 'pink_petals', 'cherry_sapling'] },
+        { type: 'tree', density: 0.7, treeType: 'cherry' }
+      ],
+      // Add more biomes as needed
+    };
+  }
+
+  /**
+   * Get features for a specific biome
+   * @param {string} biomeType - The biome type to get features for
+   * @returns {Array} Array of feature objects for the biome
+   */
+  getBiomeFeatures(biomeType) {
+    // Return biome features or empty array if not found
+    return this.biomeFeatures[biomeType] || [];
   }
 }
 

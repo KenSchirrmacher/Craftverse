@@ -40,6 +40,11 @@ const {
 const OminousBottleItem = require('./ominousBottleItem');
 // Import Armadillo Scute for 1.22 Sorcery Update
 const ArmadilloScuteItem = require('./armadilloScuteItem');
+// Import items for Minecraft 1.23 Decorated Pots Expansion
+const EnhancedPotItem = require('./enhancedPotItem');
+const EnhancedPotBaseItem = require('./enhancedPotBaseItem');
+// Import items for Minecraft 1.23 Ancient Seeds feature
+const AncientSeedItem = require('./ancientSeedItem');
 
 class ItemRegistry {
   /**
@@ -195,19 +200,20 @@ class ItemRegistry {
     // Register Pottery System items
     this.registerPotteryItems();
     
-    // Register Hanging Sign items
-    this.registerHangingSignItems();
+    // Register basic armor items
+    this.registerBasicArmorItems();
     
-    // Register Bamboo items for 1.20 Update
-    this.registerBambooItems();
-    
-    // Register 1.21 (Tricky Trials) Update items
+    // Register 1.21 (Tricky Trials) items
     this.register121Items();
     
-    // Register 1.22 (Sorcery Update) items
+    // Register 1.22 (Sorcery) items
     this.register122Items();
     
-    // Future: Register more items (stone, dirt, etc.)
+    // Register Animal Improvements / Wolf Armor items
+    this.registerWolfArmorItems();
+    
+    // Register 1.23 Ancient Seeds items
+    this.register123AncientSeedsItems();
     
     // Register potion items
     this.potionRegistry.registerDefaultPotions();
@@ -281,14 +287,26 @@ class ItemRegistry {
    * @private
    */
   registerSherdItems() {
-    const sherdTypes = [
-      'angler', 'archer', 'arms_up', 'blade', 'brewer', 'burn', 'danger',
-      'explorer', 'friend', 'heart', 'heartbreak', 'howl', 'miner', 'mourner',
-      'plenty', 'prize', 'sheaf', 'shelter', 'skull', 'snort'
+    // Original sherds from Trails & Tales
+    const originalPatterns = [
+      'arms_up', 'skull', 'danger', 'explorer', 'friend', 
+      'heart', 'heartbreak', 'howl', 'miner', 'mourner', 
+      'plenty', 'prize', 'sheaf', 'shelter', 'snort', 
+      'angler', 'archer', 'blade', 'brewer', 'burn'
     ];
     
-    for (const type of sherdTypes) {
-      this.registerItem(new PotterySherdItem({ type }));
+    // New sherds for 1.23 Update
+    const newPatterns = [
+      'enchanted', 'mystical', 'alchemical', 'runic',
+      'flowery', 'royal', 'ancient',
+      'musical', 'melodic', 'harmonic',
+      'redstone', 'clockwork', 'compass'
+    ];
+    
+    // Register all patterns
+    for (const pattern of [...originalPatterns, ...newPatterns]) {
+      const type = `pottery_sherd_${pattern}`;
+      this.registerItem(new PotterySherdItem({ pattern }));
     }
   }
   
@@ -371,8 +389,17 @@ class ItemRegistry {
     // Register pot base
     this.registerItem(new PotBase());
     
+    // Register enhanced pot base for 1.23 Update
+    this.registerItem(new EnhancedPotBaseItem());
+    
     // Register decorated pot item
     this.registerItem(new DecoratedPotItem());
+    
+    // Register enhanced pot item for 1.23 Update
+    this.registerItem(new EnhancedPotItem());
+    
+    // Register pottery sherd items (handled in registerSherdItems)
+    this.registerSherdItems();
   }
   
   /**
@@ -474,6 +501,44 @@ class ItemRegistry {
     this.registerItem(new GoldWolfArmorItem());
     this.registerItem(new DiamondWolfArmorItem());
     this.registerItem(new NetheriteWolfArmorItem());
+  }
+  
+  /**
+   * Register items for the Ancient Seeds feature (Minecraft 1.23 Update)
+   * @private
+   */
+  register123AncientSeedsItems() {
+    // Register the generic ancient seed
+    this.registerItem(new AncientSeedItem());
+    
+    // Register variant-specific ancient seeds
+    const variants = ['torchflower', 'pitcher_pod', 'mystic', 'crystal', 'arcane', 'frost'];
+    
+    for (const variant of variants) {
+      this.registerItem(new AncientSeedItem({ variant }));
+    }
+    
+    // Register the plant items that grow from the seeds
+    const plantItems = [
+      { id: 'ancient_flower', name: 'Ancient Flower', description: 'A mysterious ancient flower.' },
+      { id: 'torchflower', name: 'Torchflower', description: 'A vibrant, flame-colored flower.' },
+      { id: 'pitcher_plant', name: 'Pitcher Plant', description: 'A unique pitcher-shaped plant.' },
+      { id: 'mystic_flower', name: 'Mystic Flower', description: 'A flower with mystical properties.' },
+      { id: 'crystal_bloom', name: 'Crystal Bloom', description: 'A crystalline flower that emits light.' },
+      { id: 'arcane_blossom', name: 'Arcane Blossom', description: 'A rare flower with potent magical properties.' },
+      { id: 'frost_lily', name: 'Frost Lily', description: 'A cold-resistant flowering plant.' },
+    ];
+    
+    for (const plantItem of plantItems) {
+      this.registerItem(new Item({
+        id: plantItem.id,
+        type: plantItem.id,
+        name: plantItem.name,
+        description: plantItem.description,
+        stackable: true,
+        maxStackSize: 64
+      }));
+    }
   }
   
   /**

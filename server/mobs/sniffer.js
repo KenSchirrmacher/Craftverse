@@ -495,12 +495,31 @@ class Sniffer extends MobBase {
    * @returns {string} - Seed item ID
    */
   getRandomAncientSeed() {
-    const seeds = [
-      'torchflower_seeds', // Grows into Torchflower
-      'pitcher_pod'        // Grows into Pitcher Plant
+    // Get a weighted random seed based on rarity
+    const seedOptions = [
+      { id: 'ancient_seed_torchflower', weight: 45 }, // Common
+      { id: 'ancient_seed_pitcher_pod', weight: 35 }, // Uncommon
+      { id: 'ancient_seed_mystic', weight: 15 },      // Rare
+      { id: 'ancient_seed_crystal', weight: 5 }       // Epic
     ];
     
-    return seeds[Math.floor(Math.random() * seeds.length)];
+    // Calculate total weight
+    const totalWeight = seedOptions.reduce((sum, option) => sum + option.weight, 0);
+    
+    // Get a random value between 0 and total weight
+    const randomValue = Math.random() * totalWeight;
+    
+    // Find the corresponding seed
+    let currentWeight = 0;
+    for (const option of seedOptions) {
+      currentWeight += option.weight;
+      if (randomValue <= currentWeight) {
+        return option.id;
+      }
+    }
+    
+    // Fallback
+    return 'ancient_seed_torchflower';
   }
   
   /**

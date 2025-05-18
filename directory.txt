@@ -66,6 +66,7 @@
 - server/items/compassItem.js - Base compass implementation for directional guidance.
 - server/items/explorerCompassItem.js - Specialized compass that points to unexplored areas, biomes, or structures.
 - server/items/trailMarkerItem.js - Placeable markers for creating exploration paths.
+- server/items/ancientSeedItem.js - Implementation of Ancient Seeds items for the 1.23 Update
 
 ### Blocks
 - server/blocks/amethystBlock.js - Implementation of amethyst block and amethyst cluster growth
@@ -103,6 +104,7 @@
 - server/blocks/sculkSensorBlock.js - Implementation of sculk sensor with vibration detection
 - server/blocks/sculkShriekerBlock.js - Implementation of sculk shrieker for summoning the Warden
 - server/blocks/chiseledBookshelfBlock.js - Implementation of the Chiseled Bookshelf block for the Trails & Tales Update
+- server/blocks/ancientPlantBlock.js - Implementation of Ancient Plants that grow from Ancient Seeds
 
 ### Biomes
 - server/biomes/baseBiome.js - Base class for all biomes
@@ -182,6 +184,8 @@
 - server/tests/runWindChargeTest.js - Test runner for the Wind Charge tests
 - server/tests/trailblazerTest.js - Test suite for Trailblazer villager profession, maps, compass, and markers.
 - server/tests/runTrailblazerTest.js - Test runner for the Trailblazer tests.
+- server/tests/ancientSeedsTest.js - Tests for the Ancient Seeds feature
+- server/tests/runAncientSeedsTest.js - Test runner for the Ancient Seeds tests
 
 ## Client
 - public/index.html - Main client page
@@ -454,4 +458,48 @@ This is a test runner for the Copper Golem tests.
 - server/copper/ - Contains copper golem components and utility functions
 - server/trailblazer/ - Contains trailblazer villager profession components
   - server/trailblazer/trailblazerItemRegistry.js - Registry for all Trailblazer-related items and recipes
-  - server/trailblazer/trailblazerManager.js - Manager that integrates Trailblazer villagers and item systems with the game world 
+  - server/trailblazer/trailblazerManager.js - Manager that integrates Trailblazer villagers and item systems with the game world
+
+# Minecraft 1.23 Update - Ancient Seeds Feature Files
+
+## server/items/ancientSeedItem.js
+This is the implementation of Ancient Seeds items for the 1.23 Update:
+- Base class with common functionality for all seed variants
+- Support for multiple variants (torchflower, pitcher_pod, mystic, crystal, arcane, frost)
+- Variant-specific properties (rarity, growth time, biome preferences)
+- Biome integration for optimal growth conditions
+- Special effects for rare variants
+- Crossbreeding mechanics for producing new variants
+- Loot tables for various sources (Sniffer finds, chests, etc.)
+
+## server/blocks/ancientPlantBlock.js
+This is the implementation of Ancient Plants that grow from Ancient Seeds:
+- Growth stages with progressive visuals
+- Growth logic with biome-specific growth rates
+- Environmental requirements (light, moisture, temperature)
+- Harvesting mechanics with drops based on growth stage
+- Crossbreeding with nearby plants
+- Special effects for fully grown plants
+- Variant-specific behaviors and properties
+
+## server/tests/ancientSeedsTest.js
+This file contains comprehensive tests for the Ancient Seeds feature:
+- Unit tests for AncientSeedItem
+- Tests for growth mechanics of AncientPlantBlock
+- Tests for seed variants and their properties
+- Tests for harvesting mechanics
+- Tests for crossbreeding functionality
+- Tests for biome integration
+- Tests for special effects
+
+## server/tests/runAncientSeedsTest.js
+This is a simple runner script to execute the Ancient Seeds tests.
+
+## server/items/itemRegistry.js (updated)
+Updated to include registration of Ancient Seeds items via register123AncientSeedsItems() method.
+
+## server/blocks/blockRegistry.js (updated)
+Updated to include registration of Ancient Plant blocks via register123AncientSeedsBlocks() method.
+
+## server/world/worldGenerator.js (updated)
+Updated to include natural generation of Ancient Plants in appropriate biomes. 

@@ -3292,3 +3292,94 @@ Fixed several edge cases and issues during testing:
 5. Improved error handling and feedback for failed commands
 
 All tests are now passing, confirming the successful implementation of the Tamed Animal Improvements feature. This completes the third major feature of the Minecraft 1.23 Update, with two more features remaining to be implemented according to the roadmap.
+
+
+### 2024-09-12: Decorated Pots Expansion Implementation (1.23 Update) ###
+Implemented the Decorated Pots Expansion feature from the Minecraft 1.23 Update with the following components:
+
+1. Created PotPatternRegistry for managing pottery patterns:
+   - Central registry for all pattern types and categories
+   - Support for original patterns from Trails & Tales Update
+   - New patterns organized into categories (magical, musical, technical, decoration)
+   - Effect association system for pattern-specific functionality
+   - Rarity classification for patterns
+   - Serialization/deserialization for pattern data persistence
+
+2. Enhanced PotterySherdItem with new features:
+   - Support for new pattern types and categories
+   - Integration with PotPatternRegistry for pattern information
+   - Special effect detection and mapping
+   - Enhanced tooltip display with effect descriptions
+   - Improved crafting support for enhanced pots
+   - Category-based functionality
+
+3. Implemented EnhancedPot block extending DecoratedPot:
+   - Expanded inventory capacity (3 slots by default)
+   - Special effects based on sherd patterns
+   - Category matching bonuses for full pattern sets
+   - Redstone signal output capability
+   - Musical interaction with note sounds
+   - Dyeing support for decorative pots
+   - Item sorting functionality
+   - Enhanced drops and interaction handling
+
+4. Created EnhancedPotItem for placing enhanced pots:
+   - Custom display name based on appearance
+   - Enhanced tooltip with effect information
+   - Storage capacity display
+   - Placement logic with player rotation handling
+   - Support for color and effect serialization
+
+5. Implemented EnhancedPotBaseItem for crafting:
+   - Base item for creating enhanced pots
+   - Material upgrading system
+   - Quality levels affecting pot properties
+   - Improved crafting integration
+
+6. Created comprehensive tests for all aspects:
+   - PotPatternRegistry tests for initialization and pattern management
+   - Pottery sherd pattern tests for categories and effects
+   - EnhancedPot tests for base functionality and effects
+   - Category bonus tests for special functionality
+   - Sorting and dyeing functionality tests
+   - Sound effect tests for musical interaction
+   - Redstone signal and comparator output tests
+
+All tests are now passing, confirming the successful implementation of the Decorated Pots Expansion feature. This feature significantly enhances the existing decorated pot system with functional capabilities beyond simple storage, categorized patterns with effects, and visual customization options.
+
+This completes the fourth major feature of the Minecraft 1.23 Update, with only the Ancient Seeds feature remaining to be implemented according to the roadmap.
+
+# Ancient Seeds Feature Implementation
+
+## Overview
+The Ancient Seeds feature for Minecraft 1.23 Update builds upon the existing Sniffer mob that was implemented in the Trails & Tales Update. This feature will add special seed variants that can be found by Sniffers or in certain structures, and can be planted to grow ancient plants with unique properties.
+
+## Tasks
+
+1. Create base classes:
+   - AncientSeedItem - Special seed item with variant-specific properties
+   - AncientPlantBlock - The plant block that grows from the seeds
+
+2. Implement core functionality:
+   - Seed variants: torchflower, pitcher_pod, mystic, crystal, arcane, frost
+   - Growth mechanics with stages
+   - Biome-specific growth rates
+   - Crossbreeding mechanics
+   - Special effects for certain variants
+
+3. Register items and blocks:
+   - Add to ItemRegistry via register123AncientSeedsItems()
+   - Add to BlockRegistry via register123AncientSeedsBlocks()
+
+4. Add natural generation:
+   - Update WorldGenerator to include ancient plants in appropriate biomes
+   - Configure natural spawning rates and conditions
+
+5. Test implementation:
+   - Use ancientSeedsTest.js and runAncientSeedsTest.js
+   - Verify all functionality works as expected
+
+## Implementation Strategy
+I'll follow the existing code patterns for item and block registration. The key challenge will be implementing the crossbreeding mechanics and special effects for the various seed variants. I'll ensure that the AncientPlantBlock properly handles all growth stages and drops the correct items when harvested.
+
+The integration with the Sniffer mob should be seamless since it appears to be already implemented to dig up ancient seeds.
