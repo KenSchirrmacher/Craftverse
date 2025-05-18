@@ -189,6 +189,8 @@
 - server/tests/minecraft123IntegrationTest.js - Integration tests for all Minecraft 1.23 Update features to ensure they work together correctly.
 - server/tests/runMinecraft123IntegrationTest.js - Test runner for the Minecraft 1.23 Update integration tests.
 - server/tests/testBase.js - Base class for all test suites providing common functionality for running tests and reporting results.
+- server/tests/minecraft124TestFramework.js - Test framework for the Minecraft 1.24 Update (Trail Tales) features.
+- server/tests/runMinecraft124Tests.js - Test runner for the Minecraft 1.24 Update test framework.
 
 ## Client
 - public/index.html - Main client page
@@ -505,4 +507,11 @@ Updated to include registration of Ancient Seeds items via register123AncientSee
 Updated to include registration of Ancient Plant blocks via register123AncientSeedsBlocks() method.
 
 ## server/world/worldGenerator.js (updated)
-Updated to include natural generation of Ancient Plants in appropriate biomes. 
+Updated to include natural generation of Ancient Plants in appropriate biomes.
+
+## server/docs/
+- server/docs/future-updates-plan.txt - This document outlines the future development roadmap for the Craftverse project
+- server/docs/minecraft-1.23-research.md - Research document on the Minecraft 1.23 Update features
+- server/docs/minecraft-1.23-implementation-plan.md - Implementation plan for the Minecraft 1.23 Update features
+- server/docs/minecraft-1.24-research.md - Research document on the Minecraft 1.24 (Trail Tales) Update features
+- server/docs/wind-charge-improvements.md - Detailed implementation plan for Wind Charge Improvements feature 
