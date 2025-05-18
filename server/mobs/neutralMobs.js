@@ -19,6 +19,26 @@ class Wolf extends MobBase {
     this.armorValue = 0; // Current armor protection value
   }
 
+  // Static factory method for creating wolves
+  static create(position, options = {}) {
+    const wolf = new Wolf(position);
+    
+    // Apply any options
+    if (options.tamed) {
+      wolf.tamed = true;
+    }
+    
+    if (options.owner) {
+      wolf.owner = options.owner;
+    }
+    
+    if (options.collarColor) {
+      wolf.collarColor = options.collarColor;
+    }
+    
+    return wolf;
+  }
+
   update(world, players, mobs, deltaTime) {
     super.update(world, players, mobs, deltaTime);
 
@@ -635,6 +655,7 @@ class Goat extends MobBase {
    * @param {Object} world - The world object
    * @param {Object} players - Players object
    * @param {Object} mobs - Other mobs in the world
+   * @param {Number} dt - Time since last update in ticks
    * @private
    */
   considerRamming(world, players, mobs) {
