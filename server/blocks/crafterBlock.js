@@ -1,6 +1,7 @@
 /**
  * CrafterBlock - Automated crafting block from Minecraft 1.21 Update
  * Allows for redstone-powered crafting automation
+ * Enhanced for Minecraft 1.24 Update (Trail Tales)
  */
 
 const { Block } = require('./baseBlock');
@@ -44,6 +45,14 @@ class CrafterBlock extends Block {
     this.cooldownTime = 20; // 1 second at 20 ticks per second
     this.world = null; // Reference to world
     
+    // 1.24 Update Enhancements - Recipe Memory System
+    this.recipeMemory = null; // Pattern of the last successful recipe
+    this.recipeResult = null; // Result of the last successful recipe
+    this.craftingMode = options.craftingMode || 'manual'; // manual, template, auto-refill
+    this.slotsLocked = new Array(this.inventorySize).fill(false); // Track locked slots
+    this.redstoneMode = options.redstoneMode || 'pulse'; // pulse, continuous, filtered
+    this.lastComparatorOutput = 0; // Last emitted signal strength
+    
     // Crafting events emitter
     this.events = new EventEmitter();
   }
@@ -73,10 +82,27 @@ class CrafterBlock extends Block {
     if (this.powered !== isPowered) {
       this.powered = isPowered;
       
-      // If just powered and not on cooldown, attempt crafting
-      if (isPowered && this.cooldown <= 0) {
-        this.attemptCrafting();
-        this.cooldown = this.cooldownTime;
+      // Handle different redstone modes
+      if (isPowered) {
+        switch (this.redstoneMode) {
+          case 'pulse':
+            // Attempt crafting once when powered
+            if (this.cooldown <= 0) {
+              this.attemptCrafting();
+              this.cooldown = this.cooldownTime;
+            }
+            break;
+          case 'continuous':
+            // Will continuously craft while powered (handled in update)
+            break;
+          case 'filtered':
+            // Only craft if inventory matches recipe memory
+            if (this.cooldown <= 0 && this.recipeMemory && this.matchesRecipeMemory()) {
+              this.attemptCrafting();
+              this.cooldown = this.cooldownTime;
+            }
+            break;
+        }
       }
       
       return true;
@@ -103,8 +129,17 @@ class CrafterBlock extends Block {
    */
   placeItem(slot, item) {
     if (slot >= 0 && slot < this.inventorySize) {
+      // Don't allow placing in locked slots
+      if (this.slotsLocked[slot]) {
+        return item; // Return the item back without placing it
+      }
+      
       const previousItem = this.inventory[slot];
       this.inventory[slot] = item;
+      
+      // Update comparator output after inventory changes
+      this.updateComparatorOutput();
+      
       return previousItem;
     }
     return null;
@@ -117,8 +152,17 @@ class CrafterBlock extends Block {
    */
   removeItem(slot) {
     if (slot >= 0 && slot < this.inventorySize) {
+      // Don't allow removing from locked slots
+      if (this.slotsLocked[slot]) {
+        return null;
+      }
+      
       const item = this.inventory[slot];
       this.inventory[slot] = null;
+      
+      // Update comparator output after inventory changes
+      this.updateComparatorOutput();
+      
       return item;
     }
     return null;
@@ -134,10 +178,205 @@ class CrafterBlock extends Block {
     
     // Reset crafting grid if output is taken
     if (output) {
+      // Save the recipe pattern before consuming ingredients
+      if (this.craftingMode !== 'manual') {
+        this.saveRecipeMemory(output);
+      }
+      
       this.consumeIngredients();
     }
     
+    // Update comparator output after inventory changes
+    this.updateComparatorOutput();
+    
     return output;
+  }
+  
+  /**
+   * Save the current recipe pattern to memory
+   * @param {Object} result - The result item
+   */
+  saveRecipeMemory(result) {
+    // Create a deep copy of the current inventory as recipe memory
+    this.recipeMemory = this.inventory.map(item => {
+      if (!item) return null;
+      
+      // Create a template version of the item (id and count only)
+      return {
+        id: item.id,
+        count: item.count
+      };
+    });
+    
+    // Save the result item
+    this.recipeResult = {
+      id: result.id,
+      count: result.count
+    };
+    
+    // Emit recipe memory saved event
+    this.events.emit('recipeMemorySaved', {
+      pattern: this.recipeMemory,
+      result: this.recipeResult
+    });
+    
+    // Create particles to indicate recipe was saved
+    this.createRecipeMemoryParticles();
+  }
+  
+  /**
+   * Clear the current recipe memory
+   */
+  clearRecipeMemory() {
+    this.recipeMemory = null;
+    this.recipeResult = null;
+    
+    // Emit recipe memory cleared event
+    this.events.emit('recipeMemoryCleared');
+    
+    // Create particles to indicate recipe was cleared
+    this.createRecipeMemoryClearedParticles();
+  }
+  
+  /**
+   * Check if current inventory matches the stored recipe memory
+   * @returns {boolean} Whether the current inventory matches the recipe memory
+   */
+  matchesRecipeMemory() {
+    if (!this.recipeMemory) {
+      return false;
+    }
+    
+    for (let i = 0; i < this.inventorySize; i++) {
+      const memoryItem = this.recipeMemory[i];
+      const currentItem = this.inventory[i];
+      
+      // If memory has an item but current slot is empty
+      if (memoryItem && !currentItem) {
+        return false;
+      }
+      
+      // If memory is empty but current slot has an item
+      if (!memoryItem && currentItem) {
+        return false;
+      }
+      
+      // If both have items, compare them
+      if (memoryItem && currentItem) {
+        // Check if item types match
+        if (memoryItem.id !== currentItem.id) {
+          return false;
+        }
+        
+        // Check if current item has enough count
+        if (currentItem.count < memoryItem.count) {
+          return false;
+        }
+      }
+    }
+    
+    return true;
+  }
+  
+  /**
+   * Calculate recipe completeness percentage
+   * @returns {number} Percentage of recipe completeness (0-100)
+   */
+  calculateRecipeCompleteness() {
+    if (!this.recipeMemory) {
+      return 0;
+    }
+    
+    let matchedSlots = 0;
+    let totalRequiredSlots = 0;
+    
+    for (let i = 0; i < this.inventorySize; i++) {
+      const memoryItem = this.recipeMemory[i];
+      
+      if (memoryItem) {
+        totalRequiredSlots++;
+        const currentItem = this.inventory[i];
+        
+        // If current item matches memory item
+        if (currentItem && currentItem.id === memoryItem.id && currentItem.count >= memoryItem.count) {
+          matchedSlots++;
+        }
+      }
+    }
+    
+    // Avoid division by zero
+    if (totalRequiredSlots === 0) {
+      return 0;
+    }
+    
+    return Math.floor((matchedSlots / totalRequiredSlots) * 100);
+  }
+  
+  /**
+   * Set the crafting mode
+   * @param {string} mode - Crafting mode ('manual', 'template', 'auto-refill')
+   * @returns {boolean} Whether the mode was set successfully
+   */
+  setCraftingMode(mode) {
+    const validModes = ['manual', 'template', 'auto-refill'];
+    if (validModes.includes(mode)) {
+      this.craftingMode = mode;
+      
+      // Create particles to indicate mode change
+      this.createCraftingModeChangedParticles();
+      
+      // Emit crafting mode changed event
+      this.events.emit('craftingModeChanged', {
+        mode: this.craftingMode
+      });
+      
+      return true;
+    }
+    return false;
+  }
+  
+  /**
+   * Toggle slot locking status
+   * @param {number} slot - Slot index (0-8)
+   * @returns {boolean} New lock status
+   */
+  toggleSlotLock(slot) {
+    if (slot >= 0 && slot < this.inventorySize) {
+      this.slotsLocked[slot] = !this.slotsLocked[slot];
+      
+      // Create particles to indicate lock status change
+      this.createSlotLockChangedParticles(slot, this.slotsLocked[slot]);
+      
+      // Emit slot lock changed event
+      this.events.emit('slotLockChanged', {
+        slot: slot,
+        locked: this.slotsLocked[slot]
+      });
+      
+      return this.slotsLocked[slot];
+    }
+    return false;
+  }
+  
+  /**
+   * Cycle through redstone modes
+   * @returns {string} New redstone mode
+   */
+  cycleRedstoneMode() {
+    const modes = ['pulse', 'continuous', 'filtered'];
+    const currentIndex = modes.indexOf(this.redstoneMode);
+    const nextIndex = (currentIndex + 1) % modes.length;
+    this.redstoneMode = modes[nextIndex];
+    
+    // Create particles to indicate mode change
+    this.createRedstoneModeChangedParticles();
+    
+    // Emit redstone mode changed event
+    this.events.emit('redstoneModeChanged', {
+      mode: this.redstoneMode
+    });
+    
+    return this.redstoneMode;
   }
   
   /**
@@ -146,6 +385,11 @@ class CrafterBlock extends Block {
   consumeIngredients() {
     // Most recipes consume 1 of each ingredient
     for (let i = 0; i < this.inventorySize; i++) {
+      // Skip locked slots in template mode
+      if (this.craftingMode === 'template' && this.slotsLocked[i]) {
+        continue;
+      }
+      
       const item = this.inventory[i];
       if (item) {
         // If item has count property, reduce it
@@ -157,6 +401,9 @@ class CrafterBlock extends Block {
         }
       }
     }
+    
+    // Update comparator output after inventory changes
+    this.updateComparatorOutput();
   }
   
   /**
@@ -169,6 +416,30 @@ class CrafterBlock extends Block {
       return false;
     }
     
+    // Template mode: Check if we have a recipe memory and the inventory matches it
+    if (this.craftingMode === 'template' && this.recipeMemory) {
+      if (this.matchesRecipeMemory() && this.recipeResult) {
+        // Create result directly from memory
+        this.outputSlot = { ...this.recipeResult };
+        
+        // Emit crafting event
+        this.events.emit('craft', {
+          mode: 'template',
+          output: this.outputSlot,
+          position: this.position
+        });
+        
+        // Update comparator output
+        this.updateComparatorOutput();
+        
+        // Create crafting particles
+        this.createCraftingParticles();
+        
+        return true;
+      }
+      return false;
+    }
+    
     // Get crafting recipe manager from world
     const world = this.getWorld();
     if (!world || !world.craftingManager) {
@@ -178,6 +449,10 @@ class CrafterBlock extends Block {
         const hasItems = this.inventory.some(item => item !== null);
         if (hasItems) {
           this.outputSlot = { id: 'crafted_item', count: 1 };
+          
+          // Update comparator output
+          this.updateComparatorOutput();
+          
           return true;
         }
       }
@@ -197,10 +472,70 @@ class CrafterBlock extends Block {
         position: this.position
       });
       
+      // Update comparator output
+      this.updateComparatorOutput();
+      
+      // Create crafting particles
+      this.createCraftingParticles();
+      
       return true;
     }
     
     return false;
+  }
+  
+  /**
+   * Get comparator output signal strength
+   * @returns {number} Signal strength (0-15)
+   */
+  getComparatorOutput() {
+    // If no recipe memory, base on inventory fullness
+    if (!this.recipeMemory) {
+      // Count non-empty slots
+      const filledSlots = this.inventory.filter(item => item !== null).length;
+      // Scale to 0-15 range
+      return Math.min(15, Math.floor((filledSlots / this.inventorySize) * 15));
+    }
+    
+    // With recipe memory, base on recipe completeness
+    const completeness = this.calculateRecipeCompleteness();
+    
+    // Output strength varies based on state:
+    // 0: Empty/no recipe
+    // 1-7: Partial recipe completion (based on percentage)
+    // 8-14: Full recipe but not enough ingredients
+    // 15: Ready to craft
+    
+    if (completeness === 0) {
+      return 0;
+    } else if (completeness < 100) {
+      // Scale 1-7 based on completion percentage
+      // Calculate percentage of total range (1-7) based on completeness
+      const scaledValue = 1 + Math.floor((completeness / 100) * 6);
+      return scaledValue;
+    } else if (this.outputSlot) {
+      // Output slot occupied
+      return 15;
+    } else {
+      // Ready to craft
+      return 14;
+    }
+  }
+  
+  /**
+   * Update comparator output if it has changed
+   */
+  updateComparatorOutput() {
+    const newOutput = this.getComparatorOutput();
+    if (newOutput !== this.lastComparatorOutput) {
+      this.lastComparatorOutput = newOutput;
+      
+      // Emit comparator output changed event if world supports it
+      const world = this.getWorld();
+      if (world && world.updateComparatorOutput) {
+        world.updateComparatorOutput(this.position.x, this.position.y, this.position.z, newOutput);
+      }
+    }
   }
   
   /**
@@ -212,11 +547,120 @@ class CrafterBlock extends Block {
       this.cooldown--;
     }
     
-    // If powered and cooldown expired, try crafting again
+    // If powered and cooldown expired, handle based on redstone mode
     if (this.powered && this.cooldown <= 0) {
-      this.attemptCrafting();
-      this.cooldown = this.cooldownTime;
+      switch (this.redstoneMode) {
+        case 'pulse':
+          // Already handled in setPowered
+          break;
+        case 'continuous':
+          // Continuously attempt crafting while powered
+          this.attemptCrafting();
+          this.cooldown = this.cooldownTime;
+          break;
+        case 'filtered':
+          // Only craft if inventory matches recipe memory
+          if (this.recipeMemory && this.matchesRecipeMemory()) {
+            this.attemptCrafting();
+            this.cooldown = this.cooldownTime;
+          }
+          break;
+      }
     }
+    
+    // Auto-refill mode: Try to pull items from adjacent containers
+    if (this.craftingMode === 'auto-refill' && this.recipeMemory) {
+      this.tryRefillFromAdjacentContainers();
+    }
+    
+    // Update comparator output
+    this.updateComparatorOutput();
+  }
+  
+  /**
+   * Try to refill the crafting grid from adjacent containers
+   */
+  tryRefillFromAdjacentContainers() {
+    // Implement in future update - requires adjacent block access
+    // For now, just stub the method
+  }
+  
+  /**
+   * Create particles for recipe memory saved
+   */
+  createRecipeMemoryParticles() {
+    // Implement in future update - requires particle system
+    // For now, just emit event for client to handle
+    this.events.emit('visualEffect', {
+      type: 'recipeSaved',
+      position: this.position
+    });
+  }
+  
+  /**
+   * Create particles for recipe memory cleared
+   */
+  createRecipeMemoryClearedParticles() {
+    // Implement in future update - requires particle system
+    // For now, just emit event for client to handle
+    this.events.emit('visualEffect', {
+      type: 'recipeCleared',
+      position: this.position
+    });
+  }
+  
+  /**
+   * Create particles for crafting mode changed
+   */
+  createCraftingModeChangedParticles() {
+    // Implement in future update - requires particle system
+    // For now, just emit event for client to handle
+    this.events.emit('visualEffect', {
+      type: 'modeChanged',
+      mode: this.craftingMode,
+      position: this.position
+    });
+  }
+  
+  /**
+   * Create particles for slot lock changed
+   * @param {number} slot - Slot index
+   * @param {boolean} locked - Whether slot is locked
+   */
+  createSlotLockChangedParticles(slot, locked) {
+    // Implement in future update - requires particle system
+    // For now, just emit event for client to handle
+    this.events.emit('visualEffect', {
+      type: 'slotLockChanged',
+      slot: slot,
+      locked: locked,
+      position: this.position
+    });
+  }
+  
+  /**
+   * Create particles for redstone mode changed
+   */
+  createRedstoneModeChangedParticles() {
+    // Implement in future update - requires particle system
+    // For now, just emit event for client to handle
+    this.events.emit('visualEffect', {
+      type: 'redstoneModeChanged',
+      mode: this.redstoneMode,
+      position: this.position
+    });
+  }
+  
+  /**
+   * Create particles for successful crafting
+   */
+  createCraftingParticles() {
+    // Implement in future update - requires particle system
+    // For now, just emit event for client to handle
+    this.events.emit('visualEffect', {
+      type: 'crafting',
+      position: this.position
+    });
   }
   
   /**
@@ -226,8 +670,38 @@ class CrafterBlock extends Block {
    * @returns {boolean} Whether the interaction was handled
    */
   interact(player, action) {
-    // Open crafting interface for the player
-    if (player && action.type === 'right_click') {
+    // Special interactions based on sneaking + right-click
+    if (player && action.type === 'right_click' && action.sneaking) {
+      // Cycle through crafting modes
+      if (action.mainHand === null) {
+        this.setCraftingMode(
+          this.craftingMode === 'manual' ? 'template' : 
+          this.craftingMode === 'template' ? 'auto-refill' : 'manual'
+        );
+        return true;
+      }
+      
+      // Toggle slot locking if clicking with a specific slot
+      if (action.targetSlot !== undefined && action.targetSlot >= 0 && action.targetSlot < this.inventorySize) {
+        this.toggleSlotLock(action.targetSlot);
+        return true;
+      }
+      
+      // Cycle redstone mode if clicking with redstone dust
+      if (action.mainHand && action.mainHand.id === 'redstone_dust') {
+        this.cycleRedstoneMode();
+        return true;
+      }
+      
+      // Clear recipe memory if clicking with water bucket
+      if (action.mainHand && action.mainHand.id === 'water_bucket') {
+        this.clearRecipeMemory();
+        return true;
+      }
+    }
+    
+    // Open crafting interface for the player (default behavior)
+    if (player && action.type === 'right_click' && !action.sneaking) {
       const world = this.getWorld();
       if (world) {
         world.openCrafterInterface(player, this);
@@ -256,57 +730,106 @@ class CrafterBlock extends Block {
     
     data.facing = this.facing;
     data.powered = this.powered;
-    data.cooldown = this.cooldown;
+    
+    // Add 1.24 Update enhancements data
+    data.recipeMemory = this.recipeMemory;
+    data.recipeResult = this.recipeResult;
+    data.craftingMode = this.craftingMode;
+    data.slotsLocked = [...this.slotsLocked];
+    data.redstoneMode = this.redstoneMode;
     
     return data;
   }
   
   /**
-   * Deserialize data to restore the block
+   * Deserialize the block from saved data
    * @param {Object} data - Serialized block data
-   * @param {Object} world - World instance for reference
-   * @returns {CrafterBlock} This block instance
+   * @param {Object} world - World object
+   * @returns {CrafterBlock} Deserialized block
    */
-  deserialize(data, world) {
-    super.deserialize(data, world);
-    
-    // Restore crafter-specific data
-    if (data.inventory) {
-      this.inventory = data.inventory.map(itemData => {
-        if (itemData) {
-          // Assuming there's an ItemFactory to create items from serialized data
-          return world.itemFactory.createFromData(itemData);
-        }
-        return null;
+  static deserialize(data, world) {
+    try {
+      const block = new CrafterBlock({
+        facing: data.facing,
+        craftingMode: data.craftingMode || 'manual',
+        redstoneMode: data.redstoneMode || 'pulse'
       });
+      
+      // Set basic properties
+      if (data.position) {
+        block.position = data.position;
+      }
+      
+      block.facing = data.facing || 'north';
+      block.powered = data.powered || false;
+      
+      // Set world reference
+      if (world) {
+        block.setWorld(world);
+      }
+      
+      // Restore inventory items
+      if (Array.isArray(data.inventory)) {
+        for (let i = 0; i < Math.min(data.inventory.length, block.inventorySize); i++) {
+          const item = data.inventory[i];
+          if (item) {
+            // Handle item deserialization
+            block.inventory[i] = item;
+          }
+        }
+      }
+      
+      // Restore output slot
+      if (data.outputSlot) {
+        block.outputSlot = data.outputSlot;
+      }
+      
+      // Restore 1.24 Update enhancements data
+      if (data.recipeMemory) {
+        block.recipeMemory = data.recipeMemory;
+      }
+      
+      if (data.recipeResult) {
+        block.recipeResult = data.recipeResult;
+      }
+      
+      if (data.craftingMode) {
+        block.craftingMode = data.craftingMode;
+      }
+      
+      if (Array.isArray(data.slotsLocked)) {
+        for (let i = 0; i < Math.min(data.slotsLocked.length, block.inventorySize); i++) {
+          block.slotsLocked[i] = !!data.slotsLocked[i];
+        }
+      }
+      
+      if (data.redstoneMode) {
+        block.redstoneMode = data.redstoneMode;
+      }
+      
+      return block;
+    } catch (error) {
+      console.error('Error deserializing CrafterBlock:', error);
+      // Return a default crafter block as fallback
+      return new CrafterBlock();
     }
-    
-    if (data.outputSlot) {
-      this.outputSlot = world.itemFactory.createFromData(data.outputSlot);
-    }
-    
-    this.facing = data.facing || 'north';
-    this.powered = data.powered || false;
-    this.cooldown = data.cooldown || 0;
-    
-    return this;
   }
   
   /**
-   * Get the items that should be dropped when the block is broken
+   * Get the items dropped when the block is broken
    * @returns {Array} Array of items to drop
    */
   getDrops() {
-    const drops = [{ id: this.id, count: 1 }];
+    const drops = [{ id: 'crafter', count: 1 }];
     
-    // Drop items from inventory
+    // Drop items in inventory
     for (const item of this.inventory) {
       if (item) {
         drops.push(item);
       }
     }
     
-    // Drop output item if present
+    // Drop item in output slot
     if (this.outputSlot) {
       drops.push(this.outputSlot);
     }
