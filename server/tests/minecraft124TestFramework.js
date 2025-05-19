@@ -312,36 +312,119 @@ class VaultPortalTestSuite extends TestBase {
 
   testPortalBlock() {
     this.runTest('Portal Block', () => {
-      // Test implementation will go here
-      this.skipTest('Portal Block', 'Not implemented yet');
+      const block = new VaultPortalBlock();
+      const world = new TestWorld();
+      const player = new TestPlayer();
+
+      // Test basic properties
+      assert.strictEqual(block.id, 'vault_portal');
+      assert.strictEqual(block.name, 'Vault Portal');
+      assert.strictEqual(block.hardness, 50);
+      assert.strictEqual(block.resistance, 2000);
+      assert.strictEqual(block.transparent, true);
+      assert.strictEqual(block.lightLevel, 15);
+
+      // Test initial state
+      const state = block.getState(world, 0, 0, 0);
+      assert.strictEqual(state.active, false);
+      assert.strictEqual(state.forming, false);
+      assert.strictEqual(state.frameComplete, false);
     });
   }
 
   testActivation() {
     this.runTest('Activation Requirements', () => {
-      // Test implementation will go here
-      this.skipTest('Activation Requirements', 'Not implemented yet');
+      const block = new VaultPortalBlock();
+      const world = new TestWorld();
+      const player = new TestPlayer();
+
+      // Create valid frame
+      for (let x = -1; x <= 1; x++) {
+        for (let z = -1; z <= 1; z++) {
+          if (x === 0 && z === 0) continue;
+          world.setBlock(x, 0, z, { id: 'reinforced_deepslate' });
+        }
+      }
+
+      // Test frame validation
+      assert.strictEqual(block.validatePortalFrame(world, 0, 0, 0), true);
+
+      // Test activation process
+      block.onPlace(world, 0, 0, 0, player);
+      let state = block.getState(world, 0, 0, 0);
+      assert.strictEqual(state.frameComplete, true);
+      assert.strictEqual(state.forming, true);
+
+      // Wait for activation
+      return new Promise(resolve => {
+        setTimeout(() => {
+          state = block.getState(world, 0, 0, 0);
+          assert.strictEqual(state.active, true);
+          assert.strictEqual(state.forming, false);
+          resolve();
+        }, 3100);
+      });
     });
   }
 
   testDimensionGeneration() {
     this.runTest('Dimension Generation', () => {
-      // Test implementation will go here
-      this.skipTest('Dimension Generation', 'Not implemented yet');
+      const dimension = new VaultDimension();
+      const roomGenerator = new TestRoomGenerator();
+      const layout = roomGenerator.generateVaultLayout();
+
+      // Test layout generation
+      assert.strictEqual(layout.rooms.length > 0, true);
+      assert.strictEqual(layout.rooms[0].type, 'entrance');
+
+      // Test room generation
+      const room = roomGenerator.generateRoom(layout.rooms[0]);
+      assert.strictEqual(room.id, 'room1');
+      assert.strictEqual(room.type, 'entrance');
+      assert.strictEqual(room.width, 7);
+      assert.strictEqual(room.length, 7);
+      assert.strictEqual(room.height, 5);
+      assert.strictEqual(room.difficulty, 1);
+      assert.strictEqual(room.features.length > 0, true);
+      assert.strictEqual(room.decorations.length > 0, true);
     });
   }
 
   testMobs() {
     this.runTest('Vault Mobs', () => {
-      // Test implementation will go here
-      this.skipTest('Vault Mobs', 'Not implemented yet');
+      const dimension = new VaultDimension();
+      const roomGenerator = new TestRoomGenerator();
+      const layout = roomGenerator.generateVaultLayout();
+      const room = roomGenerator.generateRoom(layout.rooms[0]);
+
+      // Test mob spawning
+      const mobs = dimension.generateMobsForRoom(room);
+      assert.strictEqual(mobs.length > 0, true);
+
+      // Test mob properties
+      const mob = mobs[0];
+      assert.strictEqual(mob.difficulty, room.difficulty);
+      assert.strictEqual(mob.health > 0, true);
+      assert.strictEqual(mob.damage > 0, true);
     });
   }
 
   testRewards() {
     this.runTest('Vault Rewards', () => {
-      // Test implementation will go here
-      this.skipTest('Vault Rewards', 'Not implemented yet');
+      const dimension = new VaultDimension();
+      const roomGenerator = new TestRoomGenerator();
+      const layout = roomGenerator.generateVaultLayout();
+      const room = roomGenerator.generateRoom(layout.rooms[0]);
+
+      // Test reward generation
+      const rewards = dimension.generateRewardsForRoom(room);
+      assert.strictEqual(rewards.length > 0, true);
+
+      // Test reward properties
+      const reward = rewards[0];
+      assert.strictEqual(reward.rarity !== undefined, true);
+      assert.strictEqual(reward.items.length > 0, true);
+      assert.strictEqual(reward.experience > 0, true);
     });
   }
 }
