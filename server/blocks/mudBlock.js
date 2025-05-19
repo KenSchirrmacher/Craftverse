@@ -3,7 +3,7 @@
  * Slows down entities moving on it
  */
 
-const { Block } = require('./baseBlock');
+const Block = require('./baseBlock');
 
 class MudBlock extends Block {
   /**

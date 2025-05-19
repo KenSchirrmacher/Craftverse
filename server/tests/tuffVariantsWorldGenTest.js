@@ -4,15 +4,8 @@
  */
 
 const assert = require('assert');
-const { 
-  ChiseledTuffBlock,
-  TuffBricksBlock,
-  TuffBrickSlabBlock,
-  TuffBrickStairsBlock,
-  TuffBrickWallBlock
-} = require('../blocks/tuffVariantsBlocks');
 const World = require('../world/world');
-const BiomeRegistry = require('../biomes/biomeRegistry');
+const BiomeRegistry = require('../world/biomeRegistry');
 
 class TuffVariantsWorldGenTest {
   constructor() {
@@ -70,12 +63,22 @@ class TuffVariantsWorldGenTest {
 
   countBlocksInBiome(biome, blockTypes) {
     let count = 0;
-    for (let x = 0; x < biome.width; x++) {
-      for (let y = 0; y < biome.height; y++) {
-        for (let z = 0; z < biome.depth; z++) {
-          const block = this.world.getBlockAt(x, y, z);
-          if (block && blockTypes.includes(block.type)) {
-            count++;
+    const chunkSize = 16;
+    const biomeSize = 256;
+    
+    for (let x = 0; x < biomeSize; x += chunkSize) {
+      for (let z = 0; z < biomeSize; z += chunkSize) {
+        const chunk = this.world.getChunkAt(x, z);
+        if (chunk && chunk.biome === biome.id) {
+          for (let bx = 0; bx < chunkSize; bx++) {
+            for (let by = 0; by < 256; by++) {
+              for (let bz = 0; bz < chunkSize; bz++) {
+                const block = chunk.getBlock(bx, by, bz);
+                if (block && blockTypes.includes(block.id)) {
+                  count++;
+                }
+              }
+            }
           }
         }
       }
@@ -85,11 +88,13 @@ class TuffVariantsWorldGenTest {
 
   countBlocksInStructure(structure, blockTypes) {
     let count = 0;
-    for (let x = 0; x < structure.width; x++) {
-      for (let y = 0; y < structure.height; y++) {
-        for (let z = 0; z < structure.depth; z++) {
+    const bounds = structure.getBounds();
+    
+    for (let x = bounds.minX; x <= bounds.maxX; x++) {
+      for (let y = bounds.minY; y <= bounds.maxY; y++) {
+        for (let z = bounds.minZ; z <= bounds.maxZ; z++) {
           const block = this.world.getBlockAt(x, y, z);
-          if (block && blockTypes.includes(block.type)) {
+          if (block && blockTypes.includes(block.id)) {
             count++;
           }
         }

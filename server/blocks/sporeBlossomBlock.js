@@ -4,7 +4,7 @@
  */
 
 // Base block for extension
-const { Block } = require('./baseBlock');
+const Block = require('./baseBlock');
 
 class SporeBlossomBlock extends Block {
   /**

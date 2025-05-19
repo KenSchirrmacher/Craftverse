@@ -3,7 +3,7 @@
  * Has higher hardness and blast resistance than mud
  */
 
-const { Block } = require('./baseBlock');
+const Block = require('./baseBlock');
 
 class MudBricksBlock extends Block {
   /**

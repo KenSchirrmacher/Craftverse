@@ -3,7 +3,7 @@
  * A white stone-like block found in amethyst geodes
  */
 
-const Block = require('./blockBase');
+const Block = require('./baseBlock');
 
 /**
  * Calcite Block

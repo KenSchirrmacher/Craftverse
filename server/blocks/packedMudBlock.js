@@ -3,7 +3,7 @@
  * Used as a building material and for crafting mud bricks
  */
 
-const { Block } = require('./baseBlock');
+const Block = require('./baseBlock');
 
 class PackedMudBlock extends Block {
   /**
