@@ -611,13 +611,17 @@ class WindChargeEntity extends Entity {
       const immovableBlocks = ['bedrock', 'obsidian', 'reinforced_deepslate', 'end_portal_frame'];
       if (block.immovable || immovableBlocks.includes(block.type)) {
         // Skip movement but check for other interactions
-        if (!this.handleSpecialBlockInteraction(block, blockPos, blockPos.moveFactor)) {
-          continue;
+        const specialResult = this.handleSpecialBlockInteraction(block, blockPos, blockPos.moveFactor);
+        if (specialResult) {
+          interactionResults.push(specialResult);
         }
+        continue;
       }
       
       // Handle special block behaviors based on block type
-      if (this.handleSpecialBlockInteraction(block, blockPos, blockPos.moveFactor)) {
+      const specialInteraction = this.handleSpecialBlockInteraction(block, blockPos, blockPos.moveFactor);
+      if (specialInteraction) {
+        interactionResults.push(specialInteraction);
         continue; // Skip regular movement if special interaction was handled
       }
       
@@ -634,14 +638,12 @@ class WindChargeEntity extends Entity {
         this.world.setBlock(blockPos.x, blockPos.y, blockPos.z, { type: 'air' });
         
         // Track for effects
-        if (interactionResults) {
-          interactionResults.push({
-            type: 'move',
-            blockType: block.type,
-            from: { x: blockPos.x, y: blockPos.y, z: blockPos.z },
-            to: { x: targetX, y: targetY, z: targetZ }
-          });
-        }
+        interactionResults.push({
+          type: 'move',
+          blockType: block.type,
+          from: { x: blockPos.x, y: blockPos.y, z: blockPos.z },
+          to: { x: targetX, y: targetY, z: targetZ }
+        });
       }
     }
     
@@ -670,7 +672,11 @@ class WindChargeEntity extends Entity {
       if (forceFactor > 0.6) {
         // Break the block
         this.world.setBlock(position.x, position.y, position.z, { type: 'air' });
-        return true;
+        return {
+          type: 'break',
+          position: position,
+          blockType: block.type
+        };
       }
     }
     
@@ -685,14 +691,18 @@ class WindChargeEntity extends Entity {
       if (forceFactor > 0.3) {
         // Break the block
         this.world.setBlock(position.x, position.y, position.z, { type: 'air' });
-        return true;
+        return {
+          type: 'break',
+          position: position,
+          blockType: block.type
+        };
       }
     }
     
     // Interactable blocks - activate instead of moving
     const interactableBlocks = [
       'button', 'lever', 'pressure_plate', 'tripwire',
-      'door', 'trapdoor', 'fence_gate', 'bell'
+      'door', 'trapdoor', 'fence_gate'
     ];
     
     if (interactableBlocks.some(type => block.type.includes(type))) {
@@ -700,26 +710,44 @@ class WindChargeEntity extends Entity {
       if (this.world.activateBlock) {
         this.world.activateBlock(position.x, position.y, position.z);
       }
-      return true;
+      return {
+        type: 'activate',
+        position: position,
+        blockType: block.type
+      };
     }
     
     // Transformable blocks
     if (block.type === 'dirt' && forceFactor > 0.8) {
       // Transform dirt to dirt_path with high force
       this.world.setBlock(position.x, position.y, position.z, { type: 'dirt_path' });
-      return true;
+      return {
+        type: 'transform',
+        position: position,
+        from: 'dirt',
+        to: 'dirt_path'
+      };
     }
     
     if (block.type === 'grass_block' && forceFactor > 0.8) {
       // Transform grass_block to dirt with high force
       this.world.setBlock(position.x, position.y, position.z, { type: 'dirt' });
-      return true;
+      return {
+        type: 'transform',
+        position: position,
+        from: 'grass_block',
+        to: 'dirt'
+      };
     }
     
     if (block.type === 'fire') {
       // Extinguish fire
       this.world.setBlock(position.x, position.y, position.z, { type: 'air' });
-      return true;
+      return {
+        type: 'break',
+        position: position,
+        blockType: 'fire'
+      };
     }
     
     if (block.type === 'tnt') {
@@ -737,7 +765,11 @@ class WindChargeEntity extends Entity {
           fuse: 20 // 1 second fuse (20 ticks)
         });
       }
-      return true;
+      return {
+        type: 'activate',
+        position: position,
+        blockType: 'tnt'
+      };
     }
     
     // Redstone-related blocks
@@ -746,9 +778,173 @@ class WindChargeEntity extends Entity {
       if (this.world.updateRedstone) {
         this.world.updateRedstone(position.x, position.y, position.z);
       }
+      return {
+        type: 'activate',
+        position: position,
+        blockType: block.type
+      };
     }
     
-    return false; // Not handled as a special case
+    // NEW INTERACTIONS
+    
+    // Bell - Ring the bell
+    if (block.type === 'bell') {
+      if (this.world.ringBell) {
+        this.world.ringBell(position.x, position.y, position.z, 'wind');
+      }
+      return {
+        type: 'activate',
+        position: position,
+        blockType: 'bell',
+        sound: 'block.bell.use'
+      };
+    }
+    
+    // Note Block - Play a note with wind effect
+    if (block.type === 'note_block') {
+      if (this.world.playNoteBlock) {
+        // Use charge level to determine which note to play
+        const notePitch = Math.min(24, Math.floor(this.chargeLevel * 8));
+        this.world.playNoteBlock(position.x, position.y, position.z, 'flute', notePitch);
+      }
+      return {
+        type: 'activate',
+        position: position,
+        blockType: 'note_block',
+        sound: 'block.note_block.flute'
+      };
+    }
+    
+    // Campfire - Extinguish with strong force or increase flame with weak force
+    if (block.type === 'campfire' || block.type === 'soul_campfire') {
+      if (block.lit && forceFactor > 0.8) {
+        // Extinguish campfire with strong wind
+        if (this.world.setBlockState) {
+          this.world.setBlockState(position.x, position.y, position.z, { lit: false });
+        }
+        return {
+          type: 'transform',
+          position: position,
+          from: `${block.type}_lit`,
+          to: block.type,
+          sound: 'block.fire.extinguish'
+        };
+      } else if (block.lit) {
+        // Just visual effect for weak force - increase flames temporarily
+        return {
+          type: 'activate',
+          position: position,
+          blockType: block.type,
+          customParticle: 'flame_increase'
+        };
+      }
+    }
+    
+    // Candles - always extinguish when lit
+    if (block.type.includes('candle')) {
+      if (block.lit) {
+        if (this.world.setBlockState) {
+          this.world.setBlockState(position.x, position.y, position.z, { lit: false });
+        }
+        return {
+          type: 'transform',
+          position: position,
+          from: `${block.type}_lit`,
+          to: block.type,
+          sound: 'block.candle.extinguish'
+        };
+      }
+    }
+    
+    // Gravel/Sand - Turn into falling blocks with enough force
+    if ((block.type === 'gravel' || block.type === 'sand' || block.type.includes('concrete_powder')) && forceFactor > 0.7) {
+      if (this.world.setBlock && this.world.spawnEntity) {
+        // Check if the block below is air or a non-solid block
+        const blockBelow = this.world.getBlock(position.x, position.y - 1, position.z);
+        if (blockBelow && (blockBelow.type === 'air' || !blockBelow.isSolid)) {
+          // Replace with air and spawn falling block
+          this.world.setBlock(position.x, position.y, position.z, { type: 'air' });
+          this.world.spawnEntity({
+            type: 'falling_block',
+            position: {
+              x: position.x + 0.5,
+              y: position.y,
+              z: position.z + 0.5
+            },
+            blockType: block.type
+          });
+          
+          return {
+            type: 'activate',
+            position: position,
+            blockType: block.type,
+            sound: 'block.gravel.break'
+          };
+        }
+      }
+    }
+    
+    // Cobweb - Break with medium-high force
+    if (block.type === 'cobweb' && forceFactor > 0.5) {
+      this.world.setBlock(position.x, position.y, position.z, { type: 'air' });
+      return {
+        type: 'break',
+        position: position,
+        blockType: 'cobweb',
+        sound: 'block.wool.break'
+      };
+    }
+    
+    // Crops - Harvest mature crops with strong wind
+    const cropTypes = ['wheat', 'carrots', 'potatoes', 'beetroots', 'nether_wart'];
+    if (cropTypes.some(type => block.type.includes(type)) && forceFactor > 0.7) {
+      // Only harvest if crop is mature
+      if (block.age && block.age >= block.maxAge) {
+        // In a real implementation, this would drop the crop items
+        this.world.setBlock(position.x, position.y, position.z, { 
+          type: block.type, 
+          age: 0 // Reset to initial growth stage
+        });
+        return {
+          type: 'transform',
+          position: position,
+          from: `${block.type}_mature`,
+          to: `${block.type}_seedling`,
+          sound: 'block.crop.break'
+        };
+      }
+    }
+    
+    // Wind Turbines (custom block) - Generate power when hit by wind
+    if (block.type === 'wind_turbine') {
+      // Increase power generation based on charge level and force
+      const powerBoost = Math.floor(this.chargeLevel * forceFactor * 10);
+      if (this.world.boostWindTurbine) {
+        this.world.boostWindTurbine(position.x, position.y, position.z, powerBoost);
+      }
+      return {
+        type: 'activate',
+        position: position,
+        blockType: 'wind_turbine',
+        sound: 'block.wind_turbine.spin',
+        customParticle: 'turbine_boost'
+      };
+    }
+    
+    // If block has custom wind interaction capability, use it
+    if (block.applyWindEffect && typeof block.applyWindEffect === 'function') {
+      const effect = block.applyWindEffect({
+        chargeLevel: this.chargeLevel,
+        forceFactor: forceFactor,
+        direction: this.direction
+      });
+      
+      if (effect && effect.type) {
+        return effect;
+      }
+    }
+    
+    return null; // Not handled as a special case
   }
   
   /**
@@ -824,10 +1020,17 @@ class WindChargeEntity extends Entity {
   
   /**
    * Trigger chain reactions with other wind charges
+   * @returns {number} Number of wind charges triggered in the chain reaction
    */
   triggerChainReaction() {
+    if (!this.world) return 0;
+
+    // Calculate chain reaction radius based on charge level
+    const baseRadius = this.explosionRadius * 2; // Base radius for chain reactions
+    const chargeMultiplier = 1 + (this.chargeLevel * 0.5); // Higher charge levels have larger radius
+    const chainReactionRadius = baseRadius * chargeMultiplier;
+    
     // Find nearby wind charges that could be triggered
-    const chainReactionRadius = this.explosionRadius * 2; // Larger radius for chain reactions
     const nearbyEntities = this.world.getEntitiesInRadius(this.position, chainReactionRadius);
     
     // Filter for wind charge entities that haven't exploded yet
@@ -837,13 +1040,21 @@ class WindChargeEntity extends Entity {
       !entity.hasExploded
     );
     
+    let triggeredCount = 0;
+    
     // For each nearby wind charge, trigger explosion with a short delay for cascading effect
     nearbyWindCharges.forEach((windCharge, index) => {
+      // Check if we have line of sight to the wind charge (no blocks in between)
+      if (!this.checkLineOfSight(windCharge)) {
+        return; // Skip this charge if there's no line of sight
+      }
+      
       // Calculate delay based on distance (further = more delay)
       const distance = this.distanceTo(windCharge.position);
       const delayFactor = distance / chainReactionRadius; // 0 to 1 based on distance
       const baseDelay = 100; // Base delay in milliseconds
-      const delay = baseDelay + (delayFactor * 150); // 100-250ms delay based on distance
+      const maxExtraDelay = 400; // Maximum additional delay
+      const delay = baseDelay + (delayFactor * maxExtraDelay); // 100-500ms delay based on distance
       
       // Schedule explosion
       setTimeout(() => {
@@ -862,14 +1073,155 @@ class WindChargeEntity extends Entity {
             };
           }
           
+          // Create visual effect for the chain reaction connection
+          this.createChainReactionEffect(windCharge, distance, delay);
+          
+          // Trigger explosion with a slight charge boost for chain reactions
+          // This creates more dramatic cascading explosions
+          if (windCharge.chargeLevel < 2) {
+            // Boosting charge level for chain reactions (max level 2)
+            const boostedChargeLevel = Math.min(2, windCharge.chargeLevel + 1);
+            windCharge.chargeLevel = boostedChargeLevel;
+          }
+          
           // Trigger explosion
           windCharge.explode();
+          triggeredCount++;
         }
       }, delay);
     });
     
     // Return number of triggered charges for chaining information
-    return nearbyWindCharges.length;
+    return triggeredCount;
+  }
+  
+  /**
+   * Check if there's line of sight between this entity and target
+   * @param {Object} target - Target entity to check
+   * @returns {boolean} true if there's line of sight, false otherwise
+   */
+  checkLineOfSight(target) {
+    if (!this.world) return false;
+    
+    // Calculate direction vector from this entity to target
+    const dx = target.position.x - this.position.x;
+    const dy = target.position.y - this.position.y;
+    const dz = target.position.z - this.position.z;
+    const distance = Math.sqrt(dx * dx + dy * dy + dz * dz);
+    
+    if (distance === 0) return true; // Same position
+    
+    // Normalize direction vector
+    const dirX = dx / distance;
+    const dirY = dy / distance;
+    const dirZ = dz / distance;
+    
+    // Step size for ray casting (smaller = more accurate but slower)
+    const stepSize = 0.5;
+    
+    // Start slightly away from origin to avoid self-collision
+    let posX = this.position.x + dirX * 0.5;
+    let posY = this.position.y + dirY * 0.5;
+    let posZ = this.position.z + dirZ * 0.5;
+    
+    // Ray cast from this entity to target checking for blocks in between
+    for (let step = 0; step < distance; step += stepSize) {
+      // Get block at current position
+      const blockX = Math.floor(posX);
+      const blockY = Math.floor(posY);
+      const blockZ = Math.floor(posZ);
+      
+      try {
+        const block = this.world.getBlock(blockX, blockY, blockZ);
+        
+        // If block is solid, there's no line of sight
+        if (block && block.isSolid) {
+          return false;
+        }
+      } catch (error) {
+        // Ignore errors from invalid block positions
+        console.warn(`Error checking block at ${blockX}, ${blockY}, ${blockZ}: ${error.message}`);
+      }
+      
+      // Move to next position
+      posX += dirX * stepSize;
+      posY += dirY * stepSize;
+      posZ += dirZ * stepSize;
+      
+      // Check if we've reached or passed the target
+      const currentToTargetX = target.position.x - posX;
+      const currentToTargetY = target.position.y - posY;
+      const currentToTargetZ = target.position.z - posZ;
+      
+      // If the dot product is negative, we've passed the target
+      const dotProduct = currentToTargetX * dirX + currentToTargetY * dirY + currentToTargetZ * dirZ;
+      if (dotProduct <= 0) {
+        break;
+      }
+    }
+    
+    // If we got here, there's a clear line of sight
+    return true;
+  }
+  
+  /**
+   * Create visual effects for chain reaction connection
+   * @param {Object} targetCharge - The wind charge being triggered
+   * @param {number} distance - Distance to the target
+   * @param {number} delay - Delay before the target explodes
+   */
+  createChainReactionEffect(targetCharge, distance, delay) {
+    if (!this.world || !this.world.addParticleEffect) {
+      return;
+    }
+    
+    // Get color based on charge level (start with this charge's color)
+    const color = this.particleColors[Math.min(this.chargeLevel, this.particleColors.length - 1)];
+    
+    // Calculate midpoint for arc effect
+    const midX = (this.position.x + targetCharge.position.x) / 2;
+    const midY = (this.position.y + targetCharge.position.y) / 2 + 1.5; // Arc upward
+    const midZ = (this.position.z + targetCharge.position.z) / 2;
+    
+    // Create particle effect that travels from this charge to the target
+    this.world.addParticleEffect({
+      particleType: 'chain_reaction',
+      startPosition: { ...this.position },
+      midPosition: { x: midX, y: midY, z: midZ },
+      endPosition: { ...targetCharge.position },
+      color: color,
+      secondaryColor: this.particleColors[Math.min(targetCharge.chargeLevel, this.particleColors.length - 1)],
+      duration: delay - 50, // Slightly shorter than the delay
+      particleCount: Math.ceil(distance * 2), // More particles for longer distances
+      size: 0.3 + (this.chargeLevel * 0.1),
+      arcHeight: Math.min(3, distance / 2) // Higher arc for longer distances (max 3 blocks)
+    });
+    
+    // Add audio effect for the chain reaction
+    if (this.world.playSound) {
+      // Play a different sound halfway through
+      const halfDelay = delay / 2;
+      
+      // Initial "spark" sound when chain reaction begins
+      this.world.playSound({
+        sound: 'entity.wind_charge.chain_spark',
+        position: this.position,
+        volume: 0.5 + (this.chargeLevel * 0.1),
+        pitch: 1.1,
+        radius: distance * 2
+      });
+      
+      // "Travel" sound as the chain reaction propagates
+      setTimeout(() => {
+        this.world.playSound({
+          sound: 'entity.wind_charge.chain_travel',
+          position: { x: midX, y: midY, z: midZ },
+          volume: 0.7,
+          pitch: 1.0 - (distance * 0.02), // Lower pitch for longer distances
+          radius: distance * 2
+        });
+      }, halfDelay);
+    }
   }
   
   /**
@@ -884,6 +1236,8 @@ class WindChargeEntity extends Entity {
     
     // Process each interaction result to create appropriate effects
     for (const result of interactionResults) {
+      if (!result) continue;
+      
       switch (result.type) {
         case 'move':
           // Create dust particles along movement path
@@ -892,14 +1246,44 @@ class WindChargeEntity extends Entity {
         case 'break':
           // Create break particles
           this.createBlockBreakEffect(result.position, result.blockType);
+          // Play sound if specified
+          if (result.sound && this.world.playSound) {
+            this.world.playSound({
+              sound: result.sound,
+              position: result.position,
+              volume: 0.8,
+              pitch: 1.0,
+              radius: 10
+            });
+          }
           break;
         case 'transform':
           // Create transform particles
           this.createBlockTransformEffect(result.position, result.from, result.to);
+          // Play sound if specified
+          if (result.sound && this.world.playSound) {
+            this.world.playSound({
+              sound: result.sound,
+              position: result.position,
+              volume: 0.7,
+              pitch: 0.9,
+              radius: 10
+            });
+          }
           break;
         case 'activate':
           // Create activation particles
-          this.createBlockActivationEffect(result.position, result.blockType);
+          this.createBlockActivationEffect(result.position, result.blockType, result.customParticle);
+          // Play sound if specified
+          if (result.sound && this.world.playSound) {
+            this.world.playSound({
+              sound: result.sound,
+              position: result.position,
+              volume: 0.7,
+              pitch: 1.0,
+              radius: 10
+            });
+          }
           break;
       }
     }
@@ -1029,9 +1413,71 @@ class WindChargeEntity extends Entity {
    * Create visual effects for block activation
    * @param {Object} position - Block position
    * @param {string} blockType - Type of block being activated
+   * @param {string} customParticle - Optional custom particle effect
    */
-  createBlockActivationEffect(position, blockType) {
-    // Add activation particles
+  createBlockActivationEffect(position, blockType, customParticle) {
+    // Handle custom particle types
+    if (customParticle) {
+      switch (customParticle) {
+        case 'flame_increase':
+          // Create flame increase effect for campfires
+          this.world.addParticleEffect({
+            particleType: 'flame',
+            position: {
+              x: position.x + 0.5,
+              y: position.y + 1.0,
+              z: position.z + 0.5
+            },
+            count: 10 + (this.chargeLevel * 5),
+            spread: { x: 0.4, y: 0.4, z: 0.4 },
+            velocity: { x: 0, y: 0.2, z: 0 },
+            gravity: -0.05,
+            color: blockType.includes('soul') ? '#6060ff' : '#ff6020',
+            size: 0.2 + (this.chargeLevel * 0.1)
+          });
+          return;
+          
+        case 'turbine_boost':
+          // Create wind energy particles for turbines
+          this.world.addParticleEffect({
+            particleType: 'enchant',
+            position: {
+              x: position.x + 0.5,
+              y: position.y + 0.5,
+              z: position.z + 0.5
+            },
+            count: 15 + (this.chargeLevel * 5),
+            spread: { x: 0.8, y: 0.8, z: 0.8 },
+            velocity: { 
+              x: this.direction.x * 0.3, 
+              y: this.direction.y * 0.3, 
+              z: this.direction.z * 0.3 
+            },
+            color: '#80ffff',
+            size: 0.2
+          });
+          return;
+          
+        case 'note_particle':
+          // Create note block particles
+          this.world.addParticleEffect({
+            particleType: 'note',
+            position: {
+              x: position.x + 0.5,
+              y: position.y + 1.2,
+              z: position.z + 0.5
+            },
+            count: 4 + this.chargeLevel,
+            spread: { x: 0.4, y: 0.1, z: 0.4 },
+            velocity: { x: 0, y: 0.2, z: 0 },
+            color: '#' + Math.floor(Math.random() * 0xffffff).toString(16).padStart(6, '0'), // Random color
+            size: 0.2
+          });
+          return;
+      }
+    }
+    
+    // Default activation particles
     this.world.addParticleEffect({
       particleType: 'block_activate',
       position: {
@@ -1039,14 +1485,12 @@ class WindChargeEntity extends Entity {
         y: position.y + 0.5,
         z: position.z + 0.5
       },
-      count: 8,
+      count: 8 + (this.chargeLevel * 2),
       spread: { x: 0.3, y: 0.3, z: 0.3 },
       velocity: { x: 0, y: 0.1, z: 0 },
       color: '#ffffff',
-      size: 0.1
+      size: 0.1 + (this.chargeLevel * 0.05)
     });
-    
-    // No need to play sound here as the activated block will play its own sound
   }
   
   /**

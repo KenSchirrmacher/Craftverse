@@ -1,6 +1,6 @@
 /**
  * PotPatternRegistry - Manages pottery patterns for the Decorated Pots Expansion
- * Part of the Minecraft 1.23 Update
+ * Part of the Minecraft 1.24 Update
  */
 
 class PotPatternRegistry {
@@ -34,28 +34,31 @@ class PotPatternRegistry {
       { id: 'shelter', name: 'Shelter', category: 'crafting', rarity: 'common' }
     ];
     
-    // New patterns for 1.23 Update
+    // New patterns for 1.24 Update
     const newPatterns = [
-      // Magical category patterns
-      { id: 'enchanted', name: 'Enchanted', category: 'magical', rarity: 'rare', effect: 'magical_storage' },
-      { id: 'mystical', name: 'Mystical', category: 'magical', rarity: 'rare', effect: 'item_preservation' },
-      { id: 'alchemical', name: 'Alchemical', category: 'magical', rarity: 'epic', effect: 'brew_amplification' },
-      { id: 'runic', name: 'Runic', category: 'magical', rarity: 'epic', effect: 'ender_resonance' },
+      // Historical category patterns
+      { id: 'pharaoh', name: 'Pharaoh', category: 'historical', rarity: 'rare', effect: 'time_manipulation' },
+      { id: 'dynasty', name: 'Dynasty', category: 'historical', rarity: 'epic', effect: 'ancient_wisdom' },
+      { id: 'empire', name: 'Empire', category: 'historical', rarity: 'rare', effect: 'civilization_boost' },
+      { id: 'legacy', name: 'Legacy', category: 'historical', rarity: 'epic', effect: 'historical_resonance' },
       
-      // Decorative category additions
-      { id: 'flowery', name: 'Flowery', category: 'decoration', rarity: 'common', effect: 'visual_particles' },
-      { id: 'royal', name: 'Royal', category: 'decoration', rarity: 'rare', effect: 'prestige' },
-      { id: 'ancient', name: 'Ancient', category: 'decoration', rarity: 'epic', effect: 'historical_resonance' },
+      // Mythological category patterns
+      { id: 'dragon', name: 'Dragon', category: 'mythological', rarity: 'epic', effect: 'dragon_essence' },
+      { id: 'phoenix', name: 'Phoenix', category: 'mythological', rarity: 'rare', effect: 'rebirth' },
+      { id: 'griffin', name: 'Griffin', category: 'mythological', rarity: 'rare', effect: 'flight_essence' },
+      { id: 'unicorn', name: 'Unicorn', category: 'mythological', rarity: 'epic', effect: 'magical_purity' },
       
-      // New musical category
-      { id: 'musical', name: 'Musical', category: 'musical', rarity: 'uncommon', effect: 'sound_emission' },
-      { id: 'melodic', name: 'Melodic', category: 'musical', rarity: 'rare', effect: 'note_block_resonance' },
-      { id: 'harmonic', name: 'Harmonic', category: 'musical', rarity: 'epic', effect: 'sound_amplification' },
+      // Natural category patterns
+      { id: 'oak', name: 'Oak', category: 'natural', rarity: 'common', effect: 'growth_boost' },
+      { id: 'rose', name: 'Rose', category: 'natural', rarity: 'uncommon', effect: 'beauty_essence' },
+      { id: 'wolf', name: 'Wolf', category: 'natural', rarity: 'rare', effect: 'pack_mentality' },
+      { id: 'eagle', name: 'Eagle', category: 'natural', rarity: 'rare', effect: 'keen_vision' },
       
-      // Technical category (redstone interaction)
-      { id: 'redstone', name: 'Redstone', category: 'technical', rarity: 'rare', effect: 'signal_output' },
-      { id: 'clockwork', name: 'Clockwork', category: 'technical', rarity: 'epic', effect: 'timer' },
-      { id: 'compass', name: 'Compass', category: 'technical', rarity: 'rare', effect: 'direction_sensing' }
+      // Abstract category patterns
+      { id: 'spiral', name: 'Spiral', category: 'abstract', rarity: 'uncommon', effect: 'energy_flow' },
+      { id: 'mandala', name: 'Mandala', category: 'abstract', rarity: 'rare', effect: 'balance' },
+      { id: 'fractal', name: 'Fractal', category: 'abstract', rarity: 'epic', effect: 'infinite_pattern' },
+      { id: 'zen', name: 'Zen', category: 'abstract', rarity: 'rare', effect: 'inner_peace' }
     ];
     
     // Register all patterns

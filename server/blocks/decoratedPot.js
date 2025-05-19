@@ -1,9 +1,11 @@
 /**
  * DecoratedPot - Block that can display up to 4 sherd patterns
  * Part of the Trails & Tales Update's pottery system
+ * Enhanced for the Minecraft 1.24 Update
  */
 
 const Block = require('./block');
+const PotteryPatternCombiner = require('../utils/potteryPatternCombiner');
 
 class DecoratedPot extends Block {
   /**
@@ -45,6 +47,40 @@ class DecoratedPot extends Block {
     };
     
     this.rotationY = options.rotationY || 0; // For determining which side faces which direction
+    
+    // Initialize pattern combiner
+    this.patternCombiner = new PotteryPatternCombiner();
+    
+    // Active effects from pattern combinations
+    this.activeEffects = new Map();
+  }
+  
+  /**
+   * Get all sherd patterns currently on the pot
+   * @returns {Array} - Array of sherd patterns
+   */
+  getSherdPatterns() {
+    return Object.values(this.sherds).filter(pattern => pattern !== null);
+  }
+  
+  /**
+   * Update active effects based on current sherd patterns
+   * @private
+   */
+  updateActiveEffects() {
+    this.activeEffects.clear();
+    
+    const patterns = this.getSherdPatterns();
+    if (patterns.length < 2) return;
+    
+    // Get combination effect
+    const combination = this.patternCombiner.getCombinationEffect(patterns);
+    if (combination) {
+      this.activeEffects.set(combination.effect, {
+        strength: this.patternCombiner.calculateEffectStrength(patterns),
+        description: combination.description
+      });
+    }
   }
   
   /**
@@ -69,6 +105,9 @@ class DecoratedPot extends Block {
       return this.storeItem(player, itemInHand);
     }
     
+    // Apply pattern combination effects
+    this.updateActiveEffects();
+    
     return false;
   }
   
@@ -87,6 +126,13 @@ class DecoratedPot extends Block {
       count: 1
     };
     
+    // Apply pattern effects to stored item
+    if (this.activeEffects.size > 0) {
+      for (const [effect, data] of this.activeEffects) {
+        this.applyEffectToItem(itemToStore, effect, data.strength);
+      }
+    }
+    
     // Add to inventory
     this.inventory.items.push(itemToStore);
     
@@ -102,6 +148,51 @@ class DecoratedPot extends Block {
         success: true, 
         itemInHand: null 
       };
+    }
+  }
+  
+  /**
+   * Apply a pattern effect to an item
+   * @param {Object} item - The item to modify
+   * @param {string} effect - The effect to apply
+   * @param {number} strength - The effect strength
+   * @private
+   */
+  applyEffectToItem(item, effect, strength) {
+    switch (effect) {
+      case 'time_anomaly':
+        // Preserve item durability
+        if (item.durability) {
+          item.durability = Math.max(item.durability, item.maxDurability);
+        }
+        break;
+        
+      case 'mythical_convergence':
+        // Enhance item enchantments
+        if (item.enchantments) {
+          for (const enchant of item.enchantments) {
+            enchant.level = Math.min(enchant.level + strength, 5);
+          }
+        }
+        break;
+        
+      case 'nature_harmony':
+        // Enhance natural items
+        if (item.type.includes('plant') || item.type.includes('seed')) {
+          item.growthRate = (item.growthRate || 1) * (1 + strength * 0.2);
+        }
+        break;
+        
+      case 'pattern_resonance':
+        // Add visual effects
+        item.particleEffects = item.particleEffects || [];
+        item.particleEffects.push({
+          type: 'geometric',
+          strength: strength
+        });
+        break;
+        
+      // Add more effect handlers as needed
     }
   }
   
@@ -189,7 +280,8 @@ class DecoratedPot extends Block {
     return {
       ...super.getRenderData(),
       sherds: this.sherds,
-      rotationY: this.rotationY
+      rotationY: this.rotationY,
+      activeEffects: Array.from(this.activeEffects.entries())
     };
   }
   
@@ -203,7 +295,8 @@ class DecoratedPot extends Block {
       type: this.type,
       sherds: this.sherds,
       inventory: this.inventory,
-      rotationY: this.rotationY
+      rotationY: this.rotationY,
+      activeEffects: Array.from(this.activeEffects.entries())
     };
     return data;
   }
@@ -217,12 +310,18 @@ class DecoratedPot extends Block {
   static deserialize(data) {
     if (!data) return null;
     
-    return new DecoratedPot({
+    const pot = new DecoratedPot({
       id: data.id,
       sherds: data.sherds,
       inventory: data.inventory,
       rotationY: data.rotationY
     });
+    
+    if (data.activeEffects) {
+      pot.activeEffects = new Map(data.activeEffects);
+    }
+    
+    return pot;
   }
 }
 
