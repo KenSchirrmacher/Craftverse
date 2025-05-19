@@ -370,6 +370,7 @@
   - [COMPLETED] Tuff Brick Stairs block
   - [COMPLETED] Tuff Brick Wall block
   - [COMPLETED] Crafting recipes for all variants
+  - [COMPLETED] Stonecutter recipes for all variants
   - [COMPLETED] Comprehensive test coverage
 24. Fixed serialization and inheritance issues in Block class to ensure proper functionality
 25. Created comprehensive test suites for all copper and tuff variant blocks
