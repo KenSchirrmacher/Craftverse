@@ -113,43 +113,114 @@ class WindChargeImprovementsTestSuite extends TestBase {
 
   testChargingMechanic() {
     this.runTest('Charging Mechanic', () => {
-      // Test implementation will go here
-      this.skipTest('Charging Mechanic', 'Not implemented yet');
+      const windCharge = new WindChargeItem();
+      const player = new TestPlayer();
+      const world = new TestWorld();
+
+      // Test charging start
+      windCharge.useStart(player, world);
+      assert.strictEqual(player.charging.wind_charge !== undefined, true);
+      assert.strictEqual(player.charging.wind_charge.startTime !== undefined, true);
+
+      // Test charging update
+      const result = windCharge.useUpdate(player, world, 1);
+      assert.strictEqual(result.type, 'wind_charge_charge_level');
+      assert.strictEqual(result.playerId, player.id);
     });
   }
 
   testChargeLevels() {
     this.runTest('Charge Levels', () => {
-      // Test implementation will go here
-      this.skipTest('Charge Levels', 'Not implemented yet');
+      const windCharge = new WindChargeItem();
+      const player = new TestPlayer();
+      const world = new TestWorld();
+
+      // Test weak charge
+      windCharge.useStart(player, world);
+      player.charging.wind_charge.startTime = Date.now() - 1000;
+      let result = windCharge.useUpdate(player, world, 1);
+      assert.strictEqual(result.chargeLevel, 0);
+      assert.strictEqual(result.chargeName, 'weak');
+
+      // Test medium charge
+      player.charging.wind_charge.startTime = Date.now() - 2000;
+      result = windCharge.useUpdate(player, world, 1);
+      assert.strictEqual(result.chargeLevel, 1);
+      assert.strictEqual(result.chargeName, 'medium');
+
+      // Test strong charge
+      player.charging.wind_charge.startTime = Date.now() - 3000;
+      result = windCharge.useUpdate(player, world, 1);
+      assert.strictEqual(result.chargeLevel, 2);
+      assert.strictEqual(result.chargeName, 'strong');
     });
   }
 
   testTrajectoryPrediction() {
     this.runTest('Trajectory Prediction', () => {
-      // Test implementation will go here
-      this.skipTest('Trajectory Prediction', 'Not implemented yet');
+      const windCharge = new WindChargeItem();
+      const player = new TestPlayer();
+      const world = new TestWorld();
+
+      // Test trajectory prediction
+      const trajectory = windCharge.predictTrajectory(player, world);
+      assert.strictEqual(trajectory.points.length > 0, true);
+      assert.strictEqual(trajectory.impactPoint !== undefined, true);
+      assert.strictEqual(trajectory.impactTime > 0, true);
     });
   }
 
   testChainReactions() {
     this.runTest('Chain Reactions', () => {
-      // Test implementation will go here
-      this.skipTest('Chain Reactions', 'Not implemented yet');
+      const windCharge = new WindChargeEntity();
+      const world = new TestWorld();
+
+      // Place multiple wind charges
+      for (let i = 0; i < 3; i++) {
+        world.setBlock(i, 0, 0, new WindChargeEntity());
+      }
+
+      // Trigger chain reaction
+      windCharge.explode();
+      const chainReactionCount = world.getChainReactionCount();
+      assert.strictEqual(chainReactionCount > 1, true);
     });
   }
 
   testBlockInteractions() {
     this.runTest('Block Interactions', () => {
-      // Test implementation will go here
-      this.skipTest('Block Interactions', 'Not implemented yet');
+      const windCharge = new WindChargeEntity();
+      const world = new TestWorld();
+
+      // Test block movement
+      world.setBlock(0, 0, 0, { type: 'sand' });
+      windCharge.explode();
+      const movedBlock = world.getBlock(0, 1, 0);
+      assert.strictEqual(movedBlock.type, 'sand');
+
+      // Test block activation
+      world.setBlock(0, 0, 0, { type: 'note_block' });
+      windCharge.explode();
+      const activatedBlock = world.getBlock(0, 0, 0);
+      assert.strictEqual(activatedBlock.isActivated, true);
     });
   }
 
   testVisualEffects() {
     this.runTest('Visual Effects', () => {
-      // Test implementation will go here
-      this.skipTest('Visual Effects', 'Not implemented yet');
+      const windCharge = new WindChargeEntity();
+      const world = new TestWorld();
+
+      // Test particle effects
+      windCharge.explode();
+      const particles = world.getParticleEffects();
+      assert.strictEqual(particles.length > 0, true);
+      assert.strictEqual(particles[0].type, 'wind_charge');
+
+      // Test sound effects
+      const sounds = world.getSoundEffects();
+      assert.strictEqual(sounds.length > 0, true);
+      assert.strictEqual(sounds[0].type, 'wind_charge_explosion');
     });
   }
 }
@@ -171,29 +242,58 @@ class PotteryPatternsTestSuite extends TestBase {
 
   testNewPatterns() {
     this.runTest('New Patterns', () => {
-      // Test implementation will go here
-      this.skipTest('New Patterns', 'Not implemented yet');
+      const patternRegistry = new PotteryPatternRegistry();
+      
+      // Test pattern registration
+      const pattern = new PotteryPattern('test_pattern', 'Test Pattern', 'rare');
+      patternRegistry.register(pattern);
+      assert.strictEqual(patternRegistry.getPattern('test_pattern'), pattern);
+
+      // Test pattern properties
+      assert.strictEqual(pattern.id, 'test_pattern');
+      assert.strictEqual(pattern.name, 'Test Pattern');
+      assert.strictEqual(pattern.rarity, 'rare');
     });
   }
 
   testPatternCombinations() {
     this.runTest('Pattern Combinations', () => {
-      // Test implementation will go here
-      this.skipTest('Pattern Combinations', 'Not implemented yet');
+      const patternRegistry = new PotteryPatternRegistry();
+      const pot = new DecoratedPot();
+
+      // Test pattern application
+      pot.applyPattern('test_pattern', 0);
+      assert.strictEqual(pot.getPattern(0), 'test_pattern');
+
+      // Test combination effects
+      pot.applyPattern('test_pattern', 1);
+      const effect = pot.getCombinationEffect();
+      assert.strictEqual(effect !== undefined, true);
     });
   }
 
   testSpecialEffects() {
     this.runTest('Special Effects', () => {
-      // Test implementation will go here
-      this.skipTest('Special Effects', 'Not implemented yet');
+      const pot = new DecoratedPot();
+      const world = new TestWorld();
+
+      // Test effect activation
+      pot.applyPattern('special_pattern', 0);
+      pot.activateEffect(world);
+      const effects = world.getSpecialEffects();
+      assert.strictEqual(effects.length > 0, true);
     });
   }
 
   testArchaeologyIntegration() {
     this.runTest('Archaeology Integration', () => {
-      // Test implementation will go here
-      this.skipTest('Archaeology Integration', 'Not implemented yet');
+      const archaeologySystem = new ArchaeologySystem();
+      const world = new TestWorld();
+
+      // Test pattern discovery
+      const discovery = archaeologySystem.discoverPattern(world);
+      assert.strictEqual(discovery !== undefined, true);
+      assert.strictEqual(discovery.type, 'pottery_pattern');
     });
   }
 }
@@ -215,29 +315,59 @@ class CrafterEnhancementsTestSuite extends TestBase {
 
   testRecipeMemory() {
     this.runTest('Recipe Memory', () => {
-      // Test implementation will go here
-      this.skipTest('Recipe Memory', 'Not implemented yet');
+      const crafter = new CrafterBlock();
+      const world = new TestWorld();
+
+      // Test recipe storage
+      crafter.storeRecipe('test_recipe');
+      assert.strictEqual(crafter.hasRecipe('test_recipe'), true);
+
+      // Test recipe recall
+      const recipe = crafter.getStoredRecipe('test_recipe');
+      assert.strictEqual(recipe !== undefined, true);
     });
   }
 
   testInventorySorting() {
     this.runTest('Inventory Sorting', () => {
-      // Test implementation will go here
-      this.skipTest('Inventory Sorting', 'Not implemented yet');
+      const crafter = new CrafterBlock();
+      const world = new TestWorld();
+
+      // Test item sorting
+      crafter.addItem({ id: 'item2', count: 1 });
+      crafter.addItem({ id: 'item1', count: 1 });
+      crafter.sortInventory();
+      
+      const items = crafter.getInventory();
+      assert.strictEqual(items[0].id, 'item1');
+      assert.strictEqual(items[1].id, 'item2');
     });
   }
 
   testRedstoneOutput() {
     this.runTest('Redstone Output', () => {
-      // Test implementation will go here
-      this.skipTest('Redstone Output', 'Not implemented yet');
+      const crafter = new CrafterBlock();
+      const world = new TestWorld();
+
+      // Test signal strength
+      crafter.setCraftingProgress(0.5);
+      assert.strictEqual(crafter.getRedstoneSignal(), 8);
+
+      // Test signal update
+      crafter.setCraftingProgress(1.0);
+      assert.strictEqual(crafter.getRedstoneSignal(), 15);
     });
   }
 
   testItemFiltering() {
     this.runTest('Item Filtering', () => {
-      // Test implementation will go here
-      this.skipTest('Item Filtering', 'Not implemented yet');
+      const crafter = new CrafterBlock();
+      const world = new TestWorld();
+
+      // Test filter configuration
+      crafter.setItemFilter('test_item');
+      assert.strictEqual(crafter.acceptsItem('test_item'), true);
+      assert.strictEqual(crafter.acceptsItem('other_item'), false);
     });
   }
 }
@@ -260,36 +390,61 @@ class TrailRuinsTestSuite extends TestBase {
 
   testStructureGeneration() {
     this.runTest('Structure Generation', () => {
-      // Test implementation will go here
-      this.skipTest('Structure Generation', 'Not implemented yet');
+      const generator = new TrailRuinsGenerator();
+      const world = new TestWorld();
+
+      // Test structure generation
+      const structure = generator.generate(world, 0, 0, 0);
+      assert.strictEqual(structure !== undefined, true);
+      assert.strictEqual(structure.rooms.length > 0, true);
     });
   }
 
   testLootTables() {
     this.runTest('Loot Tables', () => {
-      // Test implementation will go here
-      this.skipTest('Loot Tables', 'Not implemented yet');
+      const generator = new TrailRuinsGenerator();
+      const world = new TestWorld();
+
+      // Test loot generation
+      const loot = generator.generateLoot('common');
+      assert.strictEqual(loot.length > 0, true);
+      assert.strictEqual(loot[0].rarity, 'common');
     });
   }
 
   testVariants() {
     this.runTest('Structure Variants', () => {
-      // Test implementation will go here
-      this.skipTest('Structure Variants', 'Not implemented yet');
+      const generator = new TrailRuinsGenerator();
+      const world = new TestWorld();
+
+      // Test variant generation
+      const variant = generator.generateVariant('desert');
+      assert.strictEqual(variant !== undefined, true);
+      assert.strictEqual(variant.theme, 'desert');
     });
   }
 
   testSpecialChests() {
     this.runTest('Special Chests', () => {
-      // Test implementation will go here
-      this.skipTest('Special Chests', 'Not implemented yet');
+      const generator = new TrailRuinsGenerator();
+      const world = new TestWorld();
+
+      // Test chest generation
+      const chest = generator.generateSpecialChest();
+      assert.strictEqual(chest !== undefined, true);
+      assert.strictEqual(chest.type, 'trail_ruins_chest');
     });
   }
 
   testDecayMechanics() {
     this.runTest('Decay Mechanics', () => {
-      // Test implementation will go here
-      this.skipTest('Decay Mechanics', 'Not implemented yet');
+      const generator = new TrailRuinsGenerator();
+      const world = new TestWorld();
+
+      // Test decay application
+      const structure = generator.generate(world, 0, 0, 0);
+      generator.applyDecay(structure);
+      assert.strictEqual(structure.decayLevel > 0, true);
     });
   }
 }
