@@ -7,104 +7,89 @@
 const WindChargeEntity = require('../entities/windChargeEntity');
 const assert = require('assert');
 const { v4: uuidv4 } = require('uuid');
+const World = require('../world/world');
+const Player = require('../entities/player');
 
-class TestWorld {
+// Test world implementation
+class TestWorld extends World {
   constructor() {
+    super();
     this.blocks = new Map();
     this.entities = new Map();
-    this.particleEffects = [];
-    this.soundEffects = [];
     this.blockStateUpdates = [];
-    this.activatedBlocks = [];
-    this.blockUpdates = [];
-  }
-
-  reset() {
-    this.blocks.clear();
-    this.entities.clear();
     this.particleEffects = [];
-    this.soundEffects = [];
-    this.blockStateUpdates = [];
     this.activatedBlocks = [];
-    this.blockUpdates = [];
   }
-
+  
+  getBlock(x, y, z) {
+    const key = `${x},${y},${z}`;
+    return this.blocks.get(key) || { type: 'air', isSolid: false };
+  }
+  
   setBlock(x, y, z, block) {
     const key = `${x},${y},${z}`;
     this.blocks.set(key, block);
-    this.blockUpdates.push({ position: { x, y, z }, block: { ...block } });
   }
-
-  getBlock(x, y, z) {
-    const key = `${x},${y},${z}`;
-    return this.blocks.get(key) || null;
+  
+  getEntitiesInRadius(position, radius) {
+    return Array.from(this.entities.values()).filter(entity => {
+      const dx = entity.position.x - position.x;
+      const dy = entity.position.y - position.y;
+      const dz = entity.position.z - position.z;
+      const distance = Math.sqrt(dx * dx + dy * dy + dz * dz);
+      return distance <= radius;
+    });
   }
-
+  
   addEntity(entity) {
     this.entities.set(entity.id, entity);
     entity.world = this;
-    return entity;
   }
-
+  
   removeEntity(id) {
     this.entities.delete(id);
   }
 
-  getEntitiesInRadius(position, radius) {
-    const result = [];
-    this.entities.forEach(entity => {
-      if (this.calculateDistance(position, entity.position) <= radius) {
-        result.push(entity);
-      }
-    });
-    return result;
-  }
-
-  calculateDistance(pos1, pos2) {
-    const dx = pos1.x - pos2.x;
-    const dy = pos1.y - pos2.y;
-    const dz = pos1.z - pos2.z;
-    return Math.sqrt(dx * dx + dy * dy + dz * dz);
-  }
-
-  activateBlock(x, y, z) {
-    this.activatedBlocks.push({ x, y, z });
-  }
-
-  setBlockState(x, y, z, state) {
-    const key = `${x},${y},${z}`;
-    const block = this.blocks.get(key);
-    if (block) {
-      this.blocks.set(key, { ...block, ...state });
-      this.blockStateUpdates.push({ position: { x, y, z }, state });
-    }
+  updateBlockState(x, y, z, state) {
+    this.blockStateUpdates.push({ x, y, z, state });
   }
 
   addParticleEffect(effect) {
     this.particleEffects.push(effect);
   }
 
-  playSound(soundData) {
-    this.soundEffects.push(soundData);
+  activateBlock(x, y, z, type, data) {
+    this.activatedBlocks.push({ x, y, z, type, ...data });
   }
 
-  spawnEntity(options) {
-    const id = options.id || uuidv4();
-    const entity = { id, ...options };
-    this.entities.set(id, entity);
-    return entity;
+  reset() {
+    this.blockStateUpdates = [];
+    this.particleEffects = [];
+    this.activatedBlocks = [];
+  }
+}
+
+// Test player implementation
+class TestPlayer extends Player {
+  constructor(id, position) {
+    super(id, position);
+    this.charging = {};
+    this.cooldowns = {};
+    this.gameMode = 'survival';
+    this.rotation = { x: 0, y: 0, z: 0 };
+    this.sentEvents = [];
   }
 
-  ringBell(x, y, z, source) {
-    this.activatedBlocks.push({ x, y, z, type: 'bell', source });
+  sendEvent(event) {
+    this.sentEvents.push(event);
   }
 
-  playNoteBlock(x, y, z, instrument, pitch) {
-    this.activatedBlocks.push({ x, y, z, type: 'note_block', instrument, pitch });
-  }
-
-  boostWindTurbine(x, y, z, powerBoost) {
-    this.activatedBlocks.push({ x, y, z, type: 'wind_turbine', powerBoost });
+  getLookDirection() {
+    return {
+      x: -Math.sin(this.rotation.y) * Math.cos(this.rotation.x),
+      y: -Math.sin(this.rotation.x),
+      z: Math.cos(this.rotation.y) * Math.cos(this.rotation.x)
+    };
   }
 }
 

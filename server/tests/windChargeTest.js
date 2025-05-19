@@ -2,28 +2,30 @@
 const assert = require('assert');
 const WindChargeItem = require('../items/windChargeItem');
 const WindChargeEntity = require('../entities/windChargeEntity');
+const World = require('../world/world');
+const Player = require('../entities/player');
 const { v4: uuidv4 } = require('uuid');
 
-// Mock world for testing
-class MockWorld {
+// Test world implementation
+class TestWorld extends World {
   constructor() {
-    this.blocks = {};
-    this.entities = {};
+    super();
+    this.blocks = new Map();
+    this.entities = new Map();
   }
   
   getBlock(x, y, z) {
     const key = `${x},${y},${z}`;
-    return this.blocks[key] || { type: 'air' };
+    return this.blocks.get(key) || { type: 'air', isSolid: false };
   }
   
   setBlock(x, y, z, block) {
     const key = `${x},${y},${z}`;
-    this.blocks[key] = block;
+    this.blocks.set(key, block);
   }
   
   getEntitiesInRadius(position, radius) {
-    // Filter entities by distance
-    return Object.values(this.entities).filter(entity => {
+    return Array.from(this.entities.values()).filter(entity => {
       const dx = entity.position.x - position.x;
       const dy = entity.position.y - position.y;
       const dz = entity.position.z - position.z;
@@ -33,27 +35,30 @@ class MockWorld {
   }
   
   addEntity(entity) {
-    this.entities[entity.id] = entity;
+    this.entities.set(entity.id, entity);
+    entity.world = this;
   }
   
   removeEntity(id) {
-    delete this.entities[id];
+    this.entities.delete(id);
   }
 }
 
-// Mock player for testing
-class MockPlayer {
+// Test player implementation
+class TestPlayer extends Player {
   constructor(id, position) {
-    this.id = id;
-    this.position = position || { x: 0, y: 0, z: 0 };
-    this.rotation = { x: 0, y: 0, z: 0 };
-    this.health = 20;
-    this.maxHealth = 20;
-    this.dead = false;
+    super(id, position);
+    this.charging = {};
     this.cooldowns = {};
     this.gameMode = 'survival';
+    this.rotation = { x: 0, y: 0, z: 0 };
+    this.sentEvents = [];
   }
-  
+
+  sendEvent(event) {
+    this.sentEvents.push(event);
+  }
+
   getLookDirection() {
     return {
       x: -Math.sin(this.rotation.y) * Math.cos(this.rotation.x),
@@ -137,7 +142,7 @@ describe('Wind Charge', function() {
     
     it('should create wind charge entity when used', function() {
       const windCharge = new WindChargeItem();
-      const player = new MockPlayer('player1', { x: 10, y: 5, z: 10 });
+      const player = new TestPlayer('player1', { x: 10, y: 5, z: 10 });
       const context = { itemStack: { count: 1 } };
       
       // Set player looking straight ahead
@@ -161,7 +166,7 @@ describe('Wind Charge', function() {
     
     it('should not reduce item count in creative mode', function() {
       const windCharge = new WindChargeItem();
-      const player = new MockPlayer('player1');
+      const player = new TestPlayer('player1');
       player.gameMode = 'creative';
       const context = { itemStack: { count: 1 } };
       
@@ -172,7 +177,7 @@ describe('Wind Charge', function() {
     
     it('should respect cooldown time between uses', function() {
       const windCharge = new WindChargeItem();
-      const player = new MockPlayer('player1');
+      const player = new TestPlayer('player1');
       const context = { itemStack: { count: 2 } };
       
       // First use should succeed
@@ -262,7 +267,7 @@ describe('Wind Charge', function() {
         velocity: 0.1
       });
       
-      const world = new MockWorld();
+      const world = new TestWorld();
       // Place a solid block in the path
       world.setBlock(6, 5, 5, { type: 'stone', isSolid: true });
       entity.world = world;
@@ -288,7 +293,7 @@ describe('Wind Charge', function() {
         damage: 6
       });
       
-      const world = new MockWorld();
+      const world = new TestWorld();
       entity.world = world;
       
       // Add a target entity in the path
@@ -315,7 +320,7 @@ describe('Wind Charge', function() {
         velocity: 2
       });
       
-      const world = new MockWorld();
+      const world = new TestWorld();
       entity.world = world;
       
       // Add a target entity in the path
@@ -341,7 +346,7 @@ describe('Wind Charge', function() {
         radius: 3
       });
       
-      const world = new MockWorld();
+      const world = new TestWorld();
       entity.world = world;
       
       // Add entities at different distances
@@ -375,7 +380,7 @@ describe('Wind Charge', function() {
         moveDistance: 2
       });
       
-      const world = new MockWorld();
+      const world = new TestWorld();
       entity.world = world;
       
       // Place movable blocks at different distances
@@ -417,7 +422,7 @@ describe('Wind Charge', function() {
         position: { x: 5, y: 5, z: 5 },
         direction: { x: 1, y: 0, z: 0 },
         velocity: 2,
-        world: new MockWorld() // Add a mock world
+        world: new TestWorld() // Add a mock world
       });
       
       // Set maximum lifetime to something small for testing

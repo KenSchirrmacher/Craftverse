@@ -2,34 +2,33 @@
 const assert = require('assert');
 const WindChargeItem = require('../items/windChargeItem');
 const WindChargeEntity = require('../entities/windChargeEntity');
+const World = require('../world/world');
+const Player = require('../entities/player');
 const { v4: uuidv4 } = require('uuid');
 
-// Mock world for testing
-class MockWorld {
+// Test world implementation
+class TestWorld extends World {
   constructor() {
-    this.blocks = {};
-    this.entities = {};
-    this.emitEntityUpdate = function(entity) {
-      // Mock implementation
-    };
-    this.removeEntity = function(id) {
-      delete this.entities[id];
-    };
+    super();
+    this.blocks = new Map();
+    this.entities = new Map();
+    this.blockStateUpdates = [];
+    this.particleEffects = [];
+    this.activatedBlocks = [];
   }
   
   getBlock(x, y, z) {
     const key = `${x},${y},${z}`;
-    return this.blocks[key] || { type: 'air' };
+    return this.blocks.get(key) || { type: 'air', isSolid: false };
   }
   
   setBlock(x, y, z, block) {
     const key = `${x},${y},${z}`;
-    this.blocks[key] = block;
+    this.blocks.set(key, block);
   }
   
   getEntitiesInRadius(position, radius) {
-    // Filter entities by distance
-    return Object.values(this.entities).filter(entity => {
+    return Array.from(this.entities.values()).filter(entity => {
       const dx = entity.position.x - position.x;
       const dy = entity.position.y - position.y;
       const dz = entity.position.z - position.z;
@@ -39,29 +38,48 @@ class MockWorld {
   }
   
   addEntity(entity) {
-    this.entities[entity.id] = entity;
-    entity.world = this; // Attach world to entity for bidirectional reference
+    this.entities.set(entity.id, entity);
+    entity.world = this;
   }
   
   removeEntity(id) {
-    delete this.entities[id];
+    this.entities.delete(id);
+  }
+
+  updateBlockState(x, y, z, state) {
+    this.blockStateUpdates.push({ x, y, z, state });
+  }
+
+  addParticleEffect(effect) {
+    this.particleEffects.push(effect);
+  }
+
+  activateBlock(x, y, z, type, data) {
+    this.activatedBlocks.push({ x, y, z, type, ...data });
+  }
+
+  reset() {
+    this.blockStateUpdates = [];
+    this.particleEffects = [];
+    this.activatedBlocks = [];
   }
 }
 
-// Mock player for testing
-class MockPlayer {
+// Test player implementation
+class TestPlayer extends Player {
   constructor(id, position) {
-    this.id = id;
-    this.position = position || { x: 0, y: 0, z: 0 };
-    this.rotation = { x: 0, y: 0, z: 0 };
-    this.health = 20;
-    this.maxHealth = 20;
-    this.dead = false;
+    super(id, position);
+    this.charging = {};
     this.cooldowns = {};
     this.gameMode = 'survival';
-    this.charging = {};
+    this.rotation = { x: 0, y: 0, z: 0 };
+    this.sentEvents = [];
   }
-  
+
+  sendEvent(event) {
+    this.sentEvents.push(event);
+  }
+
   getLookDirection() {
     return {
       x: -Math.sin(this.rotation.y) * Math.cos(this.rotation.x),
@@ -146,7 +164,7 @@ describe('Wind Charge', function() {
     
     it('should start charging when useStart is called', function() {
       const windCharge = new WindChargeItem();
-      const player = new MockPlayer('player1', { x: 10, y: 5, z: 10 });
+      const player = new TestPlayer('player1', { x: 10, y: 5, z: 10 });
       
       const result = windCharge.useStart(player, {});
       
@@ -158,7 +176,7 @@ describe('Wind Charge', function() {
     
     it('should update charging state with particles in useUpdate', function() {
       const windCharge = new WindChargeItem();
-      const player = new MockPlayer('player1', { x: 10, y: 5, z: 10 });
+      const player = new TestPlayer('player1', { x: 10, y: 5, z: 10 });
       
       // Start charging
       windCharge.useStart(player, {});
@@ -179,7 +197,7 @@ describe('Wind Charge', function() {
     
     it('should update charging level when time threshold reached', function() {
       const windCharge = new WindChargeItem();
-      const player = new MockPlayer('player1', { x: 10, y: 5, z: 10 });
+      const player = new TestPlayer('player1', { x: 10, y: 5, z: 10 });
       
       // Start charging
       windCharge.useStart(player, {});
@@ -213,7 +231,7 @@ describe('Wind Charge', function() {
     
     it('should create wind charge entity with proper charge level when used', function() {
       const windCharge = new WindChargeItem();
-      const player = new MockPlayer('player1', { x: 10, y: 5, z: 10 });
+      const player = new TestPlayer('player1', { x: 10, y: 5, z: 10 });
       const context = { itemStack: { count: 1 } };
       
       // Set player looking straight ahead
@@ -249,7 +267,7 @@ describe('Wind Charge', function() {
     
     it('should create wind charge entity with base charge level when used without charging', function() {
       const windCharge = new WindChargeItem();
-      const player = new MockPlayer('player1', { x: 10, y: 5, z: 10 });
+      const player = new TestPlayer('player1', { x: 10, y: 5, z: 10 });
       const context = { itemStack: { count: 1 } };
       
       // Set player looking straight ahead
@@ -273,7 +291,7 @@ describe('Wind Charge', function() {
     
     it('should not reduce item count in creative mode', function() {
       const windCharge = new WindChargeItem();
-      const player = new MockPlayer('player1');
+      const player = new TestPlayer('player1');
       player.gameMode = 'creative';
       const context = { itemStack: { count: 1 } };
       
@@ -284,7 +302,7 @@ describe('Wind Charge', function() {
     
     it('should respect cooldown time between uses', function() {
       const windCharge = new WindChargeItem();
-      const player = new MockPlayer('player1');
+      const player = new TestPlayer('player1');
       const context = { itemStack: { count: 2 } };
       
       // First use should succeed
@@ -414,7 +432,7 @@ describe('Wind Charge', function() {
     
     it('should explode on collision with blocks', function() {
       // Create a world with a solid block
-      const world = new MockWorld();
+      const world = new TestWorld();
       
       // Create a wind charge moving toward the block
       const entity = new WindChargeEntity('test_id', {
@@ -436,7 +454,7 @@ describe('Wind Charge', function() {
     
     it('should damage entities on direct hit', function() {
       // Create a world with a target entity
-      const world = new MockWorld();
+      const world = new TestWorld();
       const targetEntity = new MockEntity('target', { x: 6, y: 5, z: 5 });
       world.addEntity(targetEntity);
       
@@ -463,7 +481,7 @@ describe('Wind Charge', function() {
     
     it('should apply knockback to hit entities', function() {
       // Create a world with a target entity
-      const world = new MockWorld();
+      const world = new TestWorld();
       const targetEntity = new MockEntity('target', { x: 6, y: 5, z: 5 });
       targetEntity.health = 20; // Make it survive the hit
       world.addEntity(targetEntity);
@@ -490,7 +508,7 @@ describe('Wind Charge', function() {
     
     it('should affect entities in explosion radius with scaled effects', function() {
       // Create a world with entities at different distances
-      const world = new MockWorld();
+      const world = new TestWorld();
       
       // Entity right at the center
       const closeEntity = new MockEntity('close', { x: 5, y: 5, z: 5 });
@@ -565,7 +583,7 @@ describe('Wind Charge', function() {
     });
     
     it('should trigger chain reactions with nearby wind charges', function(done) {
-      const world = new MockWorld();
+      const world = new TestWorld();
       
       // Create first wind charge
       const windCharge1 = new WindChargeEntity('test_id1', {
@@ -619,7 +637,7 @@ describe('Wind Charge', function() {
     });
 
     it('should not trigger chain reactions with wind charges outside range', function(done) {
-      const world = new MockWorld();
+      const world = new TestWorld();
       
       // Create first wind charge
       const windCharge1 = new WindChargeEntity('test_id1', {

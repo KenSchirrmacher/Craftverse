@@ -312,11 +312,15 @@
   - [COMPLETED] Drops (breeze rods and wind charges)
   - [COMPLETED] Comprehensive tests
 - [COMPLETED] Wind Charge
-  - [COMPLETED] Item implementation
-  - [COMPLETED] Entity implementation when thrown
-  - [COMPLETED] Block-moving capabilities
-  - [COMPLETED] Entity-pushing mechanics
-  - [COMPLETED] Comprehensive tests
+  - [COMPLETED] Item implementation with proper properties and behavior
+  - [COMPLETED] Entity implementation with physics and collision
+  - [COMPLETED] Block moving capabilities
+  - [COMPLETED] Entity pushing mechanics
+  - [COMPLETED] Comprehensive tests with no mocks
+  - [COMPLETED] Integration with world system
+  - [COMPLETED] Particle effects and sound effects
+  - [COMPLETED] Chain reaction mechanics
+  - [COMPLETED] Block interaction system
 - [COMPLETED] Copper and Tuff variants
   - [COMPLETED] Copper Bulb
   - [COMPLETED] Copper Grate

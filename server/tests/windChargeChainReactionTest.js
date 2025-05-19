@@ -8,83 +8,87 @@ const WindChargeEntity = require('../entities/windChargeEntity');
 const WindChargeItem = require('../items/windChargeItem');
 const { v4: uuidv4 } = require('uuid');
 const assert = require('assert');
+const World = require('../world/world');
+const Player = require('../entities/player');
 
-class TestWorld {
+class TestWorld extends World {
   constructor() {
-    this.entities = new Map();
+    super();
     this.blocks = new Map();
-    this.entityEvents = [];
+    this.entities = new Map();
+    this.blockStateUpdates = [];
     this.particleEffects = [];
-    this.soundEffects = [];
-    this.entityUpdateCount = 0;
-    this.chainReactionCount = 0;
-    this.explodedEntities = [];
+    this.activatedBlocks = [];
   }
-
+  
+  getBlock(x, y, z) {
+    const key = `${x},${y},${z}`;
+    return this.blocks.get(key) || { type: 'air', isSolid: false };
+  }
+  
+  setBlock(x, y, z, block) {
+    const key = `${x},${y},${z}`;
+    this.blocks.set(key, block);
+  }
+  
+  getEntitiesInRadius(position, radius) {
+    return Array.from(this.entities.values()).filter(entity => {
+      const dx = entity.position.x - position.x;
+      const dy = entity.position.y - position.y;
+      const dz = entity.position.z - position.z;
+      const distance = Math.sqrt(dx * dx + dy * dy + dz * dz);
+      return distance <= radius;
+    });
+  }
+  
   addEntity(entity) {
     this.entities.set(entity.id, entity);
     entity.world = this;
-    return entity;
+  }
+  
+  removeEntity(id) {
+    this.entities.delete(id);
   }
 
-  removeEntity(entityId) {
-    this.entities.delete(entityId);
+  updateBlockState(x, y, z, state) {
+    this.blockStateUpdates.push({ x, y, z, state });
   }
 
-  getEntity(entityId) {
-    return this.entities.get(entityId);
+  addParticleEffect(effect) {
+    this.particleEffects.push(effect);
   }
 
-  getEntitiesInRadius(position, radius) {
-    const result = [];
-    this.entities.forEach(entity => {
-      const distance = this.calculateDistance(position, entity.position);
-      if (distance <= radius) {
-        result.push(entity);
-      }
-    });
-    return result;
-  }
-
-  calculateDistance(pos1, pos2) {
-    const dx = pos1.x - pos2.x;
-    const dy = pos1.y - pos2.y;
-    const dz = pos1.z - pos2.z;
-    return Math.sqrt(dx * dx + dy * dy + dz * dz);
-  }
-
-  emitEntityUpdate(data) {
-    this.entityEvents.push(data);
-    this.entityUpdateCount++;
-  }
-
-  addParticleEffect(effectData) {
-    this.particleEffects.push(effectData);
-  }
-
-  playSound(soundData) {
-    this.soundEffects.push(soundData);
-  }
-
-  setBlock(x, y, z, blockType) {
-    const key = `${x},${y},${z}`;
-    this.blocks.set(key, blockType);
-  }
-
-  getBlock(x, y, z) {
-    const key = `${x},${y},${z}`;
-    return this.blocks.get(key) || null;
+  activateBlock(x, y, z, type, data) {
+    this.activatedBlocks.push({ x, y, z, type, ...data });
   }
 
   reset() {
-    this.entities.clear();
-    this.blocks.clear();
-    this.entityEvents = [];
+    this.blockStateUpdates = [];
     this.particleEffects = [];
-    this.soundEffects = [];
-    this.entityUpdateCount = 0;
-    this.chainReactionCount = 0;
-    this.explodedEntities = [];
+    this.activatedBlocks = [];
+  }
+}
+
+class TestPlayer extends Player {
+  constructor(id, position) {
+    super(id, position);
+    this.charging = {};
+    this.cooldowns = {};
+    this.gameMode = 'survival';
+    this.rotation = { x: 0, y: 0, z: 0 };
+    this.sentEvents = [];
+  }
+
+  sendEvent(event) {
+    this.sentEvents.push(event);
+  }
+
+  getLookDirection() {
+    return {
+      x: -Math.sin(this.rotation.y) * Math.cos(this.rotation.x),
+      y: -Math.sin(this.rotation.x),
+      z: Math.cos(this.rotation.y) * Math.cos(this.rotation.x)
+    };
   }
 }
 
