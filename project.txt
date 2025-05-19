@@ -372,6 +372,11 @@
   - [COMPLETED] Crafting recipes for all variants
   - [COMPLETED] Stonecutter recipes for all variants
   - [COMPLETED] Comprehensive test coverage
+    - [COMPLETED] Unit tests for blocks
+    - [COMPLETED] Unit tests for crafting recipes
+    - [COMPLETED] Unit tests for stonecutter recipes
+    - [COMPLETED] Integration tests for crafting and stonecutter flow
+    - [COMPLETED] Integration tests for block placement and properties
 24. Fixed serialization and inheritance issues in Block class to ensure proper functionality
 25. Created comprehensive test suites for all copper and tuff variant blocks
 26. Integrated all new blocks with the BlockRegistry for proper game integration
