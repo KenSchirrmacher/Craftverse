@@ -394,6 +394,8 @@
     - [COMPLETED] Particle effects tests
     - [COMPLETED] State transition tests
     - [COMPLETED] Metadata persistence tests
+    - [COMPLETED] World generation integration tests
+    - [COMPLETED] Loot table and drops tests
 24. Fixed serialization and inheritance issues in Block class to ensure proper functionality
 25. Created comprehensive test suites for all copper and tuff variant blocks
 26. Integrated all new blocks with the BlockRegistry for proper game integration
