@@ -1,6 +1,6 @@
 const { World } = require('../world/World');
 const { ChunkManager } = require('../world/ChunkManager');
-const { BlockRegistry } = require('../registry/BlockRegistry');
+const { BlockRegistry } = require('../blocks/blockRegistry');
 const { EntityManager } = require('../entity/EntityManager');
 const { PhysicsEngine } = require('../physics/PhysicsEngine');
 

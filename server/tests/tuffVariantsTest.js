@@ -10,8 +10,8 @@ const {
   TuffBrickSlabBlock,
   TuffBrickStairsBlock,
   TuffBrickWallBlock
-} = require('../blocks/tuffVariants');
-const BlockRegistry = require('../registry/blockRegistry');
+} = require('../blocks/tuffVariantsBlocks');
+const BlockRegistry = require('../blocks/blockRegistry');
 const TestWorld = require('./testWorld');
 
 class TuffVariantsTest {

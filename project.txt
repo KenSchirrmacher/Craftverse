@@ -321,6 +321,74 @@
   - [COMPLETED] Copper Bulb
   - [COMPLETED] Copper Grate
   - [COMPLETED] Tuff variants (chiseled, bricks, etc.)
+    - [COMPLETED] Chiseled Tuff block
+    - [COMPLETED] Tuff Bricks block
+    - [COMPLETED] Tuff Brick Slab block
+    - [COMPLETED] Tuff Brick Stairs block
+    - [COMPLETED] Tuff Brick Wall block
+    - [COMPLETED] Crafting recipes for all variants
+    - [COMPLETED] Stonecutter recipes for all variants
+    - [COMPLETED] Comprehensive test coverage
+      - [COMPLETED] Unit tests for blocks
+      - [COMPLETED] Unit tests for recipes
+      - [COMPLETED] Integration tests for crafting and stonecutter flow
+      - [COMPLETED] Integration tests for block placement and properties
+      - [COMPLETED] Block interaction tests
+        - [COMPLETED] Redstone conduction
+        - [COMPLETED] Piston interaction
+        - [COMPLETED] Observer detection
+        - [COMPLETED] Wall connections
+        - [COMPLETED] Stair placement
+        - [COMPLETED] Slab placement
+      - [COMPLETED] State persistence tests
+      - [COMPLETED] State serialization tests
+      - [COMPLETED] State validation tests
+      - [COMPLETED] Block breaking tests
+      - [COMPLETED] Sound effects tests
+      - [COMPLETED] Light emission tests
+      - [COMPLETED] Fluid interaction tests
+      - [COMPLETED] Entity interaction tests
+      - [COMPLETED] Particle effects tests
+      - [COMPLETED] State transition tests
+      - [COMPLETED] Metadata persistence tests
+      - [COMPLETED] World generation integration tests
+      - [COMPLETED] Loot table and drops tests
+      - [COMPLETED] Physics and collision tests
+        - [COMPLETED] Collision box tests
+        - [COMPLETED] Entity collision tests
+        - [COMPLETED] Gravity effect tests
+        - [COMPLETED] Friction property tests
+        - [COMPLETED] Bounding box tests
+      - [COMPLETED] Networking and synchronization tests
+        - [COMPLETED] Block placement sync tests
+        - [COMPLETED] Block break sync tests
+        - [COMPLETED] State update sync tests
+        - [COMPLETED] Metadata sync tests
+        - [COMPLETED] Chunk sync tests
+      - [COMPLETED] Rendering and client-side effects tests
+        - [COMPLETED] Block rendering tests
+        - [COMPLETED] Texture mapping tests
+        - [COMPLETED] Shader effects tests
+        - [COMPLETED] Model variants tests
+        - [COMPLETED] Animation states tests
+      - [COMPLETED] Performance and optimization tests
+        - [COMPLETED] Block placement performance tests
+        - [COMPLETED] Chunk loading performance tests
+        - [COMPLETED] Block update performance tests
+        - [COMPLETED] Memory usage tests
+        - [COMPLETED] Rendering optimization tests
+      - [COMPLETED] Serialization and data persistence tests
+        - [COMPLETED] Block serialization tests
+        - [COMPLETED] State persistence tests
+        - [COMPLETED] Data migration tests
+        - [COMPLETED] Version compatibility tests
+        - [COMPLETED] Data compression tests
+      - [COMPLETED] Error handling and recovery tests
+        - [COMPLETED] Invalid state recovery tests
+        - [COMPLETED] Corrupted data handling tests
+        - [COMPLETED] Validation error tests
+        - [COMPLETED] Recovery mechanism tests
+        - [COMPLETED] Error propagation tests
 - [COMPLETED] Mace weapon
   - [COMPLETED] Basic weapon implementation
   - [COMPLETED] Heavy attack mechanics
