@@ -555,4 +555,16 @@ Updated to include natural generation of Ancient Plants in appropriate biomes.
 - server/data/loot_tables/trail_ruins/rare.json
   Description: Rare loot table for Trail Ruins
   Function: Defines rare items found in Trail Ruins
-  Called by: LootManager 
+  Called by: LootManager
+
+server/game/game.js
+- Main Game class that manages the overall game state
+- Handles player management, game settings, and world state
+- Called by: GameServer, World, Player
+- Dependencies: EventEmitter, World, Player
+
+server/tests/gameTest.js
+- Test suite for the Game class
+- Tests initialization, player management, game settings, etc.
+- Called by: Test runner
+- Dependencies: Game, World, Player 

@@ -1376,6 +1376,2173 @@ You MUST NOT create work arounds, or hacks to make the feature or service work. 
 - Ensured monuments generate underwater at appropriate depths
 - Implemented monument features like chambers, corridors, and spires
 - Added loot drops for Guardians (prismarine shards, crystals, fish)
+- [x] Mobs and AI
+  - [x] Passive mobs (animals)
+  - [x] Hostile mobs (monsters)
+  - [x] Neutral mobs
+  - [x] Mob spawning mechanics
+  - [x] Mob pathfinding
+  - [x] Mob behavior patterns
+  - [x] Mob interaction with players
+  - [x] Mob drops and loot tables
+- [x] Biomes
+  - [x] Biome types implementation
+  - [x] Biome-specific terrain
+  - [x] Biome borders and transitions
+  - [x] Biome vegetation and features
+  - [x] Temperature and rainfall systems
+  - [x] Biome-specific mob spawning
+- [x] Structures
+  - [x] Structure generation framework
+  - [x] Small structures (wells, boulder piles, fallen trees)
+  - [x] Medium structures (desert pyramids, ruins, witch huts)
+  - [x] Structure placement rules and spacing
+  - [x] Integration with terrain and biomes
+  - [x] Structure-specific features and decorations
+- [x] Weather System
+  - [x] Weather state management
+  - [x] Weather transitions
+  - [x] Lightning strike generation
+  - [x] Lightning rod integration
+  - [x] Weather effects on gameplay
+  - [x] Weather duration and timing
+  - [x] Weather event emission
+- [x] Enchanting system
+  - [x] Enchantment types and effects
+  - [x] Enchantment table functionality
+  - [x] Anvil combining mechanics
+  - [x] Enchantment application to items
+  - [x] Enchantment effect integration with combat
+  - [x] Experience system for enchanting
+- [x] Potions and brewing
+  - [x] PotionRegistry for managing potion types and effects
+  - [x] PotionRecipes for brewing recipes and transformations
+  - [x] BrewingStand block implementation
+  - [x] BrewingHandler for managing brewing process
+  - [x] PotionItem for potion usage and effects
+  - [x] ThrownPotion entity for splash and lingering potions
+  - [x] StatusEffectManager for applying and tracking potion effects
+  - [x] Integration with entity system for effect application
+- [x] Nether dimension
+  - [x] DimensionManager implementation for handling multiple dimensions
+  - [x] PortalManager for detecting and creating nether portals
+  - [x] NetherDimension class with specialized terrain generation
+  - [x] NetherPortalBlock implementation for handling portal mechanics
+  - [x] Nether-specific biomes (Nether Wastes, Soul Sand Valley, Crimson Forest, Warped Forest, Basalt Deltas)
+  - [x] Nether-specific blocks (netherrack, soul sand, basalt, etc.)
+  - [x] Nether coordinate scaling (8:1 ratio with Overworld)
+  - [x] Portal linking system between dimensions
+  - [x] Comprehensive test suite for verifying Nether functionality
+- [x] End dimension
+  - [x] EndDimension class with specialized terrain generation
+  - [x] EnderDragon class with boss fight AI mechanics
+  - [x] EndCrystal class for dragon healing and respawn mechanics
+  - [x] DragonFight manager for coordinating boss fight progression
+  - [x] End-specific blocks (end portal, end gateway, dragon egg, chorus plants)
+  - [x] EndIslandsBiome for outer islands generation
+  - [x] End portal and gateway teleportation
+  - [x] Chorus plant growth system
+  - [x] Dragon egg teleportation mechanics
+  - [x] End city placeholder structure generation
+  - [x] Comprehensive test suite for verifying End functionality
+- [x] Villages and trading
+  - [x] VillageGenerator class for procedural village generation
+  - [x] Building types with profession-specific workstations
+  - [x] VillagerNPC class with profession, level, and trading mechanics
+  - [x] ZombieVillager class with curing mechanics
+  - [x] VillageReputationManager for player-village reputation tracking
+  - [x] Trading UI with reputation discounts
+  - [x] Villager breeding and growth
+  - [x] Trade restocking mechanics
+  - [x] Integration with MobManager for handling interactions
+  - [x] Comprehensive test suite for village generation and trading
+- [x] Ocean monuments
+  - [x] Monument structure generation
+  - [x] Prismarine-based architecture
+  - [x] Guardian and Elder Guardian mob implementation
+  - [x] Monument-specific blocks and decorations
+  - [x] Structure spacing and placement rules
+  - [x] Underwater generation at appropriate depths
+  - [x] Chambers, corridors, and spires implementation
+  - [x] Guardian drops (prismarine shards, crystals, fish)
+- [x] Strongholds
+  - [x] Stronghold structure generation
+  - [x] End portal frame implementation
+  - [x] Silverfish mob implementation
+  - [x] Structure placement logic with proper distribution
+  - [x] Special rooms (library, portal room, stairs)
+  - [x] Interconnected room system
+  - [x] Global structure placement system
+  - [x] Underground placement with proper depth
+- [x] Mineshafts
+  - [x] Abandoned mineshaft generation
+  - [x] Tunnel systems with support beams
+  - [x] Rail placement and minecart chests
+  - [x] Cobweb and cave spider spawner placement
+  - [x] Proper underground distribution system
+  - [x] Special features (collapsed tunnels, intersections)
+  - [x] Global structure placement system
+  - [x] Decorative elements (torches, crafting tables)
+- [x] Dungeons
+  - [x] Underground dungeon generation
+  - [x] Mob spawner room creation
+  - [x] Loot chest placement
+  - [x] Cobblestone and mossy cobblestone structure
+  - [x] Integration with cave generation
+  - [x] Monster spawner with randomized mob types
+  - [x] Entrance tunnels connecting to caves
+  - [x] Decorative elements (cobwebs, torches)
+- [x] Temples
+  - [x] Desert temple generation with trap and treasure rooms
+  - [x] Jungle temple with traps (tripwire and redstone mechanisms)
+  - [x] Temple-specific block types and decorations
+  - [x] Biome-specific placement rules
+  - [x] Integration with world generation
+  - [x] Treasure chest loot tables
+  - [x] Comprehensive test suite for verifying temple generation
+- [x] Ocean ruins
+  - [x] Underwater structure generation
+  - [x] Small and large ruin variants
+  - [x] Biome-specific placement rules (ocean biomes)
+  - [x] Structure variants (stone and sandstone)
+  - [x] Degradation system for natural-looking ruins
+  - [x] Decorative elements (coral, seagrass)
+  - [x] Loot chest placement and loot tables
+  - [x] Mob spawning (drowned)
+  - [x] Comprehensive test suite for verifying ocean ruins generation
+- [x] Combat update
+  - [x] CombatManager class for managing combat mechanics
+  - [x] Attack cooldown system with damage scaling
+  - [x] Weapon-specific cooldown times
+  - [x] Shields for blocking attacks
+  - [x] Dual wielding with offhand slot
+  - [x] Shield mechanics (block, disable with axe, cooldowns)
+  - [x] Special arrows (tipped arrows with potion effects)
+  - [x] Integration with status effects system (haste, mining fatigue affecting cooldowns)
+  - [x] Socket event handlers for new combat interactions
+  - [x] Comprehensive test suite for verifying combat mechanics
+
+- [x] Nether update
+  - [x] New biomes (Soul Sand Valley, Warped Forest, Crimson Forest, Basalt Deltas)
+  - [x] New mob types (Piglins, Hoglins, Striders, Zoglins)
+  - [x] New block types (Ancient debris, Basalt, Blackstone variants, Nether gold ore)
+  - [x] Ancient debris and Netherite equipment
+  - [x] Ruined portals in Overworld and Nether
+  - [x] Soul fire and soul fire torches
+  - [x] Improved bartering system with Piglins
+  - [x] Comprehensive test suite for verifying Nether Update features
+
+- [x] Caves & Cliffs Update
+  - [x] Dripstone Caves biome
+  - [x] Pointed Dripstone block
+  - [x] Dripstone block
+  - [x] Lightning Rod block
+  - [x] Amethyst system
+    - [x] Amethyst Block
+    - [x] Amethyst Cluster
+    - [x] Budding Amethyst
+    - [x] Small/Medium/Large Amethyst Buds
+    - [x] Growth mechanics
+    - [x] Drops and loot tables
+    - [x] Comprehensive test suite
+
+##Reserved below for AI to create project updates.##
+
+## Project Updates ##
+### 2023-11-14: Redstone System Implementation Started ###
+- Added redstone dust that transmits power
+- Added redstone blocks as power sources (power level 15)
+- Added redstone lamps that light up when powered
+- Implemented power propagation algorithm using breadth-first search
+- Power decreases by 1 for each block it travels through
+
+### 2023-11-14: Redstone Torch Implementation ###
+- Created custom 3D model for redstone torches with a stick base and glowing top
+- Implemented power inversion logic - torch turns off when placed on a powered block
+- Added visual feedback (torch glows brightly when active, dimly when inactive)
+- Integrated with power propagation system
+- Torches act as power sources (power level 15) when active
+
+### 2023-11-14: Redstone Repeater Implementation ###
+- Created custom 3D model for redstone repeaters with base, input torch, output torch, and delay lever
+- Implemented directional placement based on player orientation
+- Added delay functionality (1-4 ticks) that can be changed by right-clicking
+- Repeaters maintain signal strength (restore to power level 15)
+- Added visual feedback (torches light up to show signal state)
+- Implemented proper I/O with directional input and output
+
+### 2023-11-14: Redstone Comparator Implementation ###
+- Created custom 3D model for redstone comparators with 4 torches (input, output, left, right) and mode lever
+- Implemented two operation modes - subtraction and comparison
+- Added mode toggling via right-click
+- In subtraction mode: output = input - side input (min 0)
+- In comparison mode: output = input if input ≥ side input, otherwise 0
+- Added visual feedback for signal states and power levels
+- Implemented directional placement based on player orientation
+
+### 2023-11-14: Redstone Logic Gates Implementation ###
+- NOT Gate: Single redstone torch (inverts input)
+- AND Gate: Multiple inputs feeding into a single output, positioned so all must be on
+- OR Gate: Multiple inputs connected to the same line
+- NAND Gate: AND gate with output connected to a NOT gate
+- NOR Gate: OR gate with output connected to a NOT gate
+- XOR Gate: Two inputs with a special configuration using torches and repeaters
+- XNOR Gate: XOR gate with output connected to a NOT gate
+- Created documentation on how to build each gate
+- Verified all gates function as expected with different input combinations
+- Added examples of using gates in combination for more complex circuits
+
+### 2023-11-14: Redstone Circuit Testing Implementation ###
+- Implemented testing functionality for redstone circuits
+- Created a test framework to validate circuit functionality
+- Added test cases for basic components (dust, torch, repeater, comparator)
+- Added test cases for all logic gates (NOT, AND, OR, NAND, NOR, XOR, XNOR)
+- Created complex circuit examples:
+  - 4-bit binary counter
+  - RS-NOR latch (memory cell)
+  - T flip-flop
+  - Clock circuit
+  - Random number generator
+- Verified all circuits work with expected inputs and outputs
+- Added documentation on how each circuit works
+- Optimized power propagation algorithm for large circuits
+- Improved visual feedback to help debugging complex circuits
+
+### 2023-11-15: Mob System Implementation Started ###
+- Created basic mob texture generation system using Node.js canvas library
+- Implemented pixel art style textures for passive mobs (sheep, cow, pig, chicken)
+- Implemented pixel art style textures for hostile mobs (zombie, skeleton, creeper)
+- Each mob texture is 64x64 pixels with distinct features and colors
+- Textures are generated programmatically and saved as PNG files
+- Textures will be loaded into the game using THREE.js TextureLoader
+- Next steps: Update the createMob function to use textured materials instead of solid colors
+
+### 2023-11-15: Complete Mob System Implementation ###
+- Created comprehensive base mob class (MobBase) with common functionality
+- Implemented passive mobs: Sheep, Cow, Chicken, Pig
+- Implemented neutral mobs: Wolf, Spider, Enderman
+- Implemented hostile mobs: Zombie, Skeleton, Creeper
+- Added advanced mob AI with state machine (idle, wander, follow, attack, flee)
+- Implemented mob spawning and despawning based on player distance
+- Added day/night cycle affecting mob behavior (e.g., spiders neutral in day, hostile at night)
+- Added mob drops and loot tables
+- Implemented special behaviors per mob type:
+  - Sheep: wool shearing and regrowth
+  - Wolf: taming, following owner, sitting
+  - Enderman: teleportation, staring mechanics
+  - Creeper: explosion mechanics
+  - Skeleton: ranged attacks
+- Added mob interactions with players
+- Created health system and damage mechanics
+- Integrated mob system with game server and client
+
+### 2023-11-16: Biome System Implementation ###
+- Created comprehensive BiomeManager class for managing biomes and transitions
+- Implemented various biome types including plains, forest, desert, mountains, and ocean
+- Added climate parameter system with temperature, precipitation, continentalness, erosion, and weirdness
+- Created smooth biome transitions with border blending
+- Added biome-specific terrain generation with appropriate block types
+- Implemented biome-specific vegetation and features
+- Created a flexible biome classification system with temperature and humidity categories
+- Connected biome system with mob spawning for biome-specific mob populations
+- Created WorldGenerator that uses the biome system for realistic terrain generation
+- Added proper height calculation, cave generation, and structure placement
+- Implemented features like trees, plants, and small structures appropriate to each biome
+
+### 2023-11-16: Biome-Specific Mob Spawning Implementation ###
+- Enhanced mob spawning system to consider biome type when spawning mobs
+- Created weighted spawn tables for each biome type (forest, desert, plains, etc.)
+- Implemented spawn control based on time of day, weather, and moon phase
+- Added biome-specific mob varieties (like husks in deserts)
+- Connected mob manager to biome manager for proper integration
+- Implemented proper mob groups with appropriate min/max counts per spawn
+- Enhanced wolves to be more common in forests, fewer animals in deserts
+- Added day/night cycle effects on hostile mob spawning
+- Added moon phase tracking to affect spawn rates of certain hostile mobs
+
+### 2023-11-16: Structure Generation System Implementation ###
+- Created comprehensive StructureGenerator class for generating world structures
+- Implemented various structure types:
+  - Small structures: desert wells, boulder piles, fallen trees
+  - Medium structures: desert pyramids, small ruins, witch huts
+  - Placeholders for large structures: villages, strongholds, mineshafts
+- Added structure placement rules with proper spacing between structures
+- Implemented structure tracking to prevent overlapping or too many structures
+- Created biome-specific structure generation with appropriate placement
+- Added detailed structure generation with proper block types and decorations
+- Integrated structure generation with the world generator and biome system
+- Added structure-specific features like treasure chests and mob spawns
+
+### 2023-11-17: Enchanting System Implementation ###
+- Created comprehensive enchantment system with all vanilla Minecraft enchantments
+- Implemented enchantment types with appropriate targets, levels, and rarity values
+- Created enchantment manager for applying enchantments and calculating effects
+- Implemented enchantment conflict rules (e.g., protection types, fortune/silk touch)
+- Added enchantment table with bookshelf power mechanics
+- Created enchantment options generation algorithm similar to vanilla behavior
+- Added anvil mechanics for combining enchanted items
+- Implemented enchantment display with proper Roman numerals
+- Integrated enchantment effects with combat system:
+  - Damage enchantments (Sharpness, Smite, Bane of Arthropods)
+  - Knockback and Fire Aspect
+  - Projectile enchantments (Power, Punch, Flame)
+  - Protection enchantments with damage reduction
+- Added mining effects (Fortune, Silk Touch, Efficiency)
+- Implemented durability effects (Unbreaking)
+- Added Mending mechanics for repairing items with XP
+- Created experience collection and level system
+
+### 2023-11-19: Potions and Brewing System Implementation ###
+- Created comprehensive brewing system with brewing stands, potions, and effects
+- Implemented BrewingStand block with slots for ingredients, bottles, and fuel
+- Added BrewingHandler to manage brewing process with proper timing and state management
+- Created PotionRegistry to define all potion types with effects, colors, and duration
+- Implemented PotionRecipes system for defining valid brewing transformations
+- Added potion application logic for drinking, splashing, and lingering effects
+- Integrated with StatusEffectManager for applying effects to entities
+- Implemented ThrownPotion entity for splash and lingering potions
+- Created client-server communication for brewing stands and potion effects
+- Added all vanilla Minecraft potion types and effects
+- Implemented special potion mechanics (duration, amplification, corruption)
+- Added visual feedback for active potion effects
+
+### 2023-11-21: Nether Dimension Implementation ###
+- Created DimensionManager class to handle multiple dimensions and transitions
+- Implemented PortalManager for detecting valid nether portal frames and activating them
+- Added NetherDimension class with specialized terrain generation
+- Created NetherPortalBlock for handling portal mechanics and entity transitions
+- Implemented 5 nether-specific biomes:
+  - Nether Wastes: Standard nether terrain with netherrack and lava pools
+  - Soul Sand Valley: Soul sand/soil terrain with basalt pillars and fossils
+  - Crimson Forest: Red fungal forest with crimson nylium and huge fungi
+  - Warped Forest: Blue/teal fungal forest with warped nylium and fungi
+  - Basalt Deltas: Rocky terrain with basalt columns, blackstone, and magma
+- Added nether-specific blocks and their properties
+- Implemented 8:1 coordinate scaling between Overworld and Nether
+- Created portal linking system for finding or creating connected portals
+- Added comprehensive test suite (NetherTest) with tests for:
+  - Nether biome registration and properties
+  - NetherDimension generation functionality
+  - Portal creation and validation
+  - Coordinate scaling between dimensions
+  - Dimension transitions for entities
+- Integrated Nether with the server and client systems
+
+### 2023-11-23: End Dimension Implementation ###
+- Created comprehensive End dimension system with specialized terrain generation:
+  - Main central island with obsidian pillars and exit portal
+  - Outer islands with chorus plants and end cities
+  - End gateway portals for teleportation between regions
+- Implemented Ender Dragon boss fight mechanics:
+  - EnderDragon class with AI phases (circling, diving, charging, strafing, perching, death)
+  - EndCrystal class for healing and respawn mechanics
+  - DragonFight manager for coordinating boss fight progression
+  - Dragon phases and attacks (breath, collision damage)
+  - End crystal healing connection system
+  - XP rewards on dragon defeat
+- Added End-specific blocks:
+  - EndPortalBlock for traveling between Overworld and End
+  - EndPortalFrameBlock with Eye of Ender mechanics
+  - EndGatewayBlock for teleporting between islands
+  - DragonEggBlock with teleportation mechanic when interacted with
+  - ChorusPlantBlock with growth mechanics
+- Created the EndIslandsBiome for outer islands:
+  - Procedural island generation using noise algorithms
+  - Chorus plant generation and growth system
+  - End city placeholder structure generation
+  - Biome-specific mob spawning (Endermen, Shulkers)
+- Integrated with DimensionManager for seamless player teleportation
+- Created comprehensive test suite (endDimensionTest.js) to verify:
+  - End terrain generation and portal mechanics
+  - Dragon behavior and fight progression
+  - End crystal mechanics
+  - Teleportation systems
+  - Block mechanics specific to the End
+  - Biome and structure generation
+  - Chorus plant growth
+
+### 2023-11-25: Villages and Trading Implementation ###
+- Created comprehensive VillageGenerator class for procedural village generation
+  - Implemented biome-specific village styles (plains, desert, taiga, savanna)
+  - Created weighted building selection system for village size and composition
+  - Built placement algorithms for structures with proper spacing and roads
+  - Implemented building generation with appropriate workstations for villager professions
+- Developed VillagerNPC class with profession, level, and trading mechanics
+  - Implemented trading system with experience and leveling
+  - Created trade generation based on profession and level
+  - Added daily schedule for villagers (work/sleep cycles)
+  - Implemented growth for baby villagers
+- Added ZombieVillager class with curing mechanics
+  - Implemented zombie conversion from villagers
+  - Created curing process requiring weakness potions and golden apples
+  - Added reputation boost for players who cure zombie villagers
+- Created VillageReputationManager for tracking player-village relationships
+  - Implemented reputation events (trading, helping villagers, attacking villagers)
+  - Added reputation decay over time
+  - Implemented effects based on reputation (trade discounts, gifts, golem hostility)
+- Enhanced villager trading UI
+  - Added reputation display with discount information
+  - Implemented visual indication of discounted trades
+  - Created comprehensive trade detail display
+  - Added trade uses and restock indicators
+- Added breeding mechanics for villagers
+  - Implemented willingness system based on food
+  - Created breeding cooldown and growth timers
+  - Added baby villager spawning logic
+- Created comprehensive test suite
+  - Implemented tests for village generation
+  - Created tests for trading mechanics
+  - Added tests for reputation system
+  - Included tests for zombie villager curing
+- Integrated system with existing server components
+  - Enhanced MobManager to handle villager interactions
+  - Added socket events for trading and reputation
+  - Updated world generator to place villages in appropriate biomes
+
+### 2023-11-25: Ocean Monument Implementation ###
+- Added Ocean Monument structure generation with prismarine-based architecture
+- Implemented Guardian and Elder Guardian hostile mobs with unique mechanics
+  - Guardians with laser beam attack
+  - Elder Guardians with mining fatigue effect
+- Added monument-specific blocks:
+  - Prismarine
+  - Prismarine Bricks
+  - Dark Prismarine
+  - Sea Lantern (with light emission)
+- Integrated monuments with deep ocean biome generation
+- Configured proper structure spacing and placement rules
+- Added comprehensive test suite to verify monument generation
+- Ensured monuments generate underwater at appropriate depths
+- Implemented monument features like chambers, corridors, and spires
+- Added loot drops for Guardians (prismarine shards, crystals, fish)
+- [x] Mobs and AI
+  - [x] Passive mobs (animals)
+  - [x] Hostile mobs (monsters)
+  - [x] Neutral mobs
+  - [x] Mob spawning mechanics
+  - [x] Mob pathfinding
+  - [x] Mob behavior patterns
+  - [x] Mob interaction with players
+  - [x] Mob drops and loot tables
+- [x] Biomes
+  - [x] Biome types implementation
+  - [x] Biome-specific terrain
+  - [x] Biome borders and transitions
+  - [x] Biome vegetation and features
+  - [x] Temperature and rainfall systems
+  - [x] Biome-specific mob spawning
+- [x] Structures
+  - [x] Structure generation framework
+  - [x] Small structures (wells, boulder piles, fallen trees)
+  - [x] Medium structures (desert pyramids, ruins, witch huts)
+  - [x] Structure placement rules and spacing
+  - [x] Integration with terrain and biomes
+  - [x] Structure-specific features and decorations
+- [x] Weather System
+  - [x] Weather state management
+  - [x] Weather transitions
+  - [x] Lightning strike generation
+  - [x] Lightning rod integration
+  - [x] Weather effects on gameplay
+  - [x] Weather duration and timing
+  - [x] Weather event emission
+- [x] Enchanting system
+  - [x] Enchantment types and effects
+  - [x] Enchantment table functionality
+  - [x] Anvil combining mechanics
+  - [x] Enchantment application to items
+  - [x] Enchantment effect integration with combat
+  - [x] Experience system for enchanting
+- [x] Potions and brewing
+  - [x] PotionRegistry for managing potion types and effects
+  - [x] PotionRecipes for brewing recipes and transformations
+  - [x] BrewingStand block implementation
+  - [x] BrewingHandler for managing brewing process
+  - [x] PotionItem for potion usage and effects
+  - [x] ThrownPotion entity for splash and lingering potions
+  - [x] StatusEffectManager for applying and tracking potion effects
+  - [x] Integration with entity system for effect application
+- [x] Nether dimension
+  - [x] DimensionManager implementation for handling multiple dimensions
+  - [x] PortalManager for detecting and creating nether portals
+  - [x] NetherDimension class with specialized terrain generation
+  - [x] NetherPortalBlock implementation for handling portal mechanics
+  - [x] Nether-specific biomes (Nether Wastes, Soul Sand Valley, Crimson Forest, Warped Forest, Basalt Deltas)
+  - [x] Nether-specific blocks (netherrack, soul sand, basalt, etc.)
+  - [x] Nether coordinate scaling (8:1 ratio with Overworld)
+  - [x] Portal linking system between dimensions
+  - [x] Comprehensive test suite for verifying Nether functionality
+- [x] End dimension
+  - [x] EndDimension class with specialized terrain generation
+  - [x] EnderDragon class with boss fight AI mechanics
+  - [x] EndCrystal class for dragon healing and respawn mechanics
+  - [x] DragonFight manager for coordinating boss fight progression
+  - [x] End-specific blocks (end portal, end gateway, dragon egg, chorus plants)
+  - [x] EndIslandsBiome for outer islands generation
+  - [x] End portal and gateway teleportation
+  - [x] Chorus plant growth system
+  - [x] Dragon egg teleportation mechanics
+  - [x] End city placeholder structure generation
+  - [x] Comprehensive test suite for verifying End functionality
+- [x] Villages and trading
+  - [x] VillageGenerator class for procedural village generation
+  - [x] Building types with profession-specific workstations
+  - [x] VillagerNPC class with profession, level, and trading mechanics
+  - [x] ZombieVillager class with curing mechanics
+  - [x] VillageReputationManager for player-village reputation tracking
+  - [x] Trading UI with reputation discounts
+  - [x] Villager breeding and growth
+  - [x] Trade restocking mechanics
+  - [x] Integration with MobManager for handling interactions
+  - [x] Comprehensive test suite for village generation and trading
+- [x] Ocean monuments
+  - [x] Monument structure generation
+  - [x] Prismarine-based architecture
+  - [x] Guardian and Elder Guardian mob implementation
+  - [x] Monument-specific blocks and decorations
+  - [x] Structure spacing and placement rules
+  - [x] Underwater generation at appropriate depths
+  - [x] Chambers, corridors, and spires implementation
+  - [x] Guardian drops (prismarine shards, crystals, fish)
+- [x] Strongholds
+  - [x] Stronghold structure generation
+  - [x] End portal frame implementation
+  - [x] Silverfish mob implementation
+  - [x] Structure placement logic with proper distribution
+  - [x] Special rooms (library, portal room, stairs)
+  - [x] Interconnected room system
+  - [x] Global structure placement system
+  - [x] Underground placement with proper depth
+- [x] Mineshafts
+  - [x] Abandoned mineshaft generation
+  - [x] Tunnel systems with support beams
+  - [x] Rail placement and minecart chests
+  - [x] Cobweb and cave spider spawner placement
+  - [x] Proper underground distribution system
+  - [x] Special features (collapsed tunnels, intersections)
+  - [x] Global structure placement system
+  - [x] Decorative elements (torches, crafting tables)
+- [x] Dungeons
+  - [x] Underground dungeon generation
+  - [x] Mob spawner room creation
+  - [x] Loot chest placement
+  - [x] Cobblestone and mossy cobblestone structure
+  - [x] Integration with cave generation
+  - [x] Monster spawner with randomized mob types
+  - [x] Entrance tunnels connecting to caves
+  - [x] Decorative elements (cobwebs, torches)
+- [x] Temples
+  - [x] Desert temple generation with trap and treasure rooms
+  - [x] Jungle temple with traps (tripwire and redstone mechanisms)
+  - [x] Temple-specific block types and decorations
+  - [x] Biome-specific placement rules
+  - [x] Integration with world generation
+  - [x] Treasure chest loot tables
+  - [x] Comprehensive test suite for verifying temple generation
+- [x] Ocean ruins
+  - [x] Underwater structure generation
+  - [x] Small and large ruin variants
+  - [x] Biome-specific placement rules (ocean biomes)
+  - [x] Structure variants (stone and sandstone)
+  - [x] Degradation system for natural-looking ruins
+  - [x] Decorative elements (coral, seagrass)
+  - [x] Loot chest placement and loot tables
+  - [x] Mob spawning (drowned)
+  - [x] Comprehensive test suite for verifying ocean ruins generation
+- [x] Combat update
+  - [x] CombatManager class for managing combat mechanics
+  - [x] Attack cooldown system with damage scaling
+  - [x] Weapon-specific cooldown times
+  - [x] Shields for blocking attacks
+  - [x] Dual wielding with offhand slot
+  - [x] Shield mechanics (block, disable with axe, cooldowns)
+  - [x] Special arrows (tipped arrows with potion effects)
+  - [x] Integration with status effects system (haste, mining fatigue affecting cooldowns)
+  - [x] Socket event handlers for new combat interactions
+  - [x] Comprehensive test suite for verifying combat mechanics
+
+- [x] Nether update
+  - [x] New biomes (Soul Sand Valley, Warped Forest, Crimson Forest, Basalt Deltas)
+  - [x] New mob types (Piglins, Hoglins, Striders, Zoglins)
+  - [x] New block types (Ancient debris, Basalt, Blackstone variants, Nether gold ore)
+  - [x] Ancient debris and Netherite equipment
+  - [x] Ruined portals in Overworld and Nether
+  - [x] Soul fire and soul fire torches
+  - [x] Improved bartering system with Piglins
+  - [x] Comprehensive test suite for verifying Nether Update features
+
+- [x] Caves & Cliffs Update
+  - [x] Dripstone Caves biome
+  - [x] Pointed Dripstone block
+  - [x] Dripstone block
+  - [x] Lightning Rod block
+  - [x] Amethyst system
+    - [x] Amethyst Block
+    - [x] Amethyst Cluster
+    - [x] Budding Amethyst
+    - [x] Small/Medium/Large Amethyst Buds
+    - [x] Growth mechanics
+    - [x] Drops and loot tables
+    - [x] Comprehensive test suite
+
+##Reserved below for AI to create project updates.##
+
+## Project Updates ##
+### 2023-11-14: Redstone System Implementation Started ###
+- Added redstone dust that transmits power
+- Added redstone blocks as power sources (power level 15)
+- Added redstone lamps that light up when powered
+- Implemented power propagation algorithm using breadth-first search
+- Power decreases by 1 for each block it travels through
+
+### 2023-11-14: Redstone Torch Implementation ###
+- Created custom 3D model for redstone torches with a stick base and glowing top
+- Implemented power inversion logic - torch turns off when placed on a powered block
+- Added visual feedback (torch glows brightly when active, dimly when inactive)
+- Integrated with power propagation system
+- Torches act as power sources (power level 15) when active
+
+### 2023-11-14: Redstone Repeater Implementation ###
+- Created custom 3D model for redstone repeaters with base, input torch, output torch, and delay lever
+- Implemented directional placement based on player orientation
+- Added delay functionality (1-4 ticks) that can be changed by right-clicking
+- Repeaters maintain signal strength (restore to power level 15)
+- Added visual feedback (torches light up to show signal state)
+- Implemented proper I/O with directional input and output
+
+### 2023-11-14: Redstone Comparator Implementation ###
+- Created custom 3D model for redstone comparators with 4 torches (input, output, left, right) and mode lever
+- Implemented two operation modes - subtraction and comparison
+- Added mode toggling via right-click
+- In subtraction mode: output = input - side input (min 0)
+- In comparison mode: output = input if input ≥ side input, otherwise 0
+- Added visual feedback for signal states and power levels
+- Implemented directional placement based on player orientation
+
+### 2023-11-14: Redstone Logic Gates Implementation ###
+- NOT Gate: Single redstone torch (inverts input)
+- AND Gate: Multiple inputs feeding into a single output, positioned so all must be on
+- OR Gate: Multiple inputs connected to the same line
+- NAND Gate: AND gate with output connected to a NOT gate
+- NOR Gate: OR gate with output connected to a NOT gate
+- XOR Gate: Two inputs with a special configuration using torches and repeaters
+- XNOR Gate: XOR gate with output connected to a NOT gate
+- Created documentation on how to build each gate
+- Verified all gates function as expected with different input combinations
+- Added examples of using gates in combination for more complex circuits
+
+### 2023-11-14: Redstone Circuit Testing Implementation ###
+- Implemented testing functionality for redstone circuits
+- Created a test framework to validate circuit functionality
+- Added test cases for basic components (dust, torch, repeater, comparator)
+- Added test cases for all logic gates (NOT, AND, OR, NAND, NOR, XOR, XNOR)
+- Created complex circuit examples:
+  - 4-bit binary counter
+  - RS-NOR latch (memory cell)
+  - T flip-flop
+  - Clock circuit
+  - Random number generator
+- Verified all circuits work with expected inputs and outputs
+- Added documentation on how each circuit works
+- Optimized power propagation algorithm for large circuits
+- Improved visual feedback to help debugging complex circuits
+
+### 2023-11-15: Mob System Implementation Started ###
+- Created basic mob texture generation system using Node.js canvas library
+- Implemented pixel art style textures for passive mobs (sheep, cow, pig, chicken)
+- Implemented pixel art style textures for hostile mobs (zombie, skeleton, creeper)
+- Each mob texture is 64x64 pixels with distinct features and colors
+- Textures are generated programmatically and saved as PNG files
+- Textures will be loaded into the game using THREE.js TextureLoader
+- Next steps: Update the createMob function to use textured materials instead of solid colors
+
+### 2023-11-15: Complete Mob System Implementation ###
+- Created comprehensive base mob class (MobBase) with common functionality
+- Implemented passive mobs: Sheep, Cow, Chicken, Pig
+- Implemented neutral mobs: Wolf, Spider, Enderman
+- Implemented hostile mobs: Zombie, Skeleton, Creeper
+- Added advanced mob AI with state machine (idle, wander, follow, attack, flee)
+- Implemented mob spawning and despawning based on player distance
+- Added day/night cycle affecting mob behavior (e.g., spiders neutral in day, hostile at night)
+- Added mob drops and loot tables
+- Implemented special behaviors per mob type:
+  - Sheep: wool shearing and regrowth
+  - Wolf: taming, following owner, sitting
+  - Enderman: teleportation, staring mechanics
+  - Creeper: explosion mechanics
+  - Skeleton: ranged attacks
+- Added mob interactions with players
+- Created health system and damage mechanics
+- Integrated mob system with game server and client
+
+### 2023-11-16: Biome System Implementation ###
+- Created comprehensive BiomeManager class for managing biomes and transitions
+- Implemented various biome types including plains, forest, desert, mountains, and ocean
+- Added climate parameter system with temperature, precipitation, continentalness, erosion, and weirdness
+- Created smooth biome transitions with border blending
+- Added biome-specific terrain generation with appropriate block types
+- Implemented biome-specific vegetation and features
+- Created a flexible biome classification system with temperature and humidity categories
+- Connected biome system with mob spawning for biome-specific mob populations
+- Created WorldGenerator that uses the biome system for realistic terrain generation
+- Added proper height calculation, cave generation, and structure placement
+- Implemented features like trees, plants, and small structures appropriate to each biome
+
+### 2023-11-16: Biome-Specific Mob Spawning Implementation ###
+- Enhanced mob spawning system to consider biome type when spawning mobs
+- Created weighted spawn tables for each biome type (forest, desert, plains, etc.)
+- Implemented spawn control based on time of day, weather, and moon phase
+- Added biome-specific mob varieties (like husks in deserts)
+- Connected mob manager to biome manager for proper integration
+- Implemented proper mob groups with appropriate min/max counts per spawn
+- Enhanced wolves to be more common in forests, fewer animals in deserts
+- Added day/night cycle effects on hostile mob spawning
+- Added moon phase tracking to affect spawn rates of certain hostile mobs
+
+### 2023-11-16: Structure Generation System Implementation ###
+- Created comprehensive StructureGenerator class for generating world structures
+- Implemented various structure types:
+  - Small structures: desert wells, boulder piles, fallen trees
+  - Medium structures: desert pyramids, small ruins, witch huts
+  - Placeholders for large structures: villages, strongholds, mineshafts
+- Added structure placement rules with proper spacing between structures
+- Implemented structure tracking to prevent overlapping or too many structures
+- Created biome-specific structure generation with appropriate placement
+- Added detailed structure generation with proper block types and decorations
+- Integrated structure generation with the world generator and biome system
+- Added structure-specific features like treasure chests and mob spawns
+
+### 2023-11-17: Enchanting System Implementation ###
+- Created comprehensive enchantment system with all vanilla Minecraft enchantments
+- Implemented enchantment types with appropriate targets, levels, and rarity values
+- Created enchantment manager for applying enchantments and calculating effects
+- Implemented enchantment conflict rules (e.g., protection types, fortune/silk touch)
+- Added enchantment table with bookshelf power mechanics
+- Created enchantment options generation algorithm similar to vanilla behavior
+- Added anvil mechanics for combining enchanted items
+- Implemented enchantment display with proper Roman numerals
+- Integrated enchantment effects with combat system:
+  - Damage enchantments (Sharpness, Smite, Bane of Arthropods)
+  - Knockback and Fire Aspect
+  - Projectile enchantments (Power, Punch, Flame)
+  - Protection enchantments with damage reduction
+- Added mining effects (Fortune, Silk Touch, Efficiency)
+- Implemented durability effects (Unbreaking)
+- Added Mending mechanics for repairing items with XP
+- Created experience collection and level system
+
+### 2023-11-19: Potions and Brewing System Implementation ###
+- Created comprehensive brewing system with brewing stands, potions, and effects
+- Implemented BrewingStand block with slots for ingredients, bottles, and fuel
+- Added BrewingHandler to manage brewing process with proper timing and state management
+- Created PotionRegistry to define all potion types with effects, colors, and duration
+- Implemented PotionRecipes system for defining valid brewing transformations
+- Added potion application logic for drinking, splashing, and lingering effects
+- Integrated with StatusEffectManager for applying effects to entities
+- Implemented ThrownPotion entity for splash and lingering potions
+- Created client-server communication for brewing stands and potion effects
+- Added all vanilla Minecraft potion types and effects
+- Implemented special potion mechanics (duration, amplification, corruption)
+- Added visual feedback for active potion effects
+
+### 2023-11-21: Nether Dimension Implementation ###
+- Created DimensionManager class to handle multiple dimensions and transitions
+- Implemented PortalManager for detecting valid nether portal frames and activating them
+- Added NetherDimension class with specialized terrain generation
+- Created NetherPortalBlock for handling portal mechanics and entity transitions
+- Implemented 5 nether-specific biomes:
+  - Nether Wastes: Standard nether terrain with netherrack and lava pools
+  - Soul Sand Valley: Soul sand/soil terrain with basalt pillars and fossils
+  - Crimson Forest: Red fungal forest with crimson nylium and huge fungi
+  - Warped Forest: Blue/teal fungal forest with warped nylium and fungi
+  - Basalt Deltas: Rocky terrain with basalt columns, blackstone, and magma
+- Added nether-specific blocks and their properties
+- Implemented 8:1 coordinate scaling between Overworld and Nether
+- Created portal linking system for finding or creating connected portals
+- Added comprehensive test suite (NetherTest) with tests for:
+  - Nether biome registration and properties
+  - NetherDimension generation functionality
+  - Portal creation and validation
+  - Coordinate scaling between dimensions
+  - Dimension transitions for entities
+Continue working on the game utilizing this and the sub links at this URL to continue development and add all the features and services that are in the repository. Use this file to keep track of each feature and service addition. Essentially you can use this as a one-to-one guide for project management, as you complete them update this file.
+
+https://minecraft.fandom.com/wiki/Java_Edition_version_history
+
+To ensure that the features and services are added are correct you must create a test case to test the feature. Then you will test it, and if it passes you will update this file to reflect the completion of the feature or service.
+You MUST NOT create work arounds, or hacks to make the feature or service work. You must add the feature or service in the correct way, by definition the correct way is fully developing the feature to be robust and useful.
+
+## Reserved for project updates DO NOT MODIFY ANYTHING ABOVE THIS LINE#
+
+## Project Tracking ##
+
+### Current Features Implemented ###
+1. Basic block placement and breaking
+2. Simple terrain generation
+3. Basic player movement
+4. Inventory system
+5. Game modes (Survival, Creative, Adventure)
+6. Multiplayer support
+7. Chat system
+8. Basic crafting system
+9. Day/night cycle
+10. Weather system
+11. Block textures
+12. Player physics
+13. Jump mechanics
+14. Sprinting
+15. Collision detection
+16. Redstone system
+17. Mobs and AI
+18. Biomes
+19. Structures
+20. Enchanting system
+21. Potions and brewing
+22. Nether dimension
+23. End dimension
+24. Villages and trading
+25. Ocean monuments
+26. Strongholds
+27. Mineshafts 
+28. Dungeons
+29. Temples
+30. Ocean ruins
+31. Combat update
+
+### Features to Implement (In Order) ###
+1. ~~Strongholds~~
+2. ~~Mineshafts~~
+3. ~~Dungeons~~
+4. ~~Temples~~
+5. ~~Ocean ruins~~
+6. ~~Combat update~~
+7. ~~Nether update~~
+8. ~~Caves & Cliffs update~~
+9. Implement 1.21 (Tricky Trials) update features
+   - [x] Crafter block
+   - [ ] Wind Charge
+   - [ ] Mace weapons
+   - [ ] Trial Chambers
+   - [ ] Copper Blocks related features
+   - [ ] Tuff variants
+
+- [x] Mobs and AI
+  - [x] Passive mobs (animals)
+  - [x] Hostile mobs (monsters)
+  - [x] Neutral mobs
+  - [x] Mob spawning mechanics
+  - [x] Mob pathfinding
+  - [x] Mob behavior patterns
+  - [x] Mob interaction with players
+  - [x] Mob drops and loot tables
+- [x] Biomes
+  - [x] Biome types implementation
+  - [x] Biome-specific terrain
+  - [x] Biome borders and transitions
+  - [x] Biome vegetation and features
+  - [x] Temperature and rainfall systems
+  - [x] Biome-specific mob spawning
+- [x] Structures
+  - [x] Structure generation framework
+  - [x] Small structures (wells, boulder piles, fallen trees)
+  - [x] Medium structures (desert pyramids, ruins, witch huts)
+  - [x] Structure placement rules and spacing
+  - [x] Integration with terrain and biomes
+  - [x] Structure-specific features and decorations
+- [x] Weather System
+  - [x] Weather state management
+  - [x] Weather transitions
+  - [x] Lightning strike generation
+  - [x] Lightning rod integration
+  - [x] Weather effects on gameplay
+  - [x] Weather duration and timing
+  - [x] Weather event emission
+- [x] Enchanting system
+  - [x] Enchantment types and effects
+  - [x] Enchantment table functionality
+  - [x] Anvil combining mechanics
+  - [x] Enchantment application to items
+  - [x] Enchantment effect integration with combat
+  - [x] Experience system for enchanting
+- [x] Potions and brewing
+  - [x] PotionRegistry for managing potion types and effects
+  - [x] PotionRecipes for brewing recipes and transformations
+  - [x] BrewingStand block implementation
+  - [x] BrewingHandler for managing brewing process
+  - [x] PotionItem for potion usage and effects
+  - [x] ThrownPotion entity for splash and lingering potions
+  - [x] StatusEffectManager for applying and tracking potion effects
+  - [x] Integration with entity system for effect application
+- [x] Nether dimension
+  - [x] DimensionManager implementation for handling multiple dimensions
+  - [x] PortalManager for detecting and creating nether portals
+  - [x] NetherDimension class with specialized terrain generation
+  - [x] NetherPortalBlock implementation for handling portal mechanics
+  - [x] Nether-specific biomes (Nether Wastes, Soul Sand Valley, Crimson Forest, Warped Forest, Basalt Deltas)
+  - [x] Nether-specific blocks (netherrack, soul sand, basalt, etc.)
+  - [x] Nether coordinate scaling (8:1 ratio with Overworld)
+  - [x] Portal linking system between dimensions
+  - [x] Comprehensive test suite for verifying Nether functionality
+- [x] End dimension
+  - [x] EndDimension class with specialized terrain generation
+  - [x] EnderDragon class with boss fight AI mechanics
+  - [x] EndCrystal class for dragon healing and respawn mechanics
+  - [x] DragonFight manager for coordinating boss fight progression
+  - [x] End-specific blocks (end portal, end gateway, dragon egg, chorus plants)
+  - [x] EndIslandsBiome for outer islands generation
+  - [x] End portal and gateway teleportation
+  - [x] Chorus plant growth system
+  - [x] Dragon egg teleportation mechanics
+  - [x] End city placeholder structure generation
+  - [x] Comprehensive test suite for verifying End functionality
+- [x] Villages and trading
+  - [x] VillageGenerator class for procedural village generation
+  - [x] Building types with profession-specific workstations
+  - [x] VillagerNPC class with profession, level, and trading mechanics
+  - [x] ZombieVillager class with curing mechanics
+  - [x] VillageReputationManager for player-village reputation tracking
+  - [x] Trading UI with reputation discounts
+  - [x] Villager breeding and growth
+  - [x] Trade restocking mechanics
+  - [x] Integration with MobManager for handling interactions
+  - [x] Comprehensive test suite for village generation and trading
+- [x] Ocean monuments
+  - [x] Monument structure generation
+  - [x] Prismarine-based architecture
+  - [x] Guardian and Elder Guardian mob implementation
+  - [x] Monument-specific blocks and decorations
+  - [x] Structure spacing and placement rules
+  - [x] Underwater generation at appropriate depths
+  - [x] Chambers, corridors, and spires implementation
+  - [x] Guardian drops (prismarine shards, crystals, fish)
+- [x] Strongholds
+  - [x] Stronghold structure generation
+  - [x] End portal frame implementation
+  - [x] Silverfish mob implementation
+  - [x] Structure placement logic with proper distribution
+  - [x] Special rooms (library, portal room, stairs)
+  - [x] Interconnected room system
+  - [x] Global structure placement system
+  - [x] Underground placement with proper depth
+- [x] Mineshafts
+  - [x] Abandoned mineshaft generation
+  - [x] Tunnel systems with support beams
+  - [x] Rail placement and minecart chests
+  - [x] Cobweb and cave spider spawner placement
+  - [x] Proper underground distribution system
+  - [x] Special features (collapsed tunnels, intersections)
+  - [x] Global structure placement system
+  - [x] Decorative elements (torches, crafting tables)
+- [x] Dungeons
+  - [x] Underground dungeon generation
+  - [x] Mob spawner room creation
+  - [x] Loot chest placement
+  - [x] Cobblestone and mossy cobblestone structure
+  - [x] Integration with cave generation
+  - [x] Monster spawner with randomized mob types
+  - [x] Entrance tunnels connecting to caves
+  - [x] Decorative elements (cobwebs, torches)
+- [x] Temples
+  - [x] Desert temple generation with trap and treasure rooms
+  - [x] Jungle temple with traps (tripwire and redstone mechanisms)
+  - [x] Temple-specific block types and decorations
+  - [x] Biome-specific placement rules
+  - [x] Integration with world generation
+  - [x] Treasure chest loot tables
+  - [x] Comprehensive test suite for verifying temple generation
+- [x] Ocean ruins
+  - [x] Underwater structure generation
+  - [x] Small and large ruin variants
+  - [x] Biome-specific placement rules (ocean biomes)
+  - [x] Structure variants (stone and sandstone)
+  - [x] Degradation system for natural-looking ruins
+  - [x] Decorative elements (coral, seagrass)
+  - [x] Loot chest placement and loot tables
+  - [x] Mob spawning (drowned)
+  - [x] Comprehensive test suite for verifying ocean ruins generation
+- [x] Combat update
+  - [x] CombatManager class for managing combat mechanics
+  - [x] Attack cooldown system with damage scaling
+  - [x] Weapon-specific cooldown times
+  - [x] Shields for blocking attacks
+  - [x] Dual wielding with offhand slot
+  - [x] Shield mechanics (block, disable with axe, cooldowns)
+  - [x] Special arrows (tipped arrows with potion effects)
+  - [x] Integration with status effects system (haste, mining fatigue affecting cooldowns)
+  - [x] Socket event handlers for new combat interactions
+  - [x] Comprehensive test suite for verifying combat mechanics
+
+- [x] Nether update
+  - [x] New biomes (Soul Sand Valley, Warped Forest, Crimson Forest, Basalt Deltas)
+  - [x] New mob types (Piglins, Hoglins, Striders, Zoglins)
+  - [x] New block types (Ancient debris, Basalt, Blackstone variants, Nether gold ore)
+  - [x] Ancient debris and Netherite equipment
+  - [x] Ruined portals in Overworld and Nether
+  - [x] Soul fire and soul fire torches
+  - [x] Improved bartering system with Piglins
+  - [x] Comprehensive test suite for verifying Nether Update features
+
+- [x] Caves & Cliffs Update
+  - [x] Dripstone Caves biome
+  - [x] Pointed Dripstone block
+  - [x] Dripstone block
+  - [x] Lightning Rod block
+  - [x] Amethyst system
+    - [x] Amethyst Block
+    - [x] Amethyst Cluster
+    - [x] Budding Amethyst
+    - [x] Small/Medium/Large Amethyst Buds
+    - [x] Growth mechanics
+    - [x] Drops and loot tables
+    - [x] Comprehensive test suite
+
+##Reserved below for AI to create project updates.##
+
+## Project Updates ##
+### 2023-11-14: Redstone System Implementation Started ###
+- Added redstone dust that transmits power
+- Added redstone blocks as power sources (power level 15)
+- Added redstone lamps that light up when powered
+- Implemented power propagation algorithm using breadth-first search
+- Power decreases by 1 for each block it travels through
+
+### 2023-11-14: Redstone Torch Implementation ###
+- Created custom 3D model for redstone torches with a stick base and glowing top
+- Implemented power inversion logic - torch turns off when placed on a powered block
+- Added visual feedback (torch glows brightly when active, dimly when inactive)
+- Integrated with power propagation system
+- Torches act as power sources (power level 15) when active
+
+### 2023-11-14: Redstone Repeater Implementation ###
+- Created custom 3D model for redstone repeaters with base, input torch, output torch, and delay lever
+- Implemented directional placement based on player orientation
+- Added delay functionality (1-4 ticks) that can be changed by right-clicking
+- Repeaters maintain signal strength (restore to power level 15)
+- Added visual feedback (torches light up to show signal state)
+- Implemented proper I/O with directional input and output
+
+### 2023-11-14: Redstone Comparator Implementation ###
+- Created custom 3D model for redstone comparators with 4 torches (input, output, left, right) and mode lever
+- Implemented two operation modes - subtraction and comparison
+- Added mode toggling via right-click
+- In subtraction mode: output = input - side input (min 0)
+- In comparison mode: output = input if input ≥ side input, otherwise 0
+- Added visual feedback for signal states and power levels
+- Implemented directional placement based on player orientation
+
+### 2023-11-14: Redstone Logic Gates Implementation ###
+- NOT Gate: Single redstone torch (inverts input)
+- AND Gate: Multiple inputs feeding into a single output, positioned so all must be on
+- OR Gate: Multiple inputs connected to the same line
+- NAND Gate: AND gate with output connected to a NOT gate
+- NOR Gate: OR gate with output connected to a NOT gate
+- XOR Gate: Two inputs with a special configuration using torches and repeaters
+- XNOR Gate: XOR gate with output connected to a NOT gate
+- Created documentation on how to build each gate
+- Verified all gates function as expected with different input combinations
+- Added examples of using gates in combination for more complex circuits
+
+### 2023-11-14: Redstone Circuit Testing Implementation ###
+- Implemented testing functionality for redstone circuits
+- Created a test framework to validate circuit functionality
+- Added test cases for basic components (dust, torch, repeater, comparator)
+- Added test cases for all logic gates (NOT, AND, OR, NAND, NOR, XOR, XNOR)
+- Created complex circuit examples:
+  - 4-bit binary counter
+  - RS-NOR latch (memory cell)
+  - T flip-flop
+  - Clock circuit
+  - Random number generator
+- Verified all circuits work with expected inputs and outputs
+- Added documentation on how each circuit works
+- Optimized power propagation algorithm for large circuits
+- Improved visual feedback to help debugging complex circuits
+
+### 2023-11-15: Mob System Implementation Started ###
+- Created basic mob texture generation system using Node.js canvas library
+- Implemented pixel art style textures for passive mobs (sheep, cow, pig, chicken)
+- Implemented pixel art style textures for hostile mobs (zombie, skeleton, creeper)
+- Each mob texture is 64x64 pixels with distinct features and colors
+- Textures are generated programmatically and saved as PNG files
+- Textures will be loaded into the game using THREE.js TextureLoader
+- Next steps: Update the createMob function to use textured materials instead of solid colors
+
+### 2023-11-15: Complete Mob System Implementation ###
+- Created comprehensive base mob class (MobBase) with common functionality
+- Implemented passive mobs: Sheep, Cow, Chicken, Pig
+- Implemented neutral mobs: Wolf, Spider, Enderman
+- Implemented hostile mobs: Zombie, Skeleton, Creeper
+- Added advanced mob AI with state machine (idle, wander, follow, attack, flee)
+- Implemented mob spawning and despawning based on player distance
+- Added day/night cycle affecting mob behavior (e.g., spiders neutral in day, hostile at night)
+- Added mob drops and loot tables
+- Implemented special behaviors per mob type:
+  - Sheep: wool shearing and regrowth
+  - Wolf: taming, following owner, sitting
+  - Enderman: teleportation, staring mechanics
+  - Creeper: explosion mechanics
+  - Skeleton: ranged attacks
+- Added mob interactions with players
+- Created health system and damage mechanics
+- Integrated mob system with game server and client
+
+### 2023-11-16: Biome System Implementation ###
+- Created comprehensive BiomeManager class for managing biomes and transitions
+- Implemented various biome types including plains, forest, desert, mountains, and ocean
+- Added climate parameter system with temperature, precipitation, continentalness, erosion, and weirdness
+- Created smooth biome transitions with border blending
+- Added biome-specific terrain generation with appropriate block types
+- Implemented biome-specific vegetation and features
+- Created a flexible biome classification system with temperature and humidity categories
+- Connected biome system with mob spawning for biome-specific mob populations
+- Created WorldGenerator that uses the biome system for realistic terrain generation
+- Added proper height calculation, cave generation, and structure placement
+- Implemented features like trees, plants, and small structures appropriate to each biome
+
+### 2023-11-16: Biome-Specific Mob Spawning Implementation ###
+- Enhanced mob spawning system to consider biome type when spawning mobs
+- Created weighted spawn tables for each biome type (forest, desert, plains, etc.)
+- Implemented spawn control based on time of day, weather, and moon phase
+- Added biome-specific mob varieties (like husks in deserts)
+- Connected mob manager to biome manager for proper integration
+- Implemented proper mob groups with appropriate min/max counts per spawn
+- Enhanced wolves to be more common in forests, fewer animals in deserts
+- Added day/night cycle effects on hostile mob spawning
+- Added moon phase tracking to affect spawn rates of certain hostile mobs
+
+### 2023-11-16: Structure Generation System Implementation ###
+- Created comprehensive StructureGenerator class for generating world structures
+- Implemented various structure types:
+  - Small structures: desert wells, boulder piles, fallen trees
+  - Medium structures: desert pyramids, small ruins, witch huts
+  - Placeholders for large structures: villages, strongholds, mineshafts
+- Added structure placement rules with proper spacing between structures
+- Implemented structure tracking to prevent overlapping or too many structures
+- Created biome-specific structure generation with appropriate placement
+- Added detailed structure generation with proper block types and decorations
+- Integrated structure generation with the world generator and biome system
+- Added structure-specific features like treasure chests and mob spawns
+
+### 2023-11-17: Enchanting System Implementation ###
+- Created comprehensive enchantment system with all vanilla Minecraft enchantments
+- Implemented enchantment types with appropriate targets, levels, and rarity values
+- Created enchantment manager for applying enchantments and calculating effects
+- Implemented enchantment conflict rules (e.g., protection types, fortune/silk touch)
+- Added enchantment table with bookshelf power mechanics
+- Created enchantment options generation algorithm similar to vanilla behavior
+- Added anvil mechanics for combining enchanted items
+- Implemented enchantment display with proper Roman numerals
+- Integrated enchantment effects with combat system:
+  - Damage enchantments (Sharpness, Smite, Bane of Arthropods)
+  - Knockback and Fire Aspect
+  - Projectile enchantments (Power, Punch, Flame)
+  - Protection enchantments with damage reduction
+- Added mining effects (Fortune, Silk Touch, Efficiency)
+- Implemented durability effects (Unbreaking)
+- Added Mending mechanics for repairing items with XP
+- Created experience collection and level system
+
+### 2023-11-19: Potions and Brewing System Implementation ###
+- Created comprehensive brewing system with brewing stands, potions, and effects
+- Implemented BrewingStand block with slots for ingredients, bottles, and fuel
+- Added BrewingHandler to manage brewing process with proper timing and state management
+- Created PotionRegistry to define all potion types with effects, colors, and duration
+- Implemented PotionRecipes system for defining valid brewing transformations
+- Added potion application logic for drinking, splashing, and lingering effects
+- Integrated with StatusEffectManager for applying effects to entities
+- Implemented ThrownPotion entity for splash and lingering potions
+- Created client-server communication for brewing stands and potion effects
+- Added all vanilla Minecraft potion types and effects
+- Implemented special potion mechanics (duration, amplification, corruption)
+- Added visual feedback for active potion effects
+
+### 2023-11-21: Nether Dimension Implementation ###
+- Created DimensionManager class to handle multiple dimensions and transitions
+- Implemented PortalManager for detecting valid nether portal frames and activating them
+- Added NetherDimension class with specialized terrain generation
+- Created NetherPortalBlock for handling portal mechanics and entity transitions
+- Implemented 5 nether-specific biomes:
+  - Nether Wastes: Standard nether terrain with netherrack and lava pools
+  - Soul Sand Valley: Soul sand/soil terrain with basalt pillars and fossils
+  - Crimson Forest: Red fungal forest with crimson nylium and huge fungi
+  - Warped Forest: Blue/teal fungal forest with warped nylium and fungi
+  - Basalt Deltas: Rocky terrain with basalt columns, blackstone, and magma
+- Added nether-specific blocks and their properties
+- Implemented 8:1 coordinate scaling between Overworld and Nether
+- Created portal linking system for finding or creating connected portals
+- Added comprehensive test suite (NetherTest) with tests for:
+  - Nether biome registration and properties
+  - NetherDimension generation functionality
+  - Portal creation and validation
+  - Coordinate scaling between dimensions
+  - Dimension transitions for entities
+- Integrated Nether with the server and client systems
+
+### 2023-11-23: End Dimension Implementation ###
+- Created comprehensive End dimension system with specialized terrain generation:
+  - Main central island with obsidian pillars and exit portal
+  - Outer islands with chorus plants and end cities
+  - End gateway portals for teleportation between regions
+- Implemented Ender Dragon boss fight mechanics:
+  - EnderDragon class with AI phases (circling, diving, charging, strafing, perching, death)
+  - EndCrystal class for healing and respawn mechanics
+  - DragonFight manager for coordinating boss fight progression
+  - Dragon phases and attacks (breath, collision damage)
+  - End crystal healing connection system
+  - XP rewards on dragon defeat
+- Added End-specific blocks:
+  - EndPortalBlock for traveling between Overworld and End
+  - EndPortalFrameBlock with Eye of Ender mechanics
+  - EndGatewayBlock for teleporting between islands
+  - DragonEggBlock with teleportation mechanic when interacted with
+  - ChorusPlantBlock with growth mechanics
+- Created the EndIslandsBiome for outer islands:
+  - Procedural island generation using noise algorithms
+  - Chorus plant generation and growth system
+  - End city placeholder structure generation
+  - Biome-specific mob spawning (Endermen, Shulkers)
+- Integrated with DimensionManager for seamless player teleportation
+- Created comprehensive test suite (endDimensionTest.js) to verify:
+  - End terrain generation and portal mechanics
+  - Dragon behavior and fight progression
+  - End crystal mechanics
+  - Teleportation systems
+  - Block mechanics specific to the End
+  - Biome and structure generation
+  - Chorus plant growth
+
+### 2023-11-25: Villages and Trading Implementation ###
+- Created comprehensive VillageGenerator class for procedural village generation
+  - Implemented biome-specific village styles (plains, desert, taiga, savanna)
+  - Created weighted building selection system for village size and composition
+  - Built placement algorithms for structures with proper spacing and roads
+  - Implemented building generation with appropriate workstations for villager professions
+- Developed VillagerNPC class with profession, level, and trading mechanics
+  - Implemented trading system with experience and leveling
+  - Created trade generation based on profession and level
+  - Added daily schedule for villagers (work/sleep cycles)
+  - Implemented growth for baby villagers
+- Added ZombieVillager class with curing mechanics
+  - Implemented zombie conversion from villagers
+  - Created curing process requiring weakness potions and golden apples
+  - Added reputation boost for players who cure zombie villagers
+- Created VillageReputationManager for tracking player-village relationships
+  - Implemented reputation events (trading, helping villagers, attacking villagers)
+  - Added reputation decay over time
+  - Implemented effects based on reputation (trade discounts, gifts, golem hostility)
+- Enhanced villager trading UI
+  - Added reputation display with discount information
+  - Implemented visual indication of discounted trades
+  - Created comprehensive trade detail display
+  - Added trade uses and restock indicators
+- Added breeding mechanics for villagers
+  - Implemented willingness system based on food
+  - Created breeding cooldown and growth timers
+  - Added baby villager spawning logic
+- Created comprehensive test suite
+  - Implemented tests for village generation
+  - Created tests for trading mechanics
+  - Added tests for reputation system
+  - Included tests for zombie villager curing
+- Integrated system with existing server components
+  - Enhanced MobManager to handle villager interactions
+  - Added socket events for trading and reputation
+  - Updated world generator to place villages in appropriate biomes
+
+### 2023-11-25: Ocean Monument Implementation ###
+- Added Ocean Monument structure generation with prismarine-based architecture
+- Implemented Guardian and Elder Guardian hostile mobs with unique mechanics
+  - Guardians with laser beam attack
+  - Elder Guardians with mining fatigue effect
+- Added monument-specific blocks:
+  - Prismarine
+  - Prismarine Bricks
+  - Dark Prismarine
+  - Sea Lantern (with light emission)
+- Integrated monuments with deep ocean biome generation
+- Configured proper structure spacing and placement rules
+- Added comprehensive test suite to verify monument generation
+- Ensured monuments generate underwater at appropriate depths
+- Implemented monument features like chambers, corridors, and spires
+- Added loot drops for Guardians (prismarine shards, crystals, fish)
+- [x] Mobs and AI
+  - [x] Passive mobs (animals)
+  - [x] Hostile mobs (monsters)
+  - [x] Neutral mobs
+  - [x] Mob spawning mechanics
+  - [x] Mob pathfinding
+  - [x] Mob behavior patterns
+  - [x] Mob interaction with players
+  - [x] Mob drops and loot tables
+- [x] Biomes
+  - [x] Biome types implementation
+  - [x] Biome-specific terrain
+  - [x] Biome borders and transitions
+  - [x] Biome vegetation and features
+  - [x] Temperature and rainfall systems
+  - [x] Biome-specific mob spawning
+- [x] Structures
+  - [x] Structure generation framework
+  - [x] Small structures (wells, boulder piles, fallen trees)
+  - [x] Medium structures (desert pyramids, ruins, witch huts)
+  - [x] Structure placement rules and spacing
+  - [x] Integration with terrain and biomes
+  - [x] Structure-specific features and decorations
+- [x] Weather System
+  - [x] Weather state management
+  - [x] Weather transitions
+  - [x] Lightning strike generation
+  - [x] Lightning rod integration
+  - [x] Weather effects on gameplay
+  - [x] Weather duration and timing
+  - [x] Weather event emission
+- [x] Enchanting system
+  - [x] Enchantment types and effects
+  - [x] Enchantment table functionality
+  - [x] Anvil combining mechanics
+  - [x] Enchantment application to items
+  - [x] Enchantment effect integration with combat
+  - [x] Experience system for enchanting
+- [x] Potions and brewing
+  - [x] PotionRegistry for managing potion types and effects
+  - [x] PotionRecipes for brewing recipes and transformations
+  - [x] BrewingStand block implementation
+  - [x] BrewingHandler for managing brewing process
+  - [x] PotionItem for potion usage and effects
+  - [x] ThrownPotion entity for splash and lingering potions
+  - [x] StatusEffectManager for applying and tracking potion effects
+  - [x] Integration with entity system for effect application
+- [x] Nether dimension
+  - [x] DimensionManager implementation for handling multiple dimensions
+  - [x] PortalManager for detecting and creating nether portals
+  - [x] NetherDimension class with specialized terrain generation
+  - [x] NetherPortalBlock implementation for handling portal mechanics
+  - [x] Nether-specific biomes (Nether Wastes, Soul Sand Valley, Crimson Forest, Warped Forest, Basalt Deltas)
+  - [x] Nether-specific blocks (netherrack, soul sand, basalt, etc.)
+  - [x] Nether coordinate scaling (8:1 ratio with Overworld)
+  - [x] Portal linking system between dimensions
+  - [x] Comprehensive test suite for verifying Nether functionality
+- [x] End dimension
+  - [x] EndDimension class with specialized terrain generation
+  - [x] EnderDragon class with boss fight AI mechanics
+  - [x] EndCrystal class for dragon healing and respawn mechanics
+  - [x] DragonFight manager for coordinating boss fight progression
+  - [x] End-specific blocks (end portal, end gateway, dragon egg, chorus plants)
+  - [x] EndIslandsBiome for outer islands generation
+  - [x] End portal and gateway teleportation
+  - [x] Chorus plant growth system
+  - [x] Dragon egg teleportation mechanics
+  - [x] End city placeholder structure generation
+  - [x] Comprehensive test suite for verifying End functionality
+- [x] Villages and trading
+  - [x] VillageGenerator class for procedural village generation
+  - [x] Building types with profession-specific workstations
+  - [x] VillagerNPC class with profession, level, and trading mechanics
+  - [x] ZombieVillager class with curing mechanics
+  - [x] VillageReputationManager for player-village reputation tracking
+  - [x] Trading UI with reputation discounts
+  - [x] Villager breeding and growth
+  - [x] Trade restocking mechanics
+  - [x] Integration with MobManager for handling interactions
+  - [x] Comprehensive test suite for village generation and trading
+- [x] Ocean monuments
+  - [x] Monument structure generation
+  - [x] Prismarine-based architecture
+  - [x] Guardian and Elder Guardian mob implementation
+  - [x] Monument-specific blocks and decorations
+  - [x] Structure spacing and placement rules
+  - [x] Underwater generation at appropriate depths
+  - [x] Chambers, corridors, and spires implementation
+  - [x] Guardian drops (prismarine shards, crystals, fish)
+- [x] Strongholds
+  - [x] Stronghold structure generation
+  - [x] End portal frame implementation
+  - [x] Silverfish mob implementation
+  - [x] Structure placement logic with proper distribution
+  - [x] Special rooms (library, portal room, stairs)
+  - [x] Interconnected room system
+  - [x] Global structure placement system
+  - [x] Underground placement with proper depth
+- [x] Mineshafts
+  - [x] Abandoned mineshaft generation
+  - [x] Tunnel systems with support beams
+  - [x] Rail placement and minecart chests
+  - [x] Cobweb and cave spider spawner placement
+  - [x] Proper underground distribution system
+  - [x] Special features (collapsed tunnels, intersections)
+  - [x] Global structure placement system
+  - [x] Decorative elements (torches, crafting tables)
+- [x] Dungeons
+  - [x] Underground dungeon generation
+  - [x] Mob spawner room creation
+  - [x] Loot chest placement
+  - [x] Cobblestone and mossy cobblestone structure
+  - [x] Integration with cave generation
+  - [x] Monster spawner with randomized mob types
+  - [x] Entrance tunnels connecting to caves
+  - [x] Decorative elements (cobwebs, torches)
+- [x] Temples
+  - [x] Desert temple generation with trap and treasure rooms
+  - [x] Jungle temple with traps (tripwire and redstone mechanisms)
+  - [x] Temple-specific block types and decorations
+  - [x] Biome-specific placement rules
+  - [x] Integration with world generation
+  - [x] Treasure chest loot tables
+  - [x] Comprehensive test suite for verifying temple generation
+- [x] Ocean ruins
+  - [x] Underwater structure generation
+  - [x] Small and large ruin variants
+  - [x] Biome-specific placement rules (ocean biomes)
+  - [x] Structure variants (stone and sandstone)
+  - [x] Degradation system for natural-looking ruins
+  - [x] Decorative elements (coral, seagrass)
+  - [x] Loot chest placement and loot tables
+  - [x] Mob spawning (drowned)
+  - [x] Comprehensive test suite for verifying ocean ruins generation
+- [x] Combat update
+  - [x] CombatManager class for managing combat mechanics
+  - [x] Attack cooldown system with damage scaling
+  - [x] Weapon-specific cooldown times
+  - [x] Shields for blocking attacks
+  - [x] Dual wielding with offhand slot
+  - [x] Shield mechanics (block, disable with axe, cooldowns)
+  - [x] Special arrows (tipped arrows with potion effects)
+  - [x] Integration with status effects system (haste, mining fatigue affecting cooldowns)
+  - [x] Socket event handlers for new combat interactions
+  - [x] Comprehensive test suite for verifying combat mechanics
+
+- [x] Nether update
+  - [x] New biomes (Soul Sand Valley, Warped Forest, Crimson Forest, Basalt Deltas)
+  - [x] New mob types (Piglins, Hoglins, Striders, Zoglins)
+  - [x] New block types (Ancient debris, Basalt, Blackstone variants, Nether gold ore)
+  - [x] Ancient debris and Netherite equipment
+  - [x] Ruined portals in Overworld and Nether
+  - [x] Soul fire and soul fire torches
+  - [x] Improved bartering system with Piglins
+  - [x] Comprehensive test suite for verifying Nether Update features
+
+- [x] Caves & Cliffs Update
+  - [x] Dripstone Caves biome
+  - [x] Pointed Dripstone block
+  - [x] Dripstone block
+  - [x] Lightning Rod block
+  - [x] Amethyst system
+    - [x] Amethyst Block
+    - [x] Amethyst Cluster
+    - [x] Budding Amethyst
+    - [x] Small/Medium/Large Amethyst Buds
+    - [x] Growth mechanics
+    - [x] Drops and loot tables
+    - [x] Comprehensive test suite
+
+##Reserved below for AI to create project updates.##
+
+## Project Updates ##
+### 2023-11-14: Redstone System Implementation Started ###
+- Added redstone dust that transmits power
+- Added redstone blocks as power sources (power level 15)
+- Added redstone lamps that light up when powered
+- Implemented power propagation algorithm using breadth-first search
+- Power decreases by 1 for each block it travels through
+
+### 2023-11-14: Redstone Torch Implementation ###
+- Created custom 3D model for redstone torches with a stick base and glowing top
+- Implemented power inversion logic - torch turns off when placed on a powered block
+- Added visual feedback (torch glows brightly when active, dimly when inactive)
+- Integrated with power propagation system
+- Torches act as power sources (power level 15) when active
+
+### 2023-11-14: Redstone Repeater Implementation ###
+- Created custom 3D model for redstone repeaters with base, input torch, output torch, and delay lever
+- Implemented directional placement based on player orientation
+- Added delay functionality (1-4 ticks) that can be changed by right-clicking
+- Repeaters maintain signal strength (restore to power level 15)
+- Added visual feedback (torches light up to show signal state)
+- Implemented proper I/O with directional input and output
+
+### 2023-11-14: Redstone Comparator Implementation ###
+- Created custom 3D model for redstone comparators with 4 torches (input, output, left, right) and mode lever
+- Implemented two operation modes - subtraction and comparison
+- Added mode toggling via right-click
+- In subtraction mode: output = input - side input (min 0)
+- In comparison mode: output = input if input ≥ side input, otherwise 0
+- Added visual feedback for signal states and power levels
+- Implemented directional placement based on player orientation
+
+### 2023-11-14: Redstone Logic Gates Implementation ###
+- NOT Gate: Single redstone torch (inverts input)
+- AND Gate: Multiple inputs feeding into a single output, positioned so all must be on
+- OR Gate: Multiple inputs connected to the same line
+- NAND Gate: AND gate with output connected to a NOT gate
+- NOR Gate: OR gate with output connected to a NOT gate
+- XOR Gate: Two inputs with a special configuration using torches and repeaters
+- XNOR Gate: XOR gate with output connected to a NOT gate
+- Created documentation on how to build each gate
+- Verified all gates function as expected with different input combinations
+- Added examples of using gates in combination for more complex circuits
+
+### 2023-11-14: Redstone Circuit Testing Implementation ###
+- Implemented testing functionality for redstone circuits
+- Created a test framework to validate circuit functionality
+- Added test cases for basic components (dust, torch, repeater, comparator)
+- Added test cases for all logic gates (NOT, AND, OR, NAND, NOR, XOR, XNOR)
+- Created complex circuit examples:
+  - 4-bit binary counter
+  - RS-NOR latch (memory cell)
+  - T flip-flop
+  - Clock circuit
+  - Random number generator
+- Verified all circuits work with expected inputs and outputs
+- Added documentation on how each circuit works
+- Optimized power propagation algorithm for large circuits
+- Improved visual feedback to help debugging complex circuits
+
+### 2023-11-15: Mob System Implementation Started ###
+- Created basic mob texture generation system using Node.js canvas library
+- Implemented pixel art style textures for passive mobs (sheep, cow, pig, chicken)
+- Implemented pixel art style textures for hostile mobs (zombie, skeleton, creeper)
+- Each mob texture is 64x64 pixels with distinct features and colors
+- Textures are generated programmatically and saved as PNG files
+- Textures will be loaded into the game using THREE.js TextureLoader
+- Next steps: Update the createMob function to use textured materials instead of solid colors
+
+### 2023-11-15: Complete Mob System Implementation ###
+- Created comprehensive base mob class (MobBase) with common functionality
+- Implemented passive mobs: Sheep, Cow, Chicken, Pig
+- Implemented neutral mobs: Wolf, Spider, Enderman
+- Implemented hostile mobs: Zombie, Skeleton, Creeper
+- Added advanced mob AI with state machine (idle, wander, follow, attack, flee)
+- Implemented mob spawning and despawning based on player distance
+- Added day/night cycle affecting mob behavior (e.g., spiders neutral in day, hostile at night)
+- Added mob drops and loot tables
+- Implemented special behaviors per mob type:
+  - Sheep: wool shearing and regrowth
+  - Wolf: taming, following owner, sitting
+  - Enderman: teleportation, staring mechanics
+  - Creeper: explosion mechanics
+  - Skeleton: ranged attacks
+- Added mob interactions with players
+- Created health system and damage mechanics
+- Integrated mob system with game server and client
+
+### 2023-11-16: Biome System Implementation ###
+- Created comprehensive BiomeManager class for managing biomes and transitions
+- Implemented various biome types including plains, forest, desert, mountains, and ocean
+- Added climate parameter system with temperature, precipitation, continentalness, erosion, and weirdness
+- Created smooth biome transitions with border blending
+- Added biome-specific terrain generation with appropriate block types
+- Implemented biome-specific vegetation and features
+- Created a flexible biome classification system with temperature and humidity categories
+- Connected biome system with mob spawning for biome-specific mob populations
+- Created WorldGenerator that uses the biome system for realistic terrain generation
+- Added proper height calculation, cave generation, and structure placement
+- Implemented features like trees, plants, and small structures appropriate to each biome
+
+### 2023-11-16: Biome-Specific Mob Spawning Implementation ###
+- Enhanced mob spawning system to consider biome type when spawning mobs
+- Created weighted spawn tables for each biome type (forest, desert, plains, etc.)
+- Implemented spawn control based on time of day, weather, and moon phase
+- Added biome-specific mob varieties (like husks in deserts)
+- Connected mob manager to biome manager for proper integration
+- Implemented proper mob groups with appropriate min/max counts per spawn
+- Enhanced wolves to be more common in forests, fewer animals in deserts
+- Added day/night cycle effects on hostile mob spawning
+- Added moon phase tracking to affect spawn rates of certain hostile mobs
+
+### 2023-11-16: Structure Generation System Implementation ###
+- Created comprehensive StructureGenerator class for generating world structures
+- Implemented various structure types:
+  - Small structures: desert wells, boulder piles, fallen trees
+  - Medium structures: desert pyramids, small ruins, witch huts
+  - Placeholders for large structures: villages, strongholds, mineshafts
+- Added structure placement rules with proper spacing between structures
+- Implemented structure tracking to prevent overlapping or too many structures
+- Created biome-specific structure generation with appropriate placement
+- Added detailed structure generation with proper block types and decorations
+- Integrated structure generation with the world generator and biome system
+- Added structure-specific features like treasure chests and mob spawns
+
+### 2023-11-17: Enchanting System Implementation ###
+- Created comprehensive enchantment system with all vanilla Minecraft enchantments
+- Implemented enchantment types with appropriate targets, levels, and rarity values
+- Created enchantment manager for applying enchantments and calculating effects
+- Implemented enchantment conflict rules (e.g., protection types, fortune/silk touch)
+- Added enchantment table with bookshelf power mechanics
+- Created enchantment options generation algorithm similar to vanilla behavior
+- Added anvil mechanics for combining enchanted items
+- Implemented enchantment display with proper Roman numerals
+- Integrated enchantment effects with combat system:
+  - Damage enchantments (Sharpness, Smite, Bane of Arthropods)
+  - Knockback and Fire Aspect
+  - Projectile enchantments (Power, Punch, Flame)
+  - Protection enchantments with damage reduction
+- Added mining effects (Fortune, Silk Touch, Efficiency)
+- Implemented durability effects (Unbreaking)
+- Added Mending mechanics for repairing items with XP
+- Created experience collection and level system
+
+### 2023-11-19: Potions and Brewing System Implementation ###
+- Created comprehensive brewing system with brewing stands, potions, and effects
+- Implemented BrewingStand block with slots for ingredients, bottles, and fuel
+- Added BrewingHandler to manage brewing process with proper timing and state management
+- Created PotionRegistry to define all potion types with effects, colors, and duration
+- Implemented PotionRecipes system for defining valid brewing transformations
+- Added potion application logic for drinking, splashing, and lingering effects
+- Integrated with StatusEffectManager for applying effects to entities
+- Implemented ThrownPotion entity for splash and lingering potions
+- Created client-server communication for brewing stands and potion effects
+- Added all vanilla Minecraft potion types and effects
+- Implemented special potion mechanics (duration, amplification, corruption)
+- Added visual feedback for active potion effects
+
+### 2023-11-21: Nether Dimension Implementation ###
+- Created DimensionManager class to handle multiple dimensions and transitions
+- Implemented PortalManager for detecting valid nether portal frames and activating them
+- Added NetherDimension class with specialized terrain generation
+- Created NetherPortalBlock for handling portal mechanics and entity transitions
+- Implemented 5 nether-specific biomes:
+  - Nether Wastes: Standard nether terrain with netherrack and lava pools
+  - Soul Sand Valley: Soul sand/soil terrain with basalt pillars and fossils
+  - Crimson Forest: Red fungal forest with crimson nylium and huge fungi
+  - Warped Forest: Blue/teal fungal forest with warped nylium and fungi
+  - Basalt Deltas: Rocky terrain with basalt columns, blackstone, and magma
+- Added nether-specific blocks and their properties
+- Implemented 8:1 coordinate scaling between Overworld and Nether
+- Created portal linking system for finding or creating connected portals
+- Added comprehensive test suite (NetherTest) with tests for:
+  - Nether biome registration and properties
+  - NetherDimension generation functionality
+  - Portal creation and validation
+  - Coordinate scaling between dimensions
+  - Dimension transitions for entities
+- Integrated Nether with the server and client systems
+
+### 2023-11-23: End Dimension Implementation ###
+- Created comprehensive End dimension system with specialized terrain generation:
+  - Main central island with obsidian pillars and exit portal
+  - Outer islands with chorus plants and end cities
+  - End gateway portals for teleportation between regions
+- Implemented Ender Dragon boss fight mechanics:
+  - EnderDragon class with AI phases (circling, diving, charging, strafing, perching, death)
+  - EndCrystal class for healing and respawn mechanics
+  - DragonFight manager for coordinating boss fight progression
+  - Dragon phases and attacks (breath, collision damage)
+  - End crystal healing connection system
+  - XP rewards on dragon defeat
+- Added End-specific blocks:
+  - EndPortalBlock for traveling between Overworld and End
+  - EndPortalFrameBlock with Eye of Ender mechanics
+  - EndGatewayBlock for teleporting between islands
+  - DragonEggBlock with teleportation mechanic when interacted with
+  - ChorusPlantBlock with growth mechanics
+- Created the EndIslandsBiome for outer islands:
+  - Procedural island generation using noise algorithms
+  - Chorus plant generation and growth system
+  - End city placeholder structure generation
+  - Biome-specific mob spawning (Endermen, Shulkers)
+- Integrated with DimensionManager for seamless player teleportation
+- Created comprehensive test suite (endDimensionTest.js) to verify:
+  - End terrain generation and portal mechanics
+  - Dragon behavior and fight progression
+  - End crystal mechanics
+  - Teleportation systems
+  - Block mechanics specific to the End
+  - Biome and structure generation
+  - Chorus plant growth
+
+### 2023-11-25: Villages and Trading Implementation ###
+- Created comprehensive VillageGenerator class for procedural village generation
+  - Implemented biome-specific village styles (plains, desert, taiga, savanna)
+  - Created weighted building selection system for village size and composition
+  - Built placement algorithms for structures with proper spacing and roads
+  - Implemented building generation with appropriate workstations for villager professions
+- Developed VillagerNPC class with profession, level, and trading mechanics
+  - Implemented trading system with experience and leveling
+  - Created trade generation based on profession and level
+  - Added daily schedule for villagers (work/sleep cycles)
+  - Implemented growth for baby villagers
+- Added ZombieVillager class with curing mechanics
+  - Implemented zombie conversion from villagers
+  - Created curing process requiring weakness potions and golden apples
+  - Added reputation boost for players who cure zombie villagers
+- Created VillageReputationManager for tracking player-village relationships
+  - Implemented reputation events (trading, helping villagers, attacking villagers)
+  - Added reputation decay over time
+  - Implemented effects based on reputation (trade discounts, gifts, golem hostility)
+- Enhanced villager trading UI
+  - Added reputation display with discount information
+  - Implemented visual indication of discounted trades
+  - Created comprehensive trade detail display
+  - Added trade uses and restock indicators
+- Added breeding mechanics for villagers
+  - Implemented willingness system based on food
+  - Created breeding cooldown and growth timers
+  - Added baby villager spawning logic
+- Created comprehensive test suite
+  - Implemented tests for village generation
+  - Created tests for trading mechanics
+  - Added tests for reputation system
+  - Included tests for zombie villager curing
+- Integrated system with existing server components
+  - Enhanced MobManager to handle villager interactions
+  - Added socket events for trading and reputation
+  - Updated world generator to place villages in appropriate biomes
+
+### 2023-11-25: Ocean Monument Implementation ###
+- Added Ocean Monument structure generation with prismarine-based architecture
+- Implemented Guardian and Elder Guardian hostile mobs with unique mechanics
+  - Guardians with laser beam attack
+  - Elder Guardians with mining fatigue effect
+- Added monument-specific blocks:
+  - Prismarine
+  - Prismarine Bricks
+  - Dark Prismarine
+  - Sea Lantern (with light emission)
+- Integrated monuments with deep ocean biome generation
+- Configured proper structure spacing and placement rules
+- Added comprehensive test suite to verify monument generation
+- Ensured monuments generate underwater at appropriate depths
+- Implemented monument features like chambers, corridors, and spires
+- Added loot drops for Guardians (prismarine shards, crystals, fish)
+- [x] Mobs and AI
+  - [x] Passive mobs (animals)
+  - [x] Hostile mobs (monsters)
+  - [x] Neutral mobs
+  - [x] Mob spawning mechanics
+  - [x] Mob pathfinding
+  - [x] Mob behavior patterns
+  - [x] Mob interaction with players
+  - [x] Mob drops and loot tables
+- [x] Biomes
+  - [x] Biome types implementation
+  - [x] Biome-specific terrain
+  - [x] Biome borders and transitions
+  - [x] Biome vegetation and features
+  - [x] Temperature and rainfall systems
+  - [x] Biome-specific mob spawning
+- [x] Structures
+  - [x] Structure generation framework
+  - [x] Small structures (wells, boulder piles, fallen trees)
+  - [x] Medium structures (desert pyramids, ruins, witch huts)
+  - [x] Structure placement rules and spacing
+  - [x] Integration with terrain and biomes
+  - [x] Structure-specific features and decorations
+- [x] Weather System
+  - [x] Weather state management
+  - [x] Weather transitions
+  - [x] Lightning strike generation
+  - [x] Lightning rod integration
+  - [x] Weather effects on gameplay
+  - [x] Weather duration and timing
+  - [x] Weather event emission
+- [x] Enchanting system
+  - [x] Enchantment types and effects
+  - [x] Enchantment table functionality
+  - [x] Anvil combining mechanics
+  - [x] Enchantment application to items
+  - [x] Enchantment effect integration with combat
+  - [x] Experience system for enchanting
+- [x] Potions and brewing
+  - [x] PotionRegistry for managing potion types and effects
+  - [x] PotionRecipes for brewing recipes and transformations
+  - [x] BrewingStand block implementation
+  - [x] BrewingHandler for managing brewing process
+  - [x] PotionItem for potion usage and effects
+  - [x] ThrownPotion entity for splash and lingering potions
+  - [x] StatusEffectManager for applying and tracking potion effects
+  - [x] Integration with entity system for effect application
+- [x] Nether dimension
+  - [x] DimensionManager implementation for handling multiple dimensions
+  - [x] PortalManager for detecting and creating nether portals
+  - [x] NetherDimension class with specialized terrain generation
+  - [x] NetherPortalBlock implementation for handling portal mechanics
+  - [x] Nether-specific biomes (Nether Wastes, Soul Sand Valley, Crimson Forest, Warped Forest, Basalt Deltas)
+  - [x] Nether-specific blocks (netherrack, soul sand, basalt, etc.)
+  - [x] Nether coordinate scaling (8:1 ratio with Overworld)
+  - [x] Portal linking system between dimensions
+  - [x] Comprehensive test suite for verifying Nether functionality
+- [x] End dimension
+  - [x] EndDimension class with specialized terrain generation
+  - [x] EnderDragon class with boss fight AI mechanics
+  - [x] EndCrystal class for dragon healing and respawn mechanics
+  - [x] DragonFight manager for coordinating boss fight progression
+  - [x] End-specific blocks (end portal, end gateway, dragon egg, chorus plants)
+  - [x] EndIslandsBiome for outer islands generation
+  - [x] End portal and gateway teleportation
+  - [x] Chorus plant growth system
+  - [x] Dragon egg teleportation mechanics
+  - [x] End city placeholder structure generation
+  - [x] Comprehensive test suite for verifying End functionality
+- [x] Villages and trading
+  - [x] VillageGenerator class for procedural village generation
+  - [x] Building types with profession-specific workstations
+  - [x] VillagerNPC class with profession, level, and trading mechanics
+  - [x] ZombieVillager class with curing mechanics
+  - [x] VillageReputationManager for player-village reputation tracking
+  - [x] Trading UI with reputation discounts
+  - [x] Villager breeding and growth
+  - [x] Trade restocking mechanics
+  - [x] Integration with MobManager for handling interactions
+  - [x] Comprehensive test suite for village generation and trading
+- [x] Ocean monuments
+  - [x] Monument structure generation
+  - [x] Prismarine-based architecture
+  - [x] Guardian and Elder Guardian mob implementation
+  - [x] Monument-specific blocks and decorations
+  - [x] Structure spacing and placement rules
+  - [x] Underwater generation at appropriate depths
+  - [x] Chambers, corridors, and spires implementation
+  - [x] Guardian drops (prismarine shards, crystals, fish)
+- [x] Strongholds
+  - [x] Stronghold structure generation
+  - [x] End portal frame implementation
+  - [x] Silverfish mob implementation
+  - [x] Structure placement logic with proper distribution
+  - [x] Special rooms (library, portal room, stairs)
+  - [x] Interconnected room system
+  - [x] Global structure placement system
+  - [x] Underground placement with proper depth
+- [x] Mineshafts
+  - [x] Abandoned mineshaft generation
+  - [x] Tunnel systems with support beams
+  - [x] Rail placement and minecart chests
+  - [x] Cobweb and cave spider spawner placement
+  - [x] Proper underground distribution system
+  - [x] Special features (collapsed tunnels, intersections)
+  - [x] Global structure placement system
+  - [x] Decorative elements (torches, crafting tables)
+- [x] Dungeons
+  - [x] Underground dungeon generation
+  - [x] Mob spawner room creation
+  - [x] Loot chest placement
+  - [x] Cobblestone and mossy cobblestone structure
+  - [x] Integration with cave generation
+  - [x] Monster spawner with randomized mob types
+  - [x] Entrance tunnels connecting to caves
+  - [x] Decorative elements (cobwebs, torches)
+- [x] Temples
+  - [x] Desert temple generation with trap and treasure rooms
+  - [x] Jungle temple with traps (tripwire and redstone mechanisms)
+  - [x] Temple-specific block types and decorations
+  - [x] Biome-specific placement rules
+  - [x] Integration with world generation
+  - [x] Treasure chest loot tables
+  - [x] Comprehensive test suite for verifying temple generation
+- [x] Ocean ruins
+  - [x] Underwater structure generation
+  - [x] Small and large ruin variants
+  - [x] Biome-specific placement rules (ocean biomes)
+  - [x] Structure variants (stone and sandstone)
+  - [x] Degradation system for natural-looking ruins
+  - [x] Decorative elements (coral, seagrass)
+  - [x] Loot chest placement and loot tables
+  - [x] Mob spawning (drowned)
+  - [x] Comprehensive test suite for verifying ocean ruins generation
+- [x] Combat update
+  - [x] CombatManager class for managing combat mechanics
+  - [x] Attack cooldown system with damage scaling
+  - [x] Weapon-specific cooldown times
+  - [x] Shields for blocking attacks
+  - [x] Dual wielding with offhand slot
+  - [x] Shield mechanics (block, disable with axe, cooldowns)
+  - [x] Special arrows (tipped arrows with potion effects)
+  - [x] Integration with status effects system (haste, mining fatigue affecting cooldowns)
+  - [x] Socket event handlers for new combat interactions
+  - [x] Comprehensive test suite for verifying combat mechanics
+
+- [x] Nether update
+  - [x] New biomes (Soul Sand Valley, Warped Forest, Crimson Forest, Basalt Deltas)
+  - [x] New mob types (Piglins, Hoglins, Striders, Zoglins)
+  - [x] New block types (Ancient debris, Basalt, Blackstone variants, Nether gold ore)
+  - [x] Ancient debris and Netherite equipment
+  - [x] Ruined portals in Overworld and Nether
+  - [x] Soul fire and soul fire torches
+  - [x] Improved bartering system with Piglins
+  - [x] Comprehensive test suite for verifying Nether Update features
+
+- [x] Caves & Cliffs Update
+  - [x] Dripstone Caves biome
+  - [x] Pointed Dripstone block
+  - [x] Dripstone block
+  - [x] Lightning Rod block
+  - [x] Amethyst system
+    - [x] Amethyst Block
+    - [x] Amethyst Cluster
+    - [x] Budding Amethyst
+    - [x] Small/Medium/Large Amethyst Buds
+    - [x] Growth mechanics
+    - [x] Drops and loot tables
+    - [x] Comprehensive test suite
+
+##Reserved below for AI to create project updates.##
+
+## Project Updates ##
+### 2023-11-14: Redstone System Implementation Started ###
+- Added redstone dust that transmits power
+- Added redstone blocks as power sources (power level 15)
+- Added redstone lamps that light up when powered
+- Implemented power propagation algorithm using breadth-first search
+- Power decreases by 1 for each block it travels through
+
+### 2023-11-14: Redstone Torch Implementation ###
+- Created custom 3D model for redstone torches with a stick base and glowing top
+- Implemented power inversion logic - torch turns off when placed on a powered block
+- Added visual feedback (torch glows brightly when active, dimly when inactive)
+- Integrated with power propagation system
+- Torches act as power sources (power level 15) when active
+
+### 2023-11-14: Redstone Repeater Implementation ###
+- Created custom 3D model for redstone repeaters with base, input torch, output torch, and delay lever
+- Implemented directional placement based on player orientation
+- Added delay functionality (1-4 ticks) that can be changed by right-clicking
+- Repeaters maintain signal strength (restore to power level 15)
+- Added visual feedback (torches light up to show signal state)
+- Implemented proper I/O with directional input and output
+
+### 2023-11-14: Redstone Comparator Implementation ###
+- Created custom 3D model for redstone comparators with 4 torches (input, output, left, right) and mode lever
+- Implemented two operation modes - subtraction and comparison
+- Added mode toggling via right-click
+- In subtraction mode: output = input - side input (min 0)
+- In comparison mode: output = input if input ≥ side input, otherwise 0
+- Added visual feedback for signal states and power levels
+- Implemented directional placement based on player orientation
+
+### 2023-11-14: Redstone Logic Gates Implementation ###
+- NOT Gate: Single redstone torch (inverts input)
+- AND Gate: Multiple inputs feeding into a single output, positioned so all must be on
+- OR Gate: Multiple inputs connected to the same line
+- NAND Gate: AND gate with output connected to a NOT gate
+- NOR Gate: OR gate with output connected to a NOT gate
+- XOR Gate: Two inputs with a special configuration using torches and repeaters
+- XNOR Gate: XOR gate with output connected to a NOT gate
+- Created documentation on how to build each gate
+- Verified all gates function as expected with different input combinations
+- Added examples of using gates in combination for more complex circuits
+
+### 2023-11-14: Redstone Circuit Testing Implementation ###
+- Implemented testing functionality for redstone circuits
+- Created a test framework to validate circuit functionality
+- Added test cases for basic components (dust, torch, repeater, comparator)
+- Added test cases for all logic gates (NOT, AND, OR, NAND, NOR, XOR, XNOR)
+- Created complex circuit examples:
+  - 4-bit binary counter
+  - RS-NOR latch (memory cell)
+  - T flip-flop
+  - Clock circuit
+  - Random number generator
+- Verified all circuits work with expected inputs and outputs
+- Added documentation on how each circuit works
+- Optimized power propagation algorithm for large circuits
+- Improved visual feedback to help debugging complex circuits
+
+### 2023-11-15: Mob System Implementation Started ###
+- Created basic mob texture generation system using Node.js canvas library
+- Implemented pixel art style textures for passive mobs (sheep, cow, pig, chicken)
+- Implemented pixel art style textures for hostile mobs (zombie, skeleton, creeper)
+- Each mob texture is 64x64 pixels with distinct features and colors
+- Textures are generated programmatically and saved as PNG files
+- Textures will be loaded into the game using THREE.js TextureLoader
+- Next steps: Update the createMob function to use textured materials instead of solid colors
+
+### 2023-11-15: Complete Mob System Implementation ###
+- Created comprehensive base mob class (MobBase) with common functionality
+- Implemented passive mobs: Sheep, Cow, Chicken, Pig
+- Implemented neutral mobs: Wolf, Spider, Enderman
+- Implemented hostile mobs: Zombie, Skeleton, Creeper
+- Added advanced mob AI with state machine (idle, wander, follow, attack, flee)
+- Implemented mob spawning and despawning based on player distance
+- Added day/night cycle affecting mob behavior (e.g., spiders neutral in day, hostile at night)
+- Added mob drops and loot tables
+- Implemented special behaviors per mob type:
+  - Sheep: wool shearing and regrowth
+  - Wolf: taming, following owner, sitting
+  - Enderman: teleportation, staring mechanics
+  - Creeper: explosion mechanics
+  - Skeleton: ranged attacks
+- Added mob interactions with players
+- Created health system and damage mechanics
+- Integrated mob system with game server and client
+
+### 2023-11-16: Biome System Implementation ###
+- Created comprehensive BiomeManager class for managing biomes and transitions
+- Implemented various biome types including plains, forest, desert, mountains, and ocean
+- Added climate parameter system with temperature, precipitation, continentalness, erosion, and weirdness
+- Created smooth biome transitions with border blending
+- Added biome-specific terrain generation with appropriate block types
+- Implemented biome-specific vegetation and features
+- Created a flexible biome classification system with temperature and humidity categories
+- Connected biome system with mob spawning for biome-specific mob populations
+- Created WorldGenerator that uses the biome system for realistic terrain generation
+- Added proper height calculation, cave generation, and structure placement
+- Implemented features like trees, plants, and small structures appropriate to each biome
+
+### 2023-11-16: Biome-Specific Mob Spawning Implementation ###
+- Enhanced mob spawning system to consider biome type when spawning mobs
+- Created weighted spawn tables for each biome type (forest, desert, plains, etc.)
+- Implemented spawn control based on time of day, weather, and moon phase
+- Added biome-specific mob varieties (like husks in deserts)
+- Connected mob manager to biome manager for proper integration
+- Implemented proper mob groups with appropriate min/max counts per spawn
+- Enhanced wolves to be more common in forests, fewer animals in deserts
+- Added day/night cycle effects on hostile mob spawning
+- Added moon phase tracking to affect spawn rates of certain hostile mobs
+
+### 2023-11-16: Structure Generation System Implementation ###
+- Created comprehensive StructureGenerator class for generating world structures
+- Implemented various structure types:
+  - Small structures: desert wells, boulder piles, fallen trees
+  - Medium structures: desert pyramids, small ruins, witch huts
+  - Placeholders for large structures: villages, strongholds, mineshafts
+- Added structure placement rules with proper spacing between structures
+- Implemented structure tracking to prevent overlapping or too many structures
+- Created biome-specific structure generation with appropriate placement
+- Added detailed structure generation with proper block types and decorations
+- Integrated structure generation with the world generator and biome system
+- Added structure-specific features like treasure chests and mob spawns
+
+### 2023-11-17: Enchanting System Implementation ###
+- Created comprehensive enchantment system with all vanilla Minecraft enchantments
+- Implemented enchantment types with appropriate targets, levels, and rarity values
+- Created enchantment manager for applying enchantments and calculating effects
+- Implemented enchantment conflict rules (e.g., protection types, fortune/silk touch)
+- Added enchantment table with bookshelf power mechanics
+- Created enchantment options generation algorithm similar to vanilla behavior
+- Added anvil mechanics for combining enchanted items
+- Implemented enchantment display with proper Roman numerals
+- Integrated enchantment effects with combat system:
+  - Damage enchantments (Sharpness, Smite, Bane of Arthropods)
+  - Knockback and Fire Aspect
+  - Projectile enchantments (Power, Punch, Flame)
+  - Protection enchantments with damage reduction
+- Added mining effects (Fortune, Silk Touch, Efficiency)
+- Implemented durability effects (Unbreaking)
+- Added Mending mechanics for repairing items with XP
+- Created experience collection and level system
+
+### 2023-11-19: Potions and Brewing System Implementation ###
+- Created comprehensive brewing system with brewing stands, potions, and effects
+- Implemented BrewingStand block with slots for ingredients, bottles, and fuel
+- Added BrewingHandler to manage brewing process with proper timing and state management
+- Created PotionRegistry to define all potion types with effects, colors, and duration
+- Implemented PotionRecipes system for defining valid brewing transformations
+- Added potion application logic for drinking, splashing, and lingering effects
+- Integrated with StatusEffectManager for applying effects to entities
+- Implemented ThrownPotion entity for splash and lingering potions
+- Created client-server communication for brewing stands and potion effects
+- Added all vanilla Minecraft potion types and effects
+- Implemented special potion mechanics (duration, amplification, corruption)
+- Added visual feedback for active potion effects
+
+### 2023-11-21: Nether Dimension Implementation ###
+- Created DimensionManager class to handle multiple dimensions and transitions
+- Implemented PortalManager for detecting valid nether portal frames and activating them
+- Added NetherDimension class with specialized terrain generation
+- Created NetherPortalBlock for handling portal mechanics and entity transitions
+- Implemented 5 nether-specific biomes:
+  - Nether Wastes: Standard nether terrain with netherrack and lava pools
+  - Soul Sand Valley: Soul sand/soil terrain with basalt pillars and fossils
+  - Crimson Forest: Red fungal forest with crimson nylium and huge fungi
+  - Warped Forest: Blue/teal fungal forest with warped nylium and fungi
+  - Basalt Deltas: Rocky terrain with basalt columns, blackstone, and magma
+- Added nether-specific blocks and their properties
+- Implemented 8:1 coordinate scaling between Overworld and Nether
+- Created portal linking system for finding or creating connected portals
+- Added comprehensive test suite (NetherTest) with tests for:
+  - Nether biome registration and properties
+  - NetherDimension generation functionality
+  - Portal creation and validation
+  - Coordinate scaling between dimensions
+  - Dimension transitions for entities
+- Integrated Nether with the server and client systems
+
+### 2023-11-23: End Dimension Implementation ###
+- Created comprehensive End dimension system with specialized terrain generation:
+  - Main central island with obsidian pillars and exit portal
+  - Outer islands with chorus plants and end cities
+  - End gateway portals for teleportation between regions
+- Implemented Ender Dragon boss fight mechanics:
+  - EnderDragon class with AI phases (circling, diving, charging, strafing, perching, death)
+  - EndCrystal class for healing and respawn mechanics
+  - DragonFight manager for coordinating boss fight progression
+  - Dragon phases and attacks (breath, collision damage)
+  - End crystal healing connection system
+  - XP rewards on dragon defeat
+- Added End-specific blocks:
+  - EndPortalBlock for traveling between Overworld and End
+  - EndPortalFrameBlock with Eye of Ender mechanics
+  - EndGatewayBlock for teleporting between islands
+  - DragonEggBlock with teleportation mechanic when interacted with
+  - ChorusPlantBlock with growth mechanics
+- Created the EndIslandsBiome for outer islands:
+  - Procedural island generation using noise algorithms
+  - Chorus plant generation and growth system
+  - End city placeholder structure generation
+  - Biome-specific mob spawning (Endermen, Shulkers)
+- Integrated with DimensionManager for seamless player teleportation
+- Created comprehensive test suite (endDimensionTest.js) to verify:
+  - End terrain generation and portal mechanics
+  - Dragon behavior and fight progression
+  - End crystal mechanics
+  - Teleportation systems
+  - Block mechanics specific to the End
+  - Biome and structure generation
+  - Chorus plant growth
+
+### 2023-11-25: Villages and Trading Implementation ###
+- Created comprehensive VillageGenerator class for procedural village generation
+  - Implemented biome-specific village styles (plains, desert, taiga, savanna)
+  - Created weighted building selection system for village size and composition
+  - Built placement algorithms for structures with proper spacing and roads
+  - Implemented building generation with appropriate workstations for villager professions
+- Developed VillagerNPC class with profession, level, and trading mechanics
+  - Implemented trading system with experience and leveling
+  - Created trade generation based on profession and level
+  - Added daily schedule for villagers (work/sleep cycles)
+  - Implemented growth for baby villagers
+- Added ZombieVillager class with curing mechanics
+  - Implemented zombie conversion from villagers
+  - Created curing process requiring weakness potions and golden apples
+  - Added reputation boost for players who cure zombie villagers
+- Created VillageReputationManager for tracking player-village relationships
+  - Implemented reputation events (trading, helping villagers, attacking villagers)
+  - Added reputation decay over time
+  - Implemented effects based on reputation (trade discounts, gifts, golem hostility)
+- Enhanced villager trading UI
+  - Added reputation display with discount information
+  - Implemented visual indication of discounted trades
+  - Created comprehensive trade detail display
+  - Added trade uses and restock indicators
+- Added breeding mechanics for villagers
+  - Implemented willingness system based on food
+  - Created breeding cooldown and growth timers
+  - Added baby villager spawning logic
+- Created comprehensive test suite
+  - Implemented tests for village generation
+  - Created tests for trading mechanics
+  - Added tests for reputation system
+  - Included tests for zombie villager curing
+- Integrated system with existing server components
+  - Enhanced MobManager to handle villager interactions
+  - Added socket events for trading and reputation
+  - Updated world generator to place villages in appropriate biomes
+
+### 2023-11-25: Ocean Monument Implementation ###
+- Added Ocean Monument structure generation with prismarine-based architecture
+- Implemented Guardian and Elder Guardian hostile mobs with unique mechanics
+  - Guardians with laser beam attack
+  - Elder Guardians with mining fatigue effect
+- Added monument-specific blocks:
+  - Prismarine
+  - Prismarine Bricks
+  - Dark Prismarine
+  - Sea Lantern (with light emission)
+- Integrated monuments with deep ocean biome generation
+- Configured proper structure spacing and placement rules
+- Added comprehensive test suite to verify monument generation
+- Ensured monuments generate underwater at appropriate depths
+- Implemented monument features like chambers, corridors, and spires
+- Added loot drops for Guardians (prismarine shards, crystals, fish)
 
 ### 2023-11-28: Stronghold Implementation ###
 - Created comprehensive `generateStronghold` method in `StructureGenerator` class

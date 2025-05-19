@@ -342,6 +342,92 @@ class Entity extends EventEmitter {
     // Update bounding box after deserializing
     this.boundingBox = this.calculateBoundingBox();
   }
+
+  getPosition() {
+    return { ...this.position };
+  }
+
+  setPosition(x, y, z) {
+    this.position = { x, y, z };
+  }
+
+  getVelocity() {
+    return { ...this.velocity };
+  }
+
+  setVelocity(x, y, z) {
+    this.velocity = { x, y, z };
+  }
+
+  getRotation() {
+    return { ...this.rotation };
+  }
+
+  setRotation(yaw, pitch) {
+    this.rotation = { yaw, pitch };
+  }
+
+  isOnGround() {
+    return this.onGround;
+  }
+
+  setOnGround(onGround) {
+    this.onGround = onGround;
+  }
+
+  isDead() {
+    return this.dead;
+  }
+
+  kill() {
+    this.dead = true;
+  }
+
+  getTicksExisted() {
+    return this.age;
+  }
+
+  tick() {
+    this.age++;
+  }
+
+  getBoundingBox() {
+    return { ...this.boundingBox };
+  }
+
+  setBoundingBox(minX, minY, minZ, maxX, maxY, maxZ) {
+    this.boundingBox = {
+      minX, minY, minZ,
+      maxX, maxY, maxZ
+    };
+  }
+
+  // Helper method to check if this entity collides with another entity
+  collidesWith(other) {
+    const thisBox = this.getBoundingBox();
+    const otherBox = other.getBoundingBox();
+    const thisPos = this.getPosition();
+    const otherPos = other.getPosition();
+
+    return (
+      thisPos.x + thisBox.max.x > otherPos.x + otherBox.min.x &&
+      thisPos.x + thisBox.min.x < otherPos.x + otherBox.max.x &&
+      thisPos.y + thisBox.max.y > otherPos.y + otherBox.min.y &&
+      thisPos.y + thisBox.min.y < otherPos.y + otherBox.max.y &&
+      thisPos.z + thisBox.max.z > otherPos.z + otherBox.min.z &&
+      thisPos.z + thisBox.min.z < otherPos.z + otherBox.max.z
+    );
+  }
+
+  // Helper method to check if this entity is within a certain distance of another entity
+  isWithinDistance(other, distance) {
+    const thisPos = this.getPosition();
+    const otherPos = other.getPosition();
+    const dx = thisPos.x - otherPos.x;
+    const dy = thisPos.y - otherPos.y;
+    const dz = thisPos.z - otherPos.z;
+    return Math.sqrt(dx * dx + dy * dy + dz * dz) <= distance;
+  }
 }
 
 // If I can't find the method, I'll let you know
