@@ -396,6 +396,12 @@
     - [COMPLETED] Metadata persistence tests
     - [COMPLETED] World generation integration tests
     - [COMPLETED] Loot table and drops tests
+    - [COMPLETED] Physics and collision tests
+      - [COMPLETED] Collision box tests
+      - [COMPLETED] Entity collision tests
+      - [COMPLETED] Gravity effect tests
+      - [COMPLETED] Friction property tests
+      - [COMPLETED] Bounding box tests
 24. Fixed serialization and inheritance issues in Block class to ensure proper functionality
 25. Created comprehensive test suites for all copper and tuff variant blocks
 26. Integrated all new blocks with the BlockRegistry for proper game integration
