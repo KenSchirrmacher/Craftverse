@@ -12,11 +12,11 @@ const {
   TuffBrickWallBlock
 } = require('../blocks/tuffVariantsBlocks');
 const BlockRegistry = require('../blocks/blockRegistry');
-const TestWorld = require('./testWorld');
+const World = require('../world/world');
 
 class TuffVariantsTest {
   constructor() {
-    this.world = new TestWorld();
+    this.world = new World();
   }
 
   runTests() {
@@ -47,9 +47,9 @@ class TuffVariantsTest {
     assert.strictEqual(drops[0].count, 1);
 
     // Test placement
-    this.world.setBlock(0, 0, 0, block);
-    const placedBlock = this.world.getBlock(0, 0, 0);
-    assert.strictEqual(placedBlock.id, 'chiseled_tuff');
+    this.world.setBlockAt(0, 0, 0, 'chiseled_tuff');
+    const placedBlock = this.world.getBlockAt(0, 0, 0);
+    assert.strictEqual(placedBlock.type, 'chiseled_tuff');
   }
 
   testTuffBricks() {
@@ -71,9 +71,9 @@ class TuffVariantsTest {
     assert.strictEqual(drops[0].count, 1);
 
     // Test placement
-    this.world.setBlock(0, 0, 0, block);
-    const placedBlock = this.world.getBlock(0, 0, 0);
-    assert.strictEqual(placedBlock.id, 'tuff_bricks');
+    this.world.setBlockAt(0, 0, 0, 'tuff_bricks');
+    const placedBlock = this.world.getBlockAt(0, 0, 0);
+    assert.strictEqual(placedBlock.type, 'tuff_bricks');
   }
 
   testTuffBrickSlab() {
@@ -96,9 +96,9 @@ class TuffVariantsTest {
     assert.strictEqual(drops[0].count, 1);
 
     // Test placement
-    this.world.setBlock(0, 0, 0, block);
-    const placedBlock = this.world.getBlock(0, 0, 0);
-    assert.strictEqual(placedBlock.id, 'tuff_brick_slab');
+    this.world.setBlockAt(0, 0, 0, 'tuff_brick_slab');
+    const placedBlock = this.world.getBlockAt(0, 0, 0);
+    assert.strictEqual(placedBlock.type, 'tuff_brick_slab');
   }
 
   testTuffBrickStairs() {
@@ -121,9 +121,9 @@ class TuffVariantsTest {
     assert.strictEqual(drops[0].count, 1);
 
     // Test placement
-    this.world.setBlock(0, 0, 0, block);
-    const placedBlock = this.world.getBlock(0, 0, 0);
-    assert.strictEqual(placedBlock.id, 'tuff_brick_stairs');
+    this.world.setBlockAt(0, 0, 0, 'tuff_brick_stairs');
+    const placedBlock = this.world.getBlockAt(0, 0, 0);
+    assert.strictEqual(placedBlock.type, 'tuff_brick_stairs');
   }
 
   testTuffBrickWall() {
@@ -146,9 +146,9 @@ class TuffVariantsTest {
     assert.strictEqual(drops[0].count, 1);
 
     // Test placement
-    this.world.setBlock(0, 0, 0, block);
-    const placedBlock = this.world.getBlock(0, 0, 0);
-    assert.strictEqual(placedBlock.id, 'tuff_brick_wall');
+    this.world.setBlockAt(0, 0, 0, 'tuff_brick_wall');
+    const placedBlock = this.world.getBlockAt(0, 0, 0);
+    assert.strictEqual(placedBlock.type, 'tuff_brick_wall');
   }
 
   testRegistryIntegration() {
@@ -175,10 +175,5 @@ class TuffVariantsTest {
     assert.strictEqual(tuffBrickWall instanceof TuffBrickWallBlock, true);
   }
 }
-
-// Run tests
-const test = new TuffVariantsTest();
-test.runTests();
-console.log('All Tuff variants tests passed!');
 
 module.exports = TuffVariantsTest; 

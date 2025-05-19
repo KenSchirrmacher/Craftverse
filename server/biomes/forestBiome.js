@@ -40,22 +40,8 @@ class ForestBiome extends Biome {
       flowerDensity: 0.1,   // Some flowers
       
       // Features and structures
-      features: [
-        { id: 'oak_tree', weight: 0.6 },
-        { id: 'birch_tree', weight: 0.3 },
-        { id: 'dark_oak_tree', weight: 0.1 },
-        { id: 'fern', weight: 0.4 },
-        { id: 'large_fern', weight: 0.2 },
-        { id: 'grass', weight: 0.6 },
-        { id: 'tall_grass', weight: 0.3 },
-        { id: 'flowers', weight: 0.2 },
-        { id: 'mushrooms', weight: 0.1 }
-      ],
-      structures: [
-        { id: 'fallen_log', weight: 0.02 },
-        { id: 'forest_rock', weight: 0.01 },
-        { id: 'beehive', weight: 0.005 }
-      ],
+      features: [],
+      structures: [],
       
       // Mob spawning lists with forest-specific weights
       mobSpawnLists: {
@@ -107,19 +93,35 @@ class ForestBiome extends Biome {
       ...options
     });
     
-    // Add additional forest features
-    this.features.push(
-      { type: 'tree', variant: 'oak', frequency: 0.05 },
-      { type: 'tree', variant: 'birch', frequency: 0.03 },
-      { type: 'plant', blockType: 'fern', frequency: 0.1 },
-      { type: 'plant', blockType: 'grass', frequency: 0.2 },
-      { type: 'plant', blockType: 'flowers', frequency: 0.05 }
+    // Initialize arrays
+    this.trees = [];
+    this.flowers = [];
+    this.grass = [];
+
+    // Add forest features
+    this.addForestFeatures();
+  }
+
+  addForestFeatures() {
+    // Add trees
+    this.trees.push(
+      { type: 'oak', weight: 0.6 },
+      { type: 'birch', weight: 0.3 },
+      { type: 'dark_oak', weight: 0.1 }
     );
-    
-    // Add forest structures
-    this.structures.push(
-      { type: 'fallen_tree', frequency: 0.02 },
-      { type: 'boulder_pile', frequency: 0.01 }
+
+    // Add flowers
+    this.flowers.push(
+      { type: 'dandelion', weight: 0.4 },
+      { type: 'poppy', weight: 0.3 },
+      { type: 'blue_orchid', weight: 0.2 },
+      { type: 'allium', weight: 0.1 }
+    );
+
+    // Add grass
+    this.grass.push(
+      { type: 'tall_grass', weight: 0.7 },
+      { type: 'fern', weight: 0.3 }
     );
   }
 
@@ -214,23 +216,14 @@ class ForestBiome extends Biome {
     // Tree placement - common in forests
     if (random() < localTreeDensity) {
       // Determine tree type
-      const treeTypeRoll = random();
-      let treeType;
-      
-      if (treeTypeRoll < 0.6) {
-        treeType = 'oak_tree';
-      } else if (treeTypeRoll < 0.9) {
-        treeType = 'birch_tree';
-      } else {
-        treeType = 'dark_oak_tree';
-      }
+      const treeType = this.selectRandomWeighted(this.trees);
       
       // Determine tree size
       const sizeVariation = 1 + (random() * 0.5 - 0.25); // 0.75-1.25x size variation
       
       features.push({
         type: 'tree',
-        id: treeType,
+        id: treeType.type,
         size: sizeVariation,
         x, z
       });
@@ -272,12 +265,11 @@ class ForestBiome extends Biome {
     // Flower placement - less common in dense forest
     if (random() < this.flowerDensity * (1 - forestDensityNoise * 0.7)) {
       // Select flower type based on position
-      const flowerTypes = ['poppy', 'dandelion', 'blue_orchid', 'allium', 'azure_bluet'];
-      const flowerIndex = Math.floor(random() * flowerTypes.length);
+      const flowerType = this.selectRandomWeighted(this.flowers);
       
       features.push({
         type: 'vegetation',
-        id: flowerTypes[flowerIndex],
+        id: flowerType.type,
         x, z
       });
     }
@@ -340,6 +332,20 @@ class ForestBiome extends Biome {
     }
     
     return structures;
+  }
+
+  selectRandomWeighted(items) {
+    const totalWeight = items.reduce((sum, item) => sum + item.weight, 0);
+    let random = Math.random() * totalWeight;
+    
+    for (const item of items) {
+      random -= item.weight;
+      if (random <= 0) {
+        return item;
+      }
+    }
+    
+    return items[0];
   }
 }
 

@@ -5,29 +5,17 @@
 
 const assert = require('assert');
 const TuffBlock = require('../blocks/tuffBlock');
+const NoiseGenerator = require('../world/noiseGenerator');
+const World = require('../world/world');
 
 describe('Tuff Block Tests', () => {
-  // Mock noise generator for testing
-  const mockNoiseGenerator = {
-    simplex3: (x, y, z) => {
-      // For testing, return high value for specific coords
-      if (x === 10 && y === 20 && z === 30) {
-        return 0.8; // Above threshold
-      }
-      return 0.5; // Below most thresholds
-    }
-  };
-  
-  // Mock world for testing
-  const mockWorld = {
-    isNearStructure: (structure, x, y, z, distance) => {
-      // For testing purposes, return true for specific coordinates
-      if (structure === 'amethyst_geode' && x === 15 && y === 25 && z === 35) {
-        return true;
-      }
-      return false;
-    }
-  };
+  let noiseGenerator;
+  let world;
+
+  beforeEach(() => {
+    noiseGenerator = new NoiseGenerator();
+    world = new World();
+  });
 
   describe('Basic Properties', () => {
     it('should initialize with correct properties', () => {
@@ -82,13 +70,26 @@ describe('Tuff Block Tests', () => {
   });
 
   describe('World Generation', () => {
+    it('should generate near amethyst geodes', () => {
+      const block = new TuffBlock();
+      const x = 15;
+      const y = 25;
+      const z = 35;
+      
+      // Create an amethyst geode at the test coordinates
+      world.createStructure('amethyst_geode', x, y, z);
+      
+      // Verify block can generate near the geode
+      assert.strictEqual(block.canGenerateAt(world, x + 5, y, z), true);
+    });
+
     it('should generate based on noise value', () => {
       const block = new TuffBlock();
       
       // Should generate at coordinates that give high noise value
       const shouldGenerate = block.shouldGenerateAt(
-        mockWorld,
-        mockNoiseGenerator,
+        world,
+        noiseGenerator,
         10, 20, 30
       );
       
@@ -96,8 +97,8 @@ describe('Tuff Block Tests', () => {
       
       // Should not generate at other coordinates
       const shouldNotGenerate = block.shouldGenerateAt(
-        mockWorld,
-        mockNoiseGenerator,
+        world,
+        noiseGenerator,
         1, 2, 3
       );
       
@@ -114,14 +115,14 @@ describe('Tuff Block Tests', () => {
       
       // At y=10 (deep) should generate with 0.65 noise
       const generateDeep = block.shouldGenerateAt(
-        mockWorld,
+        world,
         consistentNoise,
         5, 10, 5
       );
       
       // At y=60 (shallow) should not generate with 0.65 noise
       const generateShallow = block.shouldGenerateAt(
-        mockWorld,
+        world,
         consistentNoise,
         5, 60, 5
       );
@@ -135,11 +136,11 @@ describe('Tuff Block Tests', () => {
       const block = new TuffBlock();
       
       // Near geode
-      const nearGeode = block.isNearGeode(mockWorld, 15, 25, 35);
+      const nearGeode = block.isNearGeode(world, 15, 25, 35);
       assert.strictEqual(nearGeode, true);
       
       // Not near geode
-      const notNearGeode = block.isNearGeode(mockWorld, 5, 5, 5);
+      const notNearGeode = block.isNearGeode(world, 5, 5, 5);
       assert.strictEqual(notNearGeode, false);
     });
   });

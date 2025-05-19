@@ -1,90 +1,80 @@
+/**
+ * Tests for Tuff Variants World Generation
+ * Verifies the world generation functionality of tuff variants
+ */
+
 const assert = require('assert');
-const TestWorld = require('./testWorld');
-const { TuffBricksBlock, TuffBrickSlabBlock, TuffBrickStairsBlock, TuffBrickWallBlock, ChiseledTuffBlock } = require('../blocks/tuffVariants');
-const { WorldGenerator } = require('../world/worldGenerator');
-const { BiomeType } = require('../world/biomeType');
+const { 
+  ChiseledTuffBlock,
+  TuffBricksBlock,
+  TuffBrickSlabBlock,
+  TuffBrickStairsBlock,
+  TuffBrickWallBlock
+} = require('../blocks/tuffVariantsBlocks');
+const World = require('../world/world');
+const BiomeRegistry = require('../biomes/biomeRegistry');
 
 class TuffVariantsWorldGenTest {
   constructor() {
-    this.world = new TestWorld();
-    this.worldGenerator = new WorldGenerator(this.world);
+    this.world = new World();
+    this.biomeRegistry = new BiomeRegistry();
   }
 
   runTests() {
-    this.testNaturalGeneration();
-    this.testStructurePlacement();
-    this.testBiomeIntegration();
-    this.testHeightDistribution();
-    this.testClusterGeneration();
+    this.testTuffVariantsInBiomes();
+    this.testTuffVariantsInStructures();
+    this.testTuffVariantsInCaves();
   }
 
-  testNaturalGeneration() {
-    console.log('Testing natural generation...');
+  testTuffVariantsInBiomes() {
+    console.log('Testing Tuff Variants in Biomes...');
     
-    // Test Tuff Bricks natural generation
-    const chunk = this.worldGenerator.generateChunk(0, 0);
-    const tuffBricksCount = this.countBlocksInChunk(chunk, 'tuff_bricks');
-    
-    assert.strictEqual(typeof tuffBricksCount, 'number');
-    assert.strictEqual(tuffBricksCount >= 0, true);
+    // Test tuff variants in mountain biomes
+    const mountainBiome = this.biomeRegistry.getBiome('mountain');
+    const blocks = this.countBlocksInBiome(mountainBiome, ['tuff', 'chiseled_tuff', 'tuff_bricks']);
+    assert.strictEqual(blocks > 0, true, 'Mountain biome should contain tuff variants');
+
+    // Test tuff variants in cave biomes
+    const caveBiome = this.biomeRegistry.getBiome('cave');
+    const caveBlocks = this.countBlocksInBiome(caveBiome, ['tuff', 'chiseled_tuff', 'tuff_bricks']);
+    assert.strictEqual(caveBlocks > 0, true, 'Cave biome should contain tuff variants');
   }
 
-  testStructurePlacement() {
-    console.log('Testing structure placement...');
+  testTuffVariantsInStructures() {
+    console.log('Testing Tuff Variants in Structures...');
     
-    // Test Chiseled Tuff in structures
-    const structure = this.worldGenerator.generateStructure('ruins', { x: 0, y: 0, z: 0 });
-    const chiseledTuffCount = this.countBlocksInStructure(structure, 'chiseled_tuff');
-    
-    assert.strictEqual(typeof chiseledTuffCount, 'number');
-    assert.strictEqual(chiseledTuffCount >= 0, true);
+    // Test tuff variants in ancient cities
+    const ancientCity = this.world.getStructure('ancient_city');
+    const blocks = this.countBlocksInStructure(ancientCity, ['tuff_bricks', 'tuff_brick_stairs', 'tuff_brick_wall']);
+    assert.strictEqual(blocks > 0, true, 'Ancient cities should contain tuff variants');
+
+    // Test tuff variants in strongholds
+    const stronghold = this.world.getStructure('stronghold');
+    const strongholdBlocks = this.countBlocksInStructure(stronghold, ['tuff_bricks', 'tuff_brick_stairs', 'tuff_brick_wall']);
+    assert.strictEqual(strongholdBlocks > 0, true, 'Strongholds should contain tuff variants');
   }
 
-  testBiomeIntegration() {
-    console.log('Testing biome integration...');
+  testTuffVariantsInCaves() {
+    console.log('Testing Tuff Variants in Caves...');
     
-    // Test Tuff Brick variants in different biomes
-    const plainsBiome = this.worldGenerator.generateBiome(BiomeType.PLAINS, 0, 0);
-    const desertBiome = this.worldGenerator.generateBiome(BiomeType.DESERT, 0, 0);
-    
-    const plainsTuffCount = this.countBlocksInBiome(plainsBiome, 'tuff_brick_wall');
-    const desertTuffCount = this.countBlocksInBiome(desertBiome, 'tuff_brick_wall');
-    
-    assert.strictEqual(typeof plainsTuffCount, 'number');
-    assert.strictEqual(typeof desertTuffCount, 'number');
-    assert.strictEqual(plainsTuffCount !== desertTuffCount, true);
+    // Test tuff variants in deep caves
+    const deepCave = this.world.getStructure('deep_cave');
+    const blocks = this.countBlocksInStructure(deepCave, ['tuff', 'chiseled_tuff', 'tuff_bricks']);
+    assert.strictEqual(blocks > 0, true, 'Deep caves should contain tuff variants');
+
+    // Test tuff variants in cave systems
+    const caveSystem = this.world.getStructure('cave_system');
+    const caveBlocks = this.countBlocksInStructure(caveSystem, ['tuff', 'chiseled_tuff', 'tuff_bricks']);
+    assert.strictEqual(caveBlocks > 0, true, 'Cave systems should contain tuff variants');
   }
 
-  testHeightDistribution() {
-    console.log('Testing height distribution...');
-    
-    // Test Tuff Brick Slab height distribution
-    const heightMap = this.worldGenerator.generateHeightMap(0, 0);
-    const slabDistribution = this.analyzeHeightDistribution(heightMap, 'tuff_brick_slab');
-    
-    assert.strictEqual(Array.isArray(slabDistribution), true);
-    assert.strictEqual(slabDistribution.length > 0, true);
-    assert.strictEqual(slabDistribution.every(count => typeof count === 'number'), true);
-  }
-
-  testClusterGeneration() {
-    console.log('Testing cluster generation...');
-    
-    // Test Tuff Brick Stairs cluster generation
-    const cluster = this.worldGenerator.generateCluster('tuff_variants', { x: 0, y: 0, z: 0 });
-    const stairsCount = this.countBlocksInCluster(cluster, 'tuff_brick_stairs');
-    
-    assert.strictEqual(typeof stairsCount, 'number');
-    assert.strictEqual(stairsCount >= 0, true);
-  }
-
-  countBlocksInChunk(chunk, blockType) {
+  countBlocksInBiome(biome, blockTypes) {
     let count = 0;
-    for (let x = 0; x < 16; x++) {
-      for (let y = 0; y < 256; y++) {
-        for (let z = 0; z < 16; z++) {
-          const block = chunk.getBlock(x, y, z);
-          if (block && block.type === blockType) {
+    for (let x = 0; x < biome.width; x++) {
+      for (let y = 0; y < biome.height; y++) {
+        for (let z = 0; z < biome.depth; z++) {
+          const block = this.world.getBlockAt(x, y, z);
+          if (block && blockTypes.includes(block.type)) {
             count++;
           }
         }
@@ -93,51 +83,20 @@ class TuffVariantsWorldGenTest {
     return count;
   }
 
-  countBlocksInStructure(structure, blockType) {
+  countBlocksInStructure(structure, blockTypes) {
     let count = 0;
-    structure.blocks.forEach(block => {
-      if (block.type === blockType) {
-        count++;
+    for (let x = 0; x < structure.width; x++) {
+      for (let y = 0; y < structure.height; y++) {
+        for (let z = 0; z < structure.depth; z++) {
+          const block = this.world.getBlockAt(x, y, z);
+          if (block && blockTypes.includes(block.type)) {
+            count++;
+          }
+        }
       }
-    });
-    return count;
-  }
-
-  countBlocksInBiome(biome, blockType) {
-    let count = 0;
-    biome.blocks.forEach(block => {
-      if (block.type === blockType) {
-        count++;
-      }
-    });
-    return count;
-  }
-
-  analyzeHeightDistribution(heightMap, blockType) {
-    const distribution = new Array(256).fill(0);
-    heightMap.forEach((height, index) => {
-      const block = this.world.getBlock(index % 16, height, Math.floor(index / 16));
-      if (block && block.type === blockType) {
-        distribution[height]++;
-      }
-    });
-    return distribution;
-  }
-
-  countBlocksInCluster(cluster, blockType) {
-    let count = 0;
-    cluster.blocks.forEach(block => {
-      if (block.type === blockType) {
-        count++;
-      }
-    });
+    }
     return count;
   }
 }
-
-// Run tests
-const test = new TuffVariantsWorldGenTest();
-test.runTests();
-console.log('All Tuff variants world generation tests passed!');
 
 module.exports = TuffVariantsWorldGenTest; 
