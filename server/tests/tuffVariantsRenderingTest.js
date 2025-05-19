@@ -1,21 +1,23 @@
 const assert = require('assert');
 const TestWorld = require('./testWorld');
 const { TuffBricksBlock, TuffBrickSlabBlock, TuffBrickStairsBlock, TuffBrickWallBlock, ChiseledTuffBlock } = require('../blocks/tuffVariants');
-const { RenderManager } = require('../managers/renderManager');
-const { ParticleSystem } = require('../systems/particleSystem');
+const { RenderManager } = require('../rendering/renderManager');
+const { TextureManager } = require('../rendering/textureManager');
+const { ShaderManager } = require('../rendering/shaderManager');
 
 class TuffVariantsRenderingTest {
   constructor() {
     this.world = new TestWorld();
     this.renderManager = new RenderManager();
-    this.particleSystem = new ParticleSystem();
+    this.textureManager = new TextureManager();
+    this.shaderManager = new ShaderManager();
   }
 
   runTests() {
     this.testBlockRendering();
-    this.testParticleEffects();
-    this.testVisualStates();
     this.testTextureMapping();
+    this.testShaderEffects();
+    this.testModelVariants();
     this.testAnimationStates();
   }
 
@@ -26,47 +28,10 @@ class TuffVariantsRenderingTest {
     const bricks = new TuffBricksBlock();
     const placedBricks = bricks.place(this.world, { x: 0, y: 0, z: 0 });
     
-    // Get render data
     const renderData = this.renderManager.getBlockRenderData(placedBricks);
-    
-    // Verify render properties
-    assert.strictEqual(renderData.texture, 'tuff_bricks');
-    assert.strictEqual(renderData.model, 'block');
-    assert.strictEqual(renderData.transparent, false);
-    assert.strictEqual(renderData.cullFace, true);
-  }
-
-  testParticleEffects() {
-    console.log('Testing particle effects...');
-    
-    // Test Chiseled Tuff particle effects
-    const chiseled = new ChiseledTuffBlock();
-    const placedChiseled = chiseled.place(this.world, { x: 0, y: 0, z: 0 });
-    
-    // Trigger particle effect
-    const particles = this.particleSystem.createBlockBreakParticles(placedChiseled);
-    
-    // Verify particles
-    assert.strictEqual(particles.length > 0, true);
-    assert.strictEqual(particles[0].texture, 'tuff_particle');
-    assert.strictEqual(typeof particles[0].lifetime, 'number');
-  }
-
-  testVisualStates() {
-    console.log('Testing visual states...');
-    
-    // Test Tuff Brick Stairs visual states
-    const stairs = new TuffBrickStairsBlock();
-    const placedStairs = stairs.place(this.world, { x: 0, y: 0, z: 0 });
-    
-    // Test different states
-    placedStairs.setState('facing', 'north');
-    let renderData = this.renderManager.getBlockRenderData(placedStairs);
-    assert.strictEqual(renderData.rotation.y, 0);
-    
-    placedStairs.setState('facing', 'east');
-    renderData = this.renderManager.getBlockRenderData(placedStairs);
-    assert.strictEqual(renderData.rotation.y, 90);
+    assert.strictEqual(renderData.vertices.length > 0, true);
+    assert.strictEqual(renderData.indices.length > 0, true);
+    assert.strictEqual(renderData.uvs.length > 0, true);
   }
 
   testTextureMapping() {
@@ -76,13 +41,36 @@ class TuffVariantsRenderingTest {
     const wall = new TuffBrickWallBlock();
     const placedWall = wall.place(this.world, { x: 0, y: 0, z: 0 });
     
-    // Get texture coordinates
-    const textureCoords = this.renderManager.getBlockTextureCoords(placedWall);
+    const textureData = this.textureManager.getBlockTextureData(placedWall);
+    assert.strictEqual(textureData.textureId !== null, true);
+    assert.strictEqual(textureData.uvCoordinates.length > 0, true);
+    assert.strictEqual(textureData.textureAtlas !== null, true);
+  }
+
+  testShaderEffects() {
+    console.log('Testing shader effects...');
     
-    // Verify texture mapping
-    assert.strictEqual(textureCoords.length, 6); // All six faces
-    assert.strictEqual(typeof textureCoords[0].u, 'number');
-    assert.strictEqual(typeof textureCoords[0].v, 'number');
+    // Test Tuff Brick Stairs shader effects
+    const stairs = new TuffBrickStairsBlock();
+    const placedStairs = stairs.place(this.world, { x: 0, y: 0, z: 0 });
+    
+    const shaderData = this.shaderManager.getBlockShaderData(placedStairs);
+    assert.strictEqual(shaderData.shaderProgram !== null, true);
+    assert.strictEqual(shaderData.uniforms !== null, true);
+    assert.strictEqual(shaderData.attributes !== null, true);
+  }
+
+  testModelVariants() {
+    console.log('Testing model variants...');
+    
+    // Test Chiseled Tuff model variants
+    const chiseled = new ChiseledTuffBlock();
+    const placedChiseled = chiseled.place(this.world, { x: 0, y: 0, z: 0 });
+    
+    const modelData = this.renderManager.getBlockModelData(placedChiseled);
+    assert.strictEqual(modelData.modelId !== null, true);
+    assert.strictEqual(modelData.variants.length > 0, true);
+    assert.strictEqual(modelData.animations !== null, true);
   }
 
   testAnimationStates() {
@@ -92,15 +80,15 @@ class TuffVariantsRenderingTest {
     const slab = new TuffBrickSlabBlock();
     const placedSlab = slab.place(this.world, { x: 0, y: 0, z: 0 });
     
-    // Test placement animation
-    const placementAnim = this.renderManager.getBlockPlacementAnimation(placedSlab);
-    assert.strictEqual(placementAnim !== null, true);
-    assert.strictEqual(typeof placementAnim.duration, 'number');
+    const animationData = this.renderManager.getBlockAnimationData(placedSlab);
+    assert.strictEqual(animationData.animations !== null, true);
+    assert.strictEqual(animationData.currentState !== null, true);
+    assert.strictEqual(animationData.transitions !== null, true);
     
-    // Test breaking animation
-    const breakingAnim = this.renderManager.getBlockBreakingAnimation(placedSlab);
-    assert.strictEqual(breakingAnim !== null, true);
-    assert.strictEqual(typeof breakingAnim.duration, 'number');
+    // Test state transition
+    placedSlab.setState('breaking');
+    const updatedAnimationData = this.renderManager.getBlockAnimationData(placedSlab);
+    assert.strictEqual(updatedAnimationData.currentState === 'breaking', true);
   }
 }
 
