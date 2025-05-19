@@ -1,5 +1,5 @@
-const { BlockRegistry } = require('../registry/blockRegistry');
-const { EntityRegistry } = require('../registry/entityRegistry');
+const { BlockRegistry } = require('../blocks/blockRegistry');
+const { EntityRegistry } = require('../entity/entityRegistry');
 
 class World {
   constructor() {
