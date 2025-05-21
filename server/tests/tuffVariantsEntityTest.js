@@ -1,110 +1,120 @@
 const assert = require('assert');
-const TestWorld = require('./testWorld');
-const { TuffBricksBlock, TuffBrickSlabBlock, TuffBrickStairsBlock, TuffBrickWallBlock, ChiseledTuffBlock } = require('../blocks/tuffVariants');
-const { Player } = require('../entities/player');
-const { Zombie } = require('../entities/zombie');
-const { EntityManager } = require('../managers/entityManager');
+const { 
+  ChiseledTuffBlock,
+  TuffBricksBlock,
+  TuffBrickSlabBlock,
+  TuffBrickStairsBlock,
+  TuffBrickWallBlock
+} = require('../blocks/tuffVariantsBlocks');
+const World = require('../world/world');
+const Player = require('../entities/player');
+const Zombie = require('../entities/zombie');
+const ItemEntity = require('../entities/itemEntity');
 
 class TuffVariantsEntityTest {
   constructor() {
-    this.world = new TestWorld();
-    this.entityManager = new EntityManager(this.world);
+    this.world = new World();
   }
 
   runTests() {
+    this.testPlayerInteraction();
+    this.testMobInteraction();
+    this.testItemEntityInteraction();
     this.testEntityCollision();
-    this.testEntityMovement();
-    this.testEntityInteraction();
-    this.testEntityPlacement();
-    this.testEntityDamage();
+  }
+
+  testPlayerInteraction() {
+    console.log('Testing player interaction...');
+    
+    // Test Tuff Bricks player interaction
+    const bricks = new TuffBricksBlock();
+    const placedBricks = bricks.place(this.world, { x: 0, y: 0, z: 0 });
+    
+    // Create player
+    const player = new Player();
+    player.setPosition({ x: 0, y: 1, z: 0 });
+    
+    // Test player collision
+    assert.strictEqual(placedBricks.canEntityCollide(player), true);
+    assert.strictEqual(placedBricks.getCollisionBox().intersects(player.getBoundingBox()), true);
+    
+    // Test player interaction
+    const interactionResult = placedBricks.onPlayerInteract(player);
+    assert.strictEqual(interactionResult.success, true);
+  }
+
+  testMobInteraction() {
+    console.log('Testing mob interaction...');
+    
+    // Test Tuff Brick Wall mob interaction
+    const wall = new TuffBrickWallBlock();
+    const placedWall = wall.place(this.world, { x: 0, y: 0, z: 0 });
+    
+    // Create zombie
+    const zombie = new Zombie();
+    zombie.setPosition({ x: 0, y: 1, z: 0 });
+    
+    // Test mob collision
+    assert.strictEqual(placedWall.canEntityCollide(zombie), true);
+    assert.strictEqual(placedWall.getCollisionBox().intersects(zombie.getBoundingBox()), true);
+    
+    // Test mob pathfinding
+    const path = zombie.findPath({ x: 2, y: 0, z: 0 });
+    assert.strictEqual(Array.isArray(path), true);
+    assert.strictEqual(path.length > 0, true);
+  }
+
+  testItemEntityInteraction() {
+    console.log('Testing item entity interaction...');
+    
+    // Test Tuff Brick Slab item entity interaction
+    const slab = new TuffBrickSlabBlock();
+    const placedSlab = slab.place(this.world, { x: 0, y: 0, z: 0 });
+    
+    // Create item entity
+    const itemEntity = new ItemEntity({ id: 'diamond', count: 1 });
+    itemEntity.setPosition({ x: 0, y: 1, z: 0 });
+    
+    // Test item entity collision
+    assert.strictEqual(placedSlab.canEntityCollide(itemEntity), true);
+    assert.strictEqual(placedSlab.getCollisionBox().intersects(itemEntity.getBoundingBox()), true);
+    
+    // Test item entity physics
+    itemEntity.applyGravity();
+    assert.strictEqual(itemEntity.getPosition().y < 1, true);
   }
 
   testEntityCollision() {
     console.log('Testing entity collision...');
     
-    // Test Tuff Bricks entity collision
-    const bricks = new TuffBricksBlock();
-    const placedBricks = bricks.place(this.world, { x: 0, y: 0, z: 0 });
-    
-    // Create player
-    const player = new Player({ x: 1, y: 0, z: 0 });
-    this.entityManager.addEntity(player);
-    
-    // Test collision
-    const canMove = this.entityManager.canEntityMove(player, { x: 0, y: 0, z: 0 });
-    assert.strictEqual(canMove, false);
-  }
-
-  testEntityMovement() {
-    console.log('Testing entity movement...');
-    
-    // Test Chiseled Tuff entity movement
-    const chiseled = new ChiseledTuffBlock();
-    const placedChiseled = chiseled.place(this.world, { x: 0, y: 0, z: 0 });
-    
-    // Create zombie
-    const zombie = new Zombie({ x: 2, y: 0, z: 0 });
-    this.entityManager.addEntity(zombie);
-    
-    // Test movement
-    const movementSpeed = this.entityManager.getEntityMovementSpeed(zombie, { x: 0, y: 0, z: 0 });
-    assert.strictEqual(typeof movementSpeed, 'number');
-    assert.strictEqual(movementSpeed > 0, true);
-  }
-
-  testEntityInteraction() {
-    console.log('Testing entity interaction...');
-    
-    // Test Tuff Brick Stairs entity interaction
+    // Test Tuff Brick Stairs entity collision
     const stairs = new TuffBrickStairsBlock();
     const placedStairs = stairs.place(this.world, { x: 0, y: 0, z: 0 });
     
-    // Create player
-    const player = new Player({ x: 1, y: 0, z: 0 });
-    this.entityManager.addEntity(player);
+    // Create entities
+    const player = new Player();
+    const zombie = new Zombie();
     
-    // Test interaction
-    const canInteract = this.entityManager.canEntityInteract(player, { x: 0, y: 0, z: 0 });
-    assert.strictEqual(canInteract, true);
-  }
-
-  testEntityPlacement() {
-    console.log('Testing entity placement...');
+    // Position entities
+    player.setPosition({ x: 0, y: 1, z: 0 });
+    zombie.setPosition({ x: 0, y: 1, z: 1 });
     
-    // Test Tuff Brick Wall entity placement
-    const wall = new TuffBrickWallBlock();
-    const placedWall = wall.place(this.world, { x: 0, y: 0, z: 0 });
+    // Test entity collision with block
+    assert.strictEqual(placedStairs.canEntityCollide(player), true);
+    assert.strictEqual(placedStairs.canEntityCollide(zombie), true);
     
-    // Create player
-    const player = new Player({ x: 1, y: 0, z: 0 });
-    this.entityManager.addEntity(player);
+    // Test entity collision resolution
+    const playerCollision = placedStairs.resolveEntityCollision(player);
+    const zombieCollision = placedStairs.resolveEntityCollision(zombie);
     
-    // Test placement
-    const canPlace = this.entityManager.canEntityPlaceBlock(player, { x: 0, y: 0, z: 0 });
-    assert.strictEqual(canPlace, false);
-  }
-
-  testEntityDamage() {
-    console.log('Testing entity damage...');
-    
-    // Test Tuff Brick Slab entity damage
-    const slab = new TuffBrickSlabBlock();
-    const placedSlab = slab.place(this.world, { x: 0, y: 0, z: 0 });
-    
-    // Create player
-    const player = new Player({ x: 1, y: 0, z: 0 });
-    this.entityManager.addEntity(player);
-    
-    // Test damage
-    const damage = this.entityManager.getEntityDamage(player, { x: 0, y: 0, z: 0 });
-    assert.strictEqual(typeof damage, 'number');
-    assert.strictEqual(damage, 0);
+    assert.strictEqual(playerCollision.resolved, true);
+    assert.strictEqual(zombieCollision.resolved, true);
   }
 }
 
 // Run tests
 const test = new TuffVariantsEntityTest();
 test.runTests();
-console.log('All Tuff variants entity tests passed!');
+console.log('All Tuff variants entity interaction tests passed!');
 
 module.exports = TuffVariantsEntityTest; 
