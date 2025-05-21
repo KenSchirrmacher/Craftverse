@@ -5,6 +5,9 @@ const RecipeRegistry = require('../registry/recipeRegistry');
 const StonecutterRegistry = require('../registry/stonecutterRegistry');
 const TestWorld = require('./testWorld');
 const { TuffBricksBlock, TuffBrickSlabBlock, TuffBrickStairsBlock, TuffBrickWallBlock, ChiseledTuffBlock } = require('../blocks/tuffVariants');
+const BlockRegistry = require('../blocks/blockRegistry');
+const World = require('../world/world');
+const Player = require('../entities/player');
 
 class TuffVariantsIntegrationTest {
   constructor() {

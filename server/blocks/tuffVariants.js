@@ -1,4 +1,4 @@
-const Block = require('./block');
+const Block = require('./baseBlock');
 const BlockRegistry = require('../registry/blockRegistry');
 
 /**
@@ -103,11 +103,12 @@ class TuffBrickWallBlock extends TuffVariantBlock {
 }
 
 // Register all Tuff variant blocks
-BlockRegistry.register(new ChiseledTuffBlock());
-BlockRegistry.register(new TuffBricksBlock());
-BlockRegistry.register(new TuffBrickSlabBlock());
-BlockRegistry.register(new TuffBrickStairsBlock());
-BlockRegistry.register(new TuffBrickWallBlock());
+const blockRegistry = BlockRegistry.getInstance();
+blockRegistry.register('chiseled_tuff', new ChiseledTuffBlock());
+blockRegistry.register('tuff_bricks', new TuffBricksBlock());
+blockRegistry.register('tuff_brick_slab', new TuffBrickSlabBlock());
+blockRegistry.register('tuff_brick_stairs', new TuffBrickStairsBlock());
+blockRegistry.register('tuff_brick_wall', new TuffBrickWallBlock());
 
 module.exports = {
   ChiseledTuffBlock,
