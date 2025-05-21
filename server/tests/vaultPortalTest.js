@@ -5,7 +5,7 @@ const VaultPortalItem = require('../items/vaultPortalItem');
 const VaultDimension = require('../dimensions/vaultDimension');
 const VaultPortalManager = require('../systems/vaultPortalManager');
 const Player = require('../entities/player');
-const ItemStack = require('../items/itemStack');
+const ReinforcedDeepslateBlock = require('../blocks/reinforcedDeepslateBlock');
 const { BlockRegistry } = require('../registry/blockRegistry');
 
 class VaultPortalTest {
@@ -13,6 +13,8 @@ class VaultPortalTest {
     this.world = new World();
     this.vaultDimension = new VaultDimension();
     this.vaultPortalManager = new VaultPortalManager(this.world, this.vaultDimension);
+    this.blockRegistry = new BlockRegistry();
+    this.blockRegistry.register('reinforced_deepslate', ReinforcedDeepslateBlock);
   }
 
   runTests() {
@@ -40,6 +42,8 @@ class VaultPortalTest {
     assert.strictEqual(placedPortal.getFrameBlocks().length, 0);
     
     // Test frame construction
+    const frameBlock = new ReinforcedDeepslateBlock();
+    this.world.setBlock(0, 1, 0, frameBlock);
     placedPortal.addFrameBlock({ x: 0, y: 1, z: 0 });
     assert.strictEqual(placedPortal.getFrameBlocks().length, 1);
     
@@ -127,7 +131,7 @@ class VaultPortalTest {
 
     // Place reinforced deepslate blocks for the frame
     for (const pos of frameBlocks) {
-      const block = BlockRegistry.getBlock('reinforced_deepslate');
+      const block = new ReinforcedDeepslateBlock();
       this.world.setBlock(placedPortal.position.x + pos.x, placedPortal.position.y + pos.y, placedPortal.position.z + pos.z, block);
     }
 
