@@ -1,106 +1,157 @@
 /**
- * Tests for Tuff Variants World Generation
- * Verifies the world generation functionality of tuff variants
+ * World Generation Tests for Tuff Variants
+ * Verifies that Tuff variants are properly integrated into world generation
  */
 
 const assert = require('assert');
 const World = require('../world/world');
-const BiomeRegistry = require('../world/biomeRegistry');
+const WorldGenerator = require('../world/worldGenerator');
+const { 
+  ChiseledTuffBlock,
+  TuffBricksBlock,
+  TuffBrickSlabBlock,
+  TuffBrickStairsBlock,
+  TuffBrickWallBlock
+} = require('../blocks/tuffVariantsBlocks');
 
 class TuffVariantsWorldGenTest {
   constructor() {
     this.world = new World();
-    this.biomeRegistry = new BiomeRegistry();
+    this.worldGenerator = new WorldGenerator(this.world);
   }
 
   runTests() {
-    this.testTuffVariantsInBiomes();
-    this.testTuffVariantsInStructures();
-    this.testTuffVariantsInCaves();
+    this.testTuffGeneration();
+    this.testTuffBrickStructures();
+    this.testChiseledTuffGeneration();
+    this.testTuffBrickWallGeneration();
   }
 
-  testTuffVariantsInBiomes() {
-    console.log('Testing Tuff Variants in Biomes...');
-    
-    // Test tuff variants in mountain biomes
-    const mountainBiome = this.biomeRegistry.getBiome('mountain');
-    const blocks = this.countBlocksInBiome(mountainBiome, ['tuff', 'chiseled_tuff', 'tuff_bricks']);
-    assert.strictEqual(blocks > 0, true, 'Mountain biome should contain tuff variants');
+  testTuffGeneration() {
+    console.log('Testing Tuff Generation...');
 
-    // Test tuff variants in cave biomes
-    const caveBiome = this.biomeRegistry.getBiome('cave');
-    const caveBlocks = this.countBlocksInBiome(caveBiome, ['tuff', 'chiseled_tuff', 'tuff_bricks']);
-    assert.strictEqual(caveBlocks > 0, true, 'Cave biome should contain tuff variants');
-  }
+    // Generate a chunk
+    const chunkX = 0;
+    const chunkZ = 0;
+    this.worldGenerator.generateChunk(chunkX, chunkZ);
 
-  testTuffVariantsInStructures() {
-    console.log('Testing Tuff Variants in Structures...');
-    
-    // Test tuff variants in ancient cities
-    const ancientCity = this.world.getStructure('ancient_city');
-    const blocks = this.countBlocksInStructure(ancientCity, ['tuff_bricks', 'tuff_brick_stairs', 'tuff_brick_wall']);
-    assert.strictEqual(blocks > 0, true, 'Ancient cities should contain tuff variants');
-
-    // Test tuff variants in strongholds
-    const stronghold = this.world.getStructure('stronghold');
-    const strongholdBlocks = this.countBlocksInStructure(stronghold, ['tuff_bricks', 'tuff_brick_stairs', 'tuff_brick_wall']);
-    assert.strictEqual(strongholdBlocks > 0, true, 'Strongholds should contain tuff variants');
-  }
-
-  testTuffVariantsInCaves() {
-    console.log('Testing Tuff Variants in Caves...');
-    
-    // Test tuff variants in deep caves
-    const deepCave = this.world.getStructure('deep_cave');
-    const blocks = this.countBlocksInStructure(deepCave, ['tuff', 'chiseled_tuff', 'tuff_bricks']);
-    assert.strictEqual(blocks > 0, true, 'Deep caves should contain tuff variants');
-
-    // Test tuff variants in cave systems
-    const caveSystem = this.world.getStructure('cave_system');
-    const caveBlocks = this.countBlocksInStructure(caveSystem, ['tuff', 'chiseled_tuff', 'tuff_bricks']);
-    assert.strictEqual(caveBlocks > 0, true, 'Cave systems should contain tuff variants');
-  }
-
-  countBlocksInBiome(biome, blockTypes) {
-    let count = 0;
-    const chunkSize = 16;
-    const biomeSize = 256;
-    
-    for (let x = 0; x < biomeSize; x += chunkSize) {
-      for (let z = 0; z < biomeSize; z += chunkSize) {
-        const chunk = this.world.getChunkAt(x, z);
-        if (chunk && chunk.biome === biome.id) {
-          for (let bx = 0; bx < chunkSize; bx++) {
-            for (let by = 0; by < 256; by++) {
-              for (let bz = 0; bz < chunkSize; bz++) {
-                const block = chunk.getBlock(bx, by, bz);
-                if (block && blockTypes.includes(block.id)) {
-                  count++;
-                }
-              }
-            }
+    // Check for Tuff blocks in the chunk
+    let tuffFound = false;
+    for (let x = 0; x < 16; x++) {
+      for (let y = 0; y < 256; y++) {
+        for (let z = 0; z < 16; z++) {
+          const block = this.world.getBlockAt(
+            chunkX * 16 + x,
+            y,
+            chunkZ * 16 + z
+          );
+          if (block.type === 'tuff') {
+            tuffFound = true;
+            break;
           }
         }
+        if (tuffFound) break;
       }
+      if (tuffFound) break;
     }
-    return count;
+
+    assert.strictEqual(tuffFound, true, 'Tuff blocks should generate in the world');
   }
 
-  countBlocksInStructure(structure, blockTypes) {
-    let count = 0;
-    const bounds = structure.getBounds();
-    
-    for (let x = bounds.minX; x <= bounds.maxX; x++) {
-      for (let y = bounds.minY; y <= bounds.maxY; y++) {
-        for (let z = bounds.minZ; z <= bounds.maxZ; z++) {
-          const block = this.world.getBlockAt(x, y, z);
-          if (block && blockTypes.includes(block.id)) {
-            count++;
+  testTuffBrickStructures() {
+    console.log('Testing Tuff Brick Structures...');
+
+    // Generate a structure with Tuff Bricks
+    const structureX = 100;
+    const structureY = 64;
+    const structureZ = 100;
+    this.worldGenerator.generateStructure('tuff_brick_ruins', structureX, structureY, structureZ);
+
+    // Check for Tuff Brick blocks in the structure
+    let tuffBricksFound = false;
+    for (let x = -5; x <= 5; x++) {
+      for (let y = 0; y < 10; y++) {
+        for (let z = -5; z <= 5; z++) {
+          const block = this.world.getBlockAt(
+            structureX + x,
+            structureY + y,
+            structureZ + z
+          );
+          if (block.type === 'tuff_bricks') {
+            tuffBricksFound = true;
+            break;
           }
         }
+        if (tuffBricksFound) break;
       }
+      if (tuffBricksFound) break;
     }
-    return count;
+
+    assert.strictEqual(tuffBricksFound, true, 'Tuff Brick structures should generate in the world');
+  }
+
+  testChiseledTuffGeneration() {
+    console.log('Testing Chiseled Tuff Generation...');
+
+    // Generate a structure with Chiseled Tuff
+    const structureX = 200;
+    const structureY = 64;
+    const structureZ = 200;
+    this.worldGenerator.generateStructure('tuff_temple', structureX, structureY, structureZ);
+
+    // Check for Chiseled Tuff blocks in the structure
+    let chiseledTuffFound = false;
+    for (let x = -5; x <= 5; x++) {
+      for (let y = 0; y < 10; y++) {
+        for (let z = -5; z <= 5; z++) {
+          const block = this.world.getBlockAt(
+            structureX + x,
+            structureY + y,
+            structureZ + z
+          );
+          if (block.type === 'chiseled_tuff') {
+            chiseledTuffFound = true;
+            break;
+          }
+        }
+        if (chiseledTuffFound) break;
+      }
+      if (chiseledTuffFound) break;
+    }
+
+    assert.strictEqual(chiseledTuffFound, true, 'Chiseled Tuff should generate in structures');
+  }
+
+  testTuffBrickWallGeneration() {
+    console.log('Testing Tuff Brick Wall Generation...');
+
+    // Generate a structure with Tuff Brick Walls
+    const structureX = 300;
+    const structureY = 64;
+    const structureZ = 300;
+    this.worldGenerator.generateStructure('tuff_fortress', structureX, structureY, structureZ);
+
+    // Check for Tuff Brick Wall blocks in the structure
+    let tuffBrickWallFound = false;
+    for (let x = -5; x <= 5; x++) {
+      for (let y = 0; y < 10; y++) {
+        for (let z = -5; z <= 5; z++) {
+          const block = this.world.getBlockAt(
+            structureX + x,
+            structureY + y,
+            structureZ + z
+          );
+          if (block.type === 'tuff_brick_wall') {
+            tuffBrickWallFound = true;
+            break;
+          }
+        }
+        if (tuffBrickWallFound) break;
+      }
+      if (tuffBrickWallFound) break;
+    }
+
+    assert.strictEqual(tuffBrickWallFound, true, 'Tuff Brick Walls should generate in structures');
   }
 }
 
