@@ -1,519 +1,316 @@
-// Wind Charge tests - Tests for Wind Charge item and entity implementation
 const assert = require('assert');
 const WindChargeItem = require('../items/windChargeItem');
-const WindChargeEntity = require('../entities/windChargeEntity');
-const World = require('../world/world');
-const Player = require('../entities/player');
-const { v4: uuidv4 } = require('uuid');
+const WindTrajectoryPredictor = require('../utils/windTrajectoryPredictor');
+const Vector3 = require('../math/vector3');
 
-// Test world implementation
-class TestWorld extends World {
-  constructor() {
-    super();
-    this.blocks = new Map();
-    this.entities = new Map();
-  }
+describe('Wind Charge System', () => {
+  let windCharge;
+  let mockPlayer;
+  let mockWorld;
   
-  getBlock(x, y, z) {
-    const key = `${x},${y},${z}`;
-    return this.blocks.get(key) || { type: 'air', isSolid: false };
-  }
-  
-  setBlock(x, y, z, block) {
-    const key = `${x},${y},${z}`;
-    this.blocks.set(key, block);
-  }
-  
-  getEntitiesInRadius(position, radius) {
-    return Array.from(this.entities.values()).filter(entity => {
-      const dx = entity.position.x - position.x;
-      const dy = entity.position.y - position.y;
-      const dz = entity.position.z - position.z;
-      const distance = Math.sqrt(dx * dx + dy * dy + dz * dz);
-      return distance <= radius;
-    });
-  }
-  
-  addEntity(entity) {
-    this.entities.set(entity.id, entity);
-    entity.world = this;
-  }
-  
-  removeEntity(id) {
-    this.entities.delete(id);
-  }
-}
-
-// Test player implementation
-class TestPlayer extends Player {
-  constructor(id, position) {
-    super(id, position);
-    this.charging = {};
-    this.cooldowns = {};
-    this.gameMode = 'survival';
-    this.rotation = { x: 0, y: 0, z: 0 };
-    this.sentEvents = [];
-  }
-
-  sendEvent(event) {
-    this.sentEvents.push(event);
-  }
-
-  getLookDirection() {
-    return {
-      x: -Math.sin(this.rotation.y) * Math.cos(this.rotation.x),
-      y: -Math.sin(this.rotation.x),
-      z: Math.cos(this.rotation.y) * Math.cos(this.rotation.x)
+  beforeEach(() => {
+    // Create Wind Charge item
+    windCharge = new WindChargeItem();
+    
+    // Create mock player
+    mockPlayer = {
+      id: 'test_player',
+      position: { x: 0, y: 0, z: 0 },
+      rotation: { x: 0, y: 0 },
+      cooldowns: {},
+      charging: {},
+      getLookDirection: () => ({
+        x: 0,
+        y: 0,
+        z: 1
+      })
     };
-  }
-}
-
-// Mock entity for testing
-class MockEntity {
-  constructor(id, position) {
-    this.id = id;
-    this.position = position || { x: 0, y: 0, z: 0 };
-    this.velocity = { x: 0, y: 0, z: 0 };
-    this.health = 10;
-    this.maxHealth = 10;
-    this.dead = false;
-    this.boundingBox = {
-      min: {
-        x: position.x - 0.3,
-        y: position.y - 0.3,
-        z: position.z - 0.3
-      },
-      max: {
-        x: position.x + 0.3,
-        y: position.y + 0.3,
-        z: position.z + 0.3
-      }
+    
+    // Create mock world
+    mockWorld = {
+      getBlock: (x, y, z) => ({
+        isSolid: false
+      })
     };
-  }
+  });
   
-  takeDamage(amount, attacker) {
-    this.health -= amount;
-    if (this.health <= 0) {
-      this.dead = true;
-      return true;
-    }
-    return false;
-  }
-}
-
-describe('Wind Charge', function() {
-  // Test the Wind Charge item
-  describe('Wind Charge Item', function() {
-    it('should create a Wind Charge item with correct properties', function() {
-      const windCharge = new WindChargeItem();
-      
+  describe('Wind Charge Item', () => {
+    it('should initialize with correct properties', () => {
       assert.strictEqual(windCharge.id, 'wind_charge');
       assert.strictEqual(windCharge.name, 'Wind Charge');
       assert.strictEqual(windCharge.type, 'wind_charge');
-      assert.strictEqual(windCharge.subtype, 'throwable');
-      assert.strictEqual(windCharge.category, 'combat');
-      assert.strictEqual(windCharge.stackable, true);
       assert.strictEqual(windCharge.maxStackSize, 16);
-      assert.strictEqual(windCharge.damage, 5);
-      assert.strictEqual(windCharge.moveDistance, 1);
-      assert.strictEqual(windCharge.explosionRadius, 1.5);
+      assert.strictEqual(windCharge.cooldown, 20);
+      assert.strictEqual(windCharge.maxChargeTime, 60);
     });
     
-    it('should accept custom properties', function() {
-      const windCharge = new WindChargeItem({
-        damage: 10,
-        moveDistance: 2,
-        explosionRadius: 3
+    it('should have three charge levels', () => {
+      assert.strictEqual(windCharge.chargeLevels.length, 3);
+      assert.deepStrictEqual(windCharge.chargeLevels[0], {
+        name: 'weak',
+        threshold: 0,
+        damageMultiplier: 1.0,
+        radiusMultiplier: 1.0,
+        powerMultiplier: 1.0
       });
-      
-      assert.strictEqual(windCharge.damage, 10);
-      assert.strictEqual(windCharge.moveDistance, 2);
-      assert.strictEqual(windCharge.explosionRadius, 3);
     });
     
-    it('should provide correct tooltip information', function() {
-      const windCharge = new WindChargeItem();
-      const tooltip = windCharge.getTooltip();
-      
-      assert.strictEqual(tooltip[0], 'Wind Charge');
-      assert.strictEqual(tooltip[1], 'Damage: 5');
-      assert.strictEqual(tooltip[2], 'Pushes entities and blocks');
+    it('should start charging when used', () => {
+      const result = windCharge.useStart(mockPlayer);
+      assert(result);
+      assert.strictEqual(result.type, 'wind_charge_charging');
+      assert.strictEqual(result.playerId, mockPlayer.id);
+      assert(mockPlayer.charging.wind_charge);
     });
     
-    it('should create wind charge entity when used', function() {
-      const windCharge = new WindChargeItem();
-      const player = new TestPlayer('player1', { x: 10, y: 5, z: 10 });
-      const context = { itemStack: { count: 1 } };
+    it('should respect cooldown', () => {
+      // First use
+      windCharge.useStart(mockPlayer);
+      windCharge.use(mockPlayer);
       
-      // Set player looking straight ahead
-      player.rotation = { x: 0, y: 0, z: 0 };
-      
-      const result = windCharge.use(player, context);
-      
-      assert.strictEqual(result.type, 'wind_charge_entity');
-      assert.strictEqual(typeof result.id, 'string');
-      assert.strictEqual(result.shooter, player.id);
-      assert.strictEqual(result.damage, 5);
-      assert.deepStrictEqual(result.position, {
-        x: player.position.x,
-        y: player.position.y + 1.6,
-        z: player.position.z
-      });
-      
-      // Check that item count is reduced
-      assert.strictEqual(context.itemStack.count, 0);
+      // Try to use again immediately
+      const result = windCharge.useStart(mockPlayer);
+      assert.strictEqual(result, false);
     });
     
-    it('should not reduce item count in creative mode', function() {
-      const windCharge = new WindChargeItem();
-      const player = new TestPlayer('player1');
-      player.gameMode = 'creative';
-      const context = { itemStack: { count: 1 } };
+    it('should update charge level correctly', () => {
+      windCharge.useStart(mockPlayer);
       
-      windCharge.use(player, context);
-      
-      assert.strictEqual(context.itemStack.count, 1);
+      // Simulate charging for 1 second (20 ticks)
+      const result = windCharge.useUpdate(mockPlayer, {}, 20);
+      assert(result);
+      assert.strictEqual(result.type, 'wind_charge_charge_level');
+      assert.strictEqual(result.chargeLevel, 1); // Should be medium charge
     });
     
-    it('should respect cooldown time between uses', function() {
-      const windCharge = new WindChargeItem();
-      const player = new TestPlayer('player1');
-      const context = { itemStack: { count: 2 } };
-      
-      // First use should succeed
-      const result1 = windCharge.use(player, context);
-      assert.notStrictEqual(result1, false);
-      
-      // Second immediate use should fail due to cooldown
-      const result2 = windCharge.use(player, context);
-      assert.strictEqual(result2, false);
-      
-      // Item count should only decrease once
-      assert.strictEqual(context.itemStack.count, 1);
-    });
-    
-    it('should properly serialize and deserialize', function() {
-      const windCharge = new WindChargeItem({
-        damage: 8,
-        moveDistance: 2,
-        explosionRadius: 2.5
-      });
-      
-      const json = windCharge.toJSON();
-      const restored = WindChargeItem.fromJSON(json);
-      
-      assert.strictEqual(restored.id, 'wind_charge');
-      assert.strictEqual(restored.damage, 8);
-      assert.strictEqual(restored.moveDistance, 2);
-      assert.strictEqual(restored.explosionRadius, 2.5);
+    it('should calculate trajectory correctly', () => {
+      const trajectory = windCharge.calculateTrajectory(mockPlayer, 0);
+      assert(trajectory);
+      assert(trajectory.points);
+      assert(trajectory.landingPosition);
     });
   });
   
-  // Test the Wind Charge entity
-  describe('Wind Charge Entity', function() {
-    it('should create a Wind Charge entity with correct properties', function() {
-      // Create initial velocity object
-      const initialVelocity = {
-        x: 2, y: 0, z: 0
+  describe('Wind Trajectory Predictor', () => {
+    let predictor;
+    
+    beforeEach(() => {
+      predictor = new WindTrajectoryPredictor();
+    });
+    
+    it('should initialize with correct properties', () => {
+      assert.strictEqual(predictor.maxSteps, 100);
+      assert.strictEqual(predictor.stepSize, 0.25);
+      assert.strictEqual(predictor.gravity, 0.03);
+      assert.strictEqual(predictor.drag, 0.01);
+    });
+    
+    it('should predict trajectory with no obstacles', () => {
+      const startPosition = { x: 0, y: 0, z: 0 };
+      const direction = { x: 0, y: 0, z: 1 };
+      const velocity = 1.5;
+      
+      const trajectory = predictor.predictTrajectory(
+        startPosition,
+        direction,
+        velocity,
+        mockWorld,
+        0
+      );
+      
+      assert(Array.isArray(trajectory));
+      assert(trajectory.length > 0);
+      assert.deepStrictEqual(trajectory[0], startPosition);
+    });
+    
+    it('should stop trajectory at obstacles', () => {
+      // Create world with a solid block
+      const worldWithObstacle = {
+        getBlock: (x, y, z) => ({
+          isSolid: z > 5 // Solid block at z > 5
+        })
       };
       
-      // Create entity with an explicit velocity object
-      const entity = new WindChargeEntity('test_id', {
-        position: { x: 5, y: 5, z: 5 },
-        direction: { x: 1, y: 0, z: 0 },
-        velocity: initialVelocity, // Pass as object
-        damage: 8,
-        moveDistance: 2,
-        radius: 3
-      });
+      const startPosition = { x: 0, y: 0, z: 0 };
+      const direction = { x: 0, y: 0, z: 1 };
+      const velocity = 1.5;
       
-      assert.strictEqual(entity.id, 'test_id');
-      assert.strictEqual(entity.type, 'wind_charge_entity');
-      assert.deepStrictEqual(entity.position, { x: 5, y: 5, z: 5 });
-      assert.deepStrictEqual(entity.direction, { x: 1, y: 0, z: 0 });
+      const trajectory = predictor.predictTrajectory(
+        startPosition,
+        direction,
+        velocity,
+        worldWithObstacle,
+        0
+      );
       
-      // Check numeric values of velocity components
-      assert.strictEqual(typeof entity.velocity.x, 'number');
-      assert.strictEqual(typeof entity.velocity.y, 'number');
-      assert.strictEqual(typeof entity.velocity.z, 'number');
-      
-      assert.strictEqual(entity.damage, 8);
-      assert.strictEqual(entity.moveDistance, 2);
-      assert.strictEqual(entity.explosionRadius, 3);
-      assert.strictEqual(entity.hasExploded, false);
+      assert(Array.isArray(trajectory));
+      assert(trajectory.length > 0);
+      assert(trajectory[trajectory.length - 1].z <= 5);
     });
     
-    it('should move according to velocity', function() {
-      // Create a wind charge with a clear velocity in the positive X direction
-      const entity = new WindChargeEntity('test_id', {
-        position: { x: 5, y: 5, z: 5 },
-        direction: { x: 1, y: 0, z: 0 },
-        velocity: { x: 0.5, y: 0, z: 0 } // Explicit velocity
-      });
+    it('should provide different predictions for different charge levels', () => {
+      const startPosition = { x: 0, y: 0, z: 0 };
+      const direction = { x: 0, y: 0, z: 1 };
+      const velocity = 1.5;
       
-      const initialX = entity.position.x;
+      const weakTrajectory = predictor.predictTrajectory(
+        startPosition,
+        direction,
+        velocity,
+        mockWorld,
+        0
+      );
       
-      // Manually update position based on velocity
-      entity.position.x += entity.velocity.x;
+      const strongTrajectory = predictor.predictTrajectory(
+        startPosition,
+        direction,
+        velocity,
+        mockWorld,
+        2
+      );
       
-      // Should have moved in X direction (should be 5.5 now)
-      assert.strictEqual(entity.position.x, 5.5);
+      assert.notDeepStrictEqual(weakTrajectory, strongTrajectory);
+      assert(strongTrajectory.length > weakTrajectory.length);
     });
     
-    it('should explode on collision with blocks', function() {
-      const entity = new WindChargeEntity('test_id', {
-        position: { x: 5, y: 5, z: 5 },
-        direction: { x: 1, y: 0, z: 0 },
-        velocity: 0.1
-      });
+    it('should generate correct render data', () => {
+      const trajectory = [
+        { x: 0, y: 0, z: 0 },
+        { x: 0, y: 0, z: 1 },
+        { x: 0, y: 0, z: 2 }
+      ];
       
-      const world = new TestWorld();
-      // Place a solid block in the path
-      world.setBlock(6, 5, 5, { type: 'stone', isSolid: true });
-      entity.world = world;
+      const renderData = predictor.getTrajectoryRenderData(trajectory, 0);
       
-      // Manually set position just before the block
-      entity.position = { x: 5.9, y: 5, z: 5 };
-      
-      // Should not be exploded initially
-      assert.strictEqual(entity.hasExploded, false);
-      
-      // Manually trigger the explode method
-      entity.explode();
-      
-      // Should have exploded
-      assert.strictEqual(entity.hasExploded, true);
-    });
-    
-    it('should damage entities on direct hit', function() {
-      const entity = new WindChargeEntity('test_id', {
-        position: { x: 5, y: 5, z: 5 },
-        direction: { x: 1, y: 0, z: 0 },
-        velocity: 0.1,
-        damage: 6
-      });
-      
-      const world = new TestWorld();
-      entity.world = world;
-      
-      // Add a target entity in the path
-      const targetEntity = new MockEntity('target', { x: 6, y: 5, z: 5 });
-      world.addEntity(targetEntity);
-      
-      // Initial health
-      assert.strictEqual(targetEntity.health, 10);
-      
-      // Directly hit the entity
-      entity.hitEntity(targetEntity);
-      
-      // Should damage the entity
-      assert.strictEqual(targetEntity.health, 4); // 10 - 6 = 4
-      
-      // Should have exploded
-      assert.strictEqual(entity.hasExploded, true);
-    });
-    
-    it('should apply knockback to hit entities', function() {
-      const entity = new WindChargeEntity('test_id', {
-        position: { x: 5, y: 5, z: 5 },
-        direction: { x: 1, y: 0, z: 0 },
-        velocity: 2
-      });
-      
-      const world = new TestWorld();
-      entity.world = world;
-      
-      // Add a target entity in the path
-      const targetEntity = new MockEntity('target', { x: 6, y: 5, z: 5 });
-      world.addEntity(targetEntity);
-      
-      // Initial velocity
-      assert.deepStrictEqual(targetEntity.velocity, { x: 0, y: 0, z: 0 });
-      
-      // Hit the entity
-      entity.hitEntity(targetEntity);
-      
-      // Should apply knockback in the direction of travel
-      assert.strictEqual(targetEntity.velocity.x > 0, true);
-      assert.strictEqual(targetEntity.velocity.y > 0, true); // Some upward component
-    });
-    
-    it('should affect entities in explosion radius', function() {
-      const entity = new WindChargeEntity('test_id', {
-        position: { x: 5, y: 5, z: 5 },
-        direction: { x: 1, y: 0, z: 0 },
-        velocity: 2,
-        radius: 3
-      });
-      
-      const world = new TestWorld();
-      entity.world = world;
-      
-      // Add entities at different distances
-      const closeEntity = new MockEntity('close', { x: 6, y: 5, z: 5 }); // Distance = 1
-      const midEntity = new MockEntity('mid', { x: 7, y: 5, z: 5 });     // Distance = 2
-      const farEntity = new MockEntity('far', { x: 9, y: 5, z: 5 });     // Distance = 4
-      
-      world.addEntity(closeEntity);
-      world.addEntity(midEntity);
-      world.addEntity(farEntity);
-      
-      // Explode the wind charge
-      entity.explode();
-      
-      // Close entity should get strongest knockback
-      assert.strictEqual(closeEntity.velocity.x > 0, true);
-      
-      // Mid entity should get some knockback
-      assert.strictEqual(midEntity.velocity.x > 0, true);
-      
-      // Far entity should not be affected (outside radius)
-      assert.deepStrictEqual(farEntity.velocity, { x: 0, y: 0, z: 0 });
-    });
-    
-    it('should move blocks in explosion radius', function() {
-      const entity = new WindChargeEntity('test_id', {
-        position: { x: 5, y: 5, z: 5 },
-        direction: { x: 1, y: 0, z: 0 },
-        velocity: 0.1,
-        radius: 2,
-        moveDistance: 2
-      });
-      
-      const world = new TestWorld();
-      entity.world = world;
-      
-      // Place movable blocks at different distances
-      world.setBlock(6, 5, 5, { type: 'sand' }); // Close
-      world.setBlock(7, 5, 5, { type: 'gravel' }); // Mid
-      world.setBlock(9, 5, 5, { type: 'sand' }); // Far (outside radius)
-      
-      // And some non-movable blocks
-      world.setBlock(6, 6, 5, { type: 'stone' }); // Close but not movable
-      
-      // Set these test blocks to have already been moved to avoid test issues
-      const movedBlocks = new Set(['7,5,5']);
-      entity.movedBlocks = movedBlocks;
-      
-      // Test a specific part of the method
-      // Get block within radius
-      const block = world.getBlock(6, 5, 5);
-      assert.strictEqual(block.type, 'sand');
-      
-      // Move the block manually
-      world.setBlock(7, 5, 5, block);
-      world.setBlock(6, 5, 5, { type: 'air' });
-      
-      // Close sand block should have moved
-      assert.strictEqual(world.getBlock(6, 5, 5).type, 'air');
-      
-      // Mid position should now have sand
-      assert.strictEqual(world.getBlock(7, 5, 5).type, 'sand');
-      
-      // Far sand block should not have moved
-      assert.strictEqual(world.getBlock(9, 5, 5).type, 'sand');
-      
-      // Stone block should not have moved
-      assert.strictEqual(world.getBlock(6, 6, 5).type, 'stone');
-    });
-    
-    it('should have a limited lifetime', function() {
-      const entity = new WindChargeEntity('test_id', {
-        position: { x: 5, y: 5, z: 5 },
-        direction: { x: 1, y: 0, z: 0 },
-        velocity: 2,
-        world: new TestWorld() // Add a mock world
-      });
-      
-      // Set maximum lifetime to something small for testing
-      entity.maxLifetime = 5;
-      
-      // Should not be exploded initially
-      assert.strictEqual(entity.hasExploded, false);
-      
-      // Update for max lifetime ticks
-      for (let i = 0; i < entity.maxLifetime; i++) {
-        entity.lifetime += 1; // Just update lifetime without physics
-        
-        if (entity.lifetime > entity.maxLifetime) {
-          entity.explode();
-        }
-      }
-      
-      // Should not be exploded yet
-      assert.strictEqual(entity.hasExploded, false);
-      
-      // One more update should explode
-      entity.lifetime += 1;
-      if (entity.lifetime > entity.maxLifetime) {
-        entity.explode();
-      }
-      
-      // Should have exploded due to lifetime
-      assert.strictEqual(entity.hasExploded, true);
-    });
-    
-    it('should generate trail particles', function() {
-      const entity = new WindChargeEntity('test_id', {
-        position: { x: 5, y: 5, z: 5 },
-        direction: { x: 1, y: 0, z: 0 },
-        velocity: 2
-      });
-      
-      // Initially no particles
-      assert.strictEqual(entity.particles.length, 0);
-      
-      // Force particle creation
-      entity.trailParticleDelay = 1;
-      entity.updateTrailParticles(1);
-      
-      // Should have at least one particle
-      assert.strictEqual(entity.particles.length > 0, true);
-      
-      // Particle should have correct properties
-      const particle = entity.particles[0];
-      assert.deepStrictEqual(particle.position, entity.position);
-      assert.strictEqual(typeof particle.lifetime, 'number');
-      assert.strictEqual(typeof particle.size, 'number');
-      assert.strictEqual(typeof particle.color, 'string');
-    });
-    
-    it('should serialize and deserialize correctly', function() {
-      const entity = new WindChargeEntity('test_id', {
-        position: { x: 5, y: 5, z: 5 },
-        direction: { x: 1, y: 0, z: 0 },
-        velocity: 2,
-        damage: 8,
-        moveDistance: 2,
-        radius: 3,
-        shooter: 'player1',
-        powerLevel: 1.5
-      });
-      
-      // Add some particles
-      entity.particles.push({
-        position: { x: 4.9, y: 5, z: 5 },
-        lifetime: 8,
-        size: 0.2,
-        color: '#a0e6ff'
-      });
-      
-      // Serialize
-      const data = entity.serialize();
-      
-      // Deserialize
-      const restored = WindChargeEntity.deserialize(data);
-      
-      // Check properties were preserved
-      assert.strictEqual(restored.id, 'test_id');
-      assert.deepStrictEqual(restored.position, { x: 5, y: 5, z: 5 });
-      assert.deepStrictEqual(restored.direction, { x: 1, y: 0, z: 0 });
-      assert.strictEqual(restored.damage, 8);
-      assert.strictEqual(restored.moveDistance, 2);
-      assert.strictEqual(restored.explosionRadius, 3);
-      assert.strictEqual(restored.shooter, 'player1');
-      assert.strictEqual(restored.powerLevel, 1.5);
-      assert.strictEqual(restored.particles.length, 1);
+      assert.strictEqual(renderData.type, 'wind_charge_trajectory');
+      assert(Array.isArray(renderData.points));
+      assert(renderData.landingPosition);
+      assert.strictEqual(renderData.chargeLevel, 0);
     });
   });
-}); 
+  
+  describe('Wind Charge Chain Reactions', () => {
+    it('should trigger chain reactions when hitting blocks', () => {
+      // Create world with chainable blocks
+      const worldWithChainableBlocks = {
+        getBlock: (x, y, z) => ({
+          isSolid: true,
+          isChainable: true,
+          triggerChainReaction: () => true
+        })
+      };
+      
+      const result = windCharge.use(mockPlayer, {
+        world: worldWithChainableBlocks,
+        position: { x: 0, y: 0, z: 5 }
+      });
+      
+      assert(result);
+      assert(result.chainReaction);
+      assert(Array.isArray(result.chainReaction.affectedBlocks));
+    });
+    
+    it('should respect line of sight for chain reactions', () => {
+      // Create world with solid blocks blocking line of sight
+      const worldWithObstacles = {
+        getBlock: (x, y, z) => ({
+          isSolid: true,
+          isChainable: true,
+          blocksLineOfSight: true
+        })
+      };
+      
+      const result = windCharge.use(mockPlayer, {
+        world: worldWithObstacles,
+        position: { x: 0, y: 0, z: 5 }
+      });
+      
+      assert(result);
+      assert(!result.chainReaction.affectedBlocks.some(block => 
+        block.x > 1 || block.z > 6
+      ));
+    });
+  });
+  
+  describe('Wind Charge Block Interactions', () => {
+    it('should interact with bells', () => {
+      const worldWithBell = {
+        getBlock: (x, y, z) => ({
+          isSolid: true,
+          type: 'bell',
+          ring: () => true
+        })
+      };
+      
+      const result = windCharge.use(mockPlayer, {
+        world: worldWithBell,
+        position: { x: 0, y: 0, z: 5 }
+      });
+      
+      assert(result);
+      assert(result.blockInteractions.some(interaction => 
+        interaction.type === 'bell_ring'
+      ));
+    });
+    
+    it('should interact with note blocks', () => {
+      const worldWithNoteBlock = {
+        getBlock: (x, y, z) => ({
+          isSolid: true,
+          type: 'note_block',
+          playNote: () => true
+        })
+      };
+      
+      const result = windCharge.use(mockPlayer, {
+        world: worldWithNoteBlock,
+        position: { x: 0, y: 0, z: 5 }
+      });
+      
+      assert(result);
+      assert(result.blockInteractions.some(interaction => 
+        interaction.type === 'note_block_play'
+      ));
+    });
+    
+    it('should interact with campfires', () => {
+      const worldWithCampfire = {
+        getBlock: (x, y, z) => ({
+          isSolid: true,
+          type: 'campfire',
+          extinguish: () => true
+        })
+      };
+      
+      const result = windCharge.use(mockPlayer, {
+        world: worldWithCampfire,
+        position: { x: 0, y: 0, z: 5 }
+      });
+      
+      assert(result);
+      assert(result.blockInteractions.some(interaction => 
+        interaction.type === 'campfire_extinguish'
+      ));
+    });
+    
+    it('should interact with wind turbines', () => {
+      const worldWithWindTurbine = {
+        getBlock: (x, y, z) => ({
+          isSolid: true,
+          type: 'wind_turbine',
+          generatePower: () => true
+        })
+      };
+      
+      const result = windCharge.use(mockPlayer, {
+        world: worldWithWindTurbine,
+        position: { x: 0, y: 0, z: 5 }
+      });
+      
+      assert(result);
+      assert(result.blockInteractions.some(interaction => 
+        interaction.type === 'wind_turbine_power'
+      ));
+    });
+  });
+});

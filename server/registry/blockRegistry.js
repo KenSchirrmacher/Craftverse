@@ -9,6 +9,7 @@ class BlockRegistry {
       return BlockRegistry.instance;
     }
     this.blocks = new Map();
+    this.registeredTypes = new Set();
     BlockRegistry.instance = this;
   }
 
@@ -20,7 +21,11 @@ class BlockRegistry {
   }
 
   register(type, block) {
+    if (this.registeredTypes.has(type)) {
+      console.warn(`Block type '${type}' already registered, overwriting`);
+    }
     this.blocks.set(type, block);
+    this.registeredTypes.add(type);
   }
 
   get(type) {
@@ -41,6 +46,11 @@ class BlockRegistry {
 
   list() {
     return Array.from(this.blocks.keys());
+  }
+
+  clear() {
+    this.blocks.clear();
+    this.registeredTypes.clear();
   }
 }
 

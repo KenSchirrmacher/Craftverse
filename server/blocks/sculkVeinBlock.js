@@ -2,7 +2,7 @@
  * SculkVeinBlock - A sculk block that grows along surfaces like vines
  */
 
-const { Block } = require('./baseBlock');
+const Block = require('./baseBlock');
 
 class SculkVeinBlock extends Block {
   /**

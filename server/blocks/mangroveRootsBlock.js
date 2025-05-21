@@ -3,7 +3,7 @@
  * Can be waterlogged and partially transparent
  */
 
-const { Block } = require('./baseBlock');
+const Block = require('./baseBlock');
 
 class MangroveRootsBlock extends Block {
   /**

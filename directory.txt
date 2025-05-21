@@ -567,4 +567,30 @@ server/tests/gameTest.js
 - Test suite for the Game class
 - Tests initialization, player management, game settings, etc.
 - Called by: Test runner
-- Dependencies: Game, World, Player 
+- Dependencies: Game, World, Player
+
+Vault Portal System:
+- server/tests/vaultPortalTest.js
+  Description: Test suite for Vault Portal functionality
+  Called by: Test runner
+  Dependencies: World, VaultPortalBlock, VaultPortalItem, VaultDimension, VaultPortalManager
+
+- server/blocks/vaultPortalBlock.js
+  Description: Implementation of the Vault Portal block
+  Called by: VaultPortalManager, World
+  Dependencies: Block, Vector3
+
+- server/items/vaultPortalItem.js
+  Description: Implementation of the Vault Portal item
+  Called by: Player, Inventory
+  Dependencies: Item, VaultPortalBlock
+
+- server/dimensions/vaultDimension.js
+  Description: Implementation of the Vault dimension
+  Called by: VaultPortalManager, World
+  Dependencies: Dimension, Vector3, RoomGenerator, LootTable
+
+- server/systems/vaultPortalManager.js
+  Description: Manages Vault Portal registration, linking, and teleportation
+  Called by: World, Player
+  Dependencies: EventEmitter, VaultPortalBlock 

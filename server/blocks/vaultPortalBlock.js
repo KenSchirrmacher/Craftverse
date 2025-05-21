@@ -1,24 +1,73 @@
 const Block = require('./block');
 const { BlockRegistry } = require('../registry/blockRegistry');
 const { VaultPortalManager } = require('../managers/vaultPortalManager');
+const { Vector3 } = require('../math/vector3');
 
 class VaultPortalBlock extends Block {
   constructor() {
-    super({
-      id: 'vault_portal',
-      name: 'Vault Portal',
-      hardness: 50,
-      resistance: 2000,
-      transparent: true,
-      lightLevel: 15,
-      state: {
-        active: false,
-        forming: false,
-        frameComplete: false
-      }
-    });
-    
+    super('vault_portal');
+    this.frameBlocks = [];
+    this.active = false;
+    this.linkedPortal = null;
     this.portalManager = new VaultPortalManager();
+  }
+
+  isValidPlacement() {
+    return true;
+  }
+
+  isActive() {
+    return this.active;
+  }
+
+  getFrameBlocks() {
+    return this.frameBlocks;
+  }
+
+  addFrameBlock(position) {
+    this.frameBlocks.push(new Vector3(position.x, position.y, position.z));
+  }
+
+  activate() {
+    if (this.frameBlocks.length >= 4) {
+      this.active = true;
+      this.emit('activated', this);
+    }
+  }
+
+  deactivate() {
+    this.active = false;
+    this.emit('deactivated', this);
+  }
+
+  onPlayerInteract(player) {
+    if (this.active && this.linkedPortal) {
+      this.emit('teleport', { player, destination: this.linkedPortal });
+    }
+  }
+
+  setLinkedPortal(portal) {
+    this.linkedPortal = portal;
+  }
+
+  getLinkedPortal() {
+    return this.linkedPortal;
+  }
+
+  serialize() {
+    return {
+      ...super.serialize(),
+      frameBlocks: this.frameBlocks.map(block => block.serialize()),
+      active: this.active,
+      linkedPortalId: this.linkedPortal ? this.linkedPortal.getId() : null
+    };
+  }
+
+  deserialize(data) {
+    super.deserialize(data);
+    this.frameBlocks = data.frameBlocks.map(block => Vector3.deserialize(block));
+    this.active = data.active;
+    this.linkedPortalId = data.linkedPortalId;
   }
 
   onPlace(world, x, y, z, player) {
@@ -122,12 +171,6 @@ class VaultPortalBlock extends Block {
       volume: 0.5,
       pitch: 1.0
     });
-  }
-
-  onPlayerInteract(world, x, y, z, player) {
-    if (this.getState(world, x, y, z).active) {
-      this.portalManager.teleportPlayer(player);
-    }
   }
 
   getState(world, x, y, z) {

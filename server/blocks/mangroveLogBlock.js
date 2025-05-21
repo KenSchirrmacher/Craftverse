@@ -3,7 +3,7 @@
  * Has vertical and horizontal orientations, can be stripped
  */
 
-const { Block } = require('./baseBlock');
+const Block = require('./baseBlock');
 
 class MangroveLogBlock extends Block {
   /**

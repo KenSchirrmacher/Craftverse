@@ -1,6 +1,89 @@
 const assert = require('assert');
-const { World } = require('../world/World');
+const World = require('../world/world');
+const BlockRegistry = require('../registry/blockRegistry');
+const { EntityRegistry } = require('../entity/entityRegistry');
 const { TuffBricksBlock, TuffBrickSlabBlock, TuffBrickStairsBlock, TuffBrickWallBlock, ChiseledTuffBlock } = require('../blocks/tuffVariants');
+
+describe('World', () => {
+  let world;
+  let blockRegistry;
+
+  beforeEach(() => {
+    world = new World();
+    blockRegistry = BlockRegistry.getInstance();
+  });
+
+  describe('Block Management', () => {
+    it('should set and get blocks correctly', () => {
+      const block = blockRegistry.get('stone');
+      world.setBlock(0, 0, 0, block);
+      assert.strictEqual(world.getBlock(0, 0, 0), block);
+    });
+
+    it('should set and get block states correctly', () => {
+      const state = { powered: true };
+      world.setBlockState(0, 0, 0, state);
+      assert.deepStrictEqual(world.getBlockState(0, 0, 0), state);
+    });
+
+    it('should get blocks in region correctly', () => {
+      const block1 = blockRegistry.get('stone');
+      const block2 = blockRegistry.get('dirt');
+      world.setBlock(0, 0, 0, block1);
+      world.setBlock(1, 0, 0, block2);
+
+      const blocks = world.getBlocksInRegion(0, 0, 0, 1, 0, 0);
+      assert.strictEqual(blocks.length, 2);
+      assert.strictEqual(blocks[0].block, block1);
+      assert.strictEqual(blocks[1].block, block2);
+    });
+  });
+
+  describe('Entity Management', () => {
+    it('should add and get entities correctly', () => {
+      const entity = { id: 'test-entity' };
+      world.addEntity(entity);
+      assert.strictEqual(world.getEntity('test-entity'), entity);
+    });
+
+    it('should remove entities correctly', () => {
+      const entity = { id: 'test-entity' };
+      world.addEntity(entity);
+      world.removeEntity('test-entity');
+      assert.strictEqual(world.getEntity('test-entity'), undefined);
+    });
+  });
+
+  describe('Particle and Sound Effects', () => {
+    it('should track particle effects correctly', () => {
+      const particle = { type: 'portal', x: 0, y: 0, z: 0 };
+      world.addParticleEffect(particle);
+      assert.strictEqual(world.getParticleCount(), 1);
+    });
+
+    it('should track sound effects correctly', () => {
+      const sound = { type: 'portal', x: 0, y: 0, z: 0 };
+      world.playSound(sound);
+      assert.strictEqual(world.getSoundCount(), 1);
+    });
+  });
+
+  describe('Dimension Management', () => {
+    it('should set and get dimension correctly', () => {
+      world.setDimension('nether');
+      assert.strictEqual(world.getDimension(), 'nether');
+    });
+  });
+
+  describe('Bounds Checking', () => {
+    it('should validate positions within bounds', () => {
+      assert.strictEqual(world.isInBounds(0, 0, 0), true);
+      assert.strictEqual(world.isInBounds(30000001, 0, 0), false);
+      assert.strictEqual(world.isInBounds(0, 257, 0), false);
+      assert.strictEqual(world.isInBounds(0, 0, 30000001), false);
+    });
+  });
+});
 
 class WorldTest {
   constructor() {

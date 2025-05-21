@@ -2,7 +2,7 @@
  * SculkCatalystBlock - A sculk block that spreads sculk when mobs die nearby
  */
 
-const Block = require('./block');
+const Block = require('./baseBlock');
 const EventEmitter = require('events');
 
 class SculkCatalystBlock extends Block {

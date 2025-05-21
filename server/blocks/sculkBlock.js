@@ -2,7 +2,7 @@
  * SculkBlock - Base block for the sculk family found in the Deep Dark biome
  */
 
-const { Block } = require('./baseBlock');
+const Block = require('./baseBlock');
 
 class SculkBlock extends Block {
   /**

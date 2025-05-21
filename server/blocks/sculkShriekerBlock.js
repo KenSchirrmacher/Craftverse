@@ -2,7 +2,7 @@
  * SculkShriekerBlock - A sculk block that emits a warning shriek and can summon the Warden
  */
 
-const { Block } = require('./baseBlock');
+const Block = require('./baseBlock');
 const EventEmitter = require('events');
 
 class SculkShriekerBlock extends Block {

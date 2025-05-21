@@ -19,6 +19,7 @@ class TestWorld extends World {
     this.blockStateUpdates = [];
     this.particleEffects = [];
     this.activatedBlocks = [];
+    this.soundEffects = [];
   }
   
   getBlock(x, y, z) {
@@ -29,6 +30,7 @@ class TestWorld extends World {
   setBlock(x, y, z, block) {
     const key = `${x},${y},${z}`;
     this.blocks.set(key, block);
+    this.emit('blockUpdate', { x, y, z, block });
   }
   
   getEntitiesInRadius(position, radius) {
@@ -44,28 +46,42 @@ class TestWorld extends World {
   addEntity(entity) {
     this.entities.set(entity.id, entity);
     entity.world = this;
+    this.emit('entityAdded', entity);
   }
   
   removeEntity(id) {
-    this.entities.delete(id);
+    const entity = this.entities.get(id);
+    if (entity) {
+      this.entities.delete(id);
+      this.emit('entityRemoved', entity);
+    }
   }
 
   updateBlockState(x, y, z, state) {
     this.blockStateUpdates.push({ x, y, z, state });
+    this.emit('blockStateUpdate', { x, y, z, state });
   }
 
   addParticleEffect(effect) {
     this.particleEffects.push(effect);
+    this.emit('particleEffect', effect);
   }
 
   activateBlock(x, y, z, type, data) {
     this.activatedBlocks.push({ x, y, z, type, ...data });
+    this.emit('blockActivated', { x, y, z, type, ...data });
+  }
+
+  playSound(sound, position, volume, pitch) {
+    this.soundEffects.push({ sound, position, volume, pitch });
+    this.emit('soundPlayed', { sound, position, volume, pitch });
   }
 
   reset() {
     this.blockStateUpdates = [];
     this.particleEffects = [];
     this.activatedBlocks = [];
+    this.soundEffects = [];
   }
 }
 
@@ -78,10 +94,12 @@ class TestPlayer extends Player {
     this.gameMode = 'survival';
     this.rotation = { x: 0, y: 0, z: 0 };
     this.sentEvents = [];
+    this.inventory = new Map();
   }
 
   sendEvent(event) {
     this.sentEvents.push(event);
+    this.emit('eventSent', event);
   }
 
   getLookDirection() {
@@ -90,6 +108,19 @@ class TestPlayer extends Player {
       y: -Math.sin(this.rotation.x),
       z: Math.cos(this.rotation.y) * Math.cos(this.rotation.x)
     };
+  }
+
+  addItem(item) {
+    this.inventory.set(item.id, item);
+    this.emit('itemAdded', item);
+  }
+
+  removeItem(itemId) {
+    const item = this.inventory.get(itemId);
+    if (item) {
+      this.inventory.delete(itemId);
+      this.emit('itemRemoved', item);
+    }
   }
 }
 

@@ -4,6 +4,7 @@ const WindChargeItem = require('../items/windChargeItem');
 const WindChargeEntity = require('../entities/windChargeEntity');
 const World = require('../world/world');
 const Player = require('../entities/player');
+const Entity = require('../entities/entity');
 const { v4: uuidv4 } = require('uuid');
 
 // Test world implementation
@@ -15,6 +16,7 @@ class TestWorld extends World {
     this.blockStateUpdates = [];
     this.particleEffects = [];
     this.activatedBlocks = [];
+    this.soundEffects = [];
   }
   
   getBlock(x, y, z) {
@@ -25,6 +27,7 @@ class TestWorld extends World {
   setBlock(x, y, z, block) {
     const key = `${x},${y},${z}`;
     this.blocks.set(key, block);
+    this.emit('blockUpdate', { x, y, z, block });
   }
   
   getEntitiesInRadius(position, radius) {
@@ -40,28 +43,42 @@ class TestWorld extends World {
   addEntity(entity) {
     this.entities.set(entity.id, entity);
     entity.world = this;
+    this.emit('entityAdded', entity);
   }
   
   removeEntity(id) {
-    this.entities.delete(id);
+    const entity = this.entities.get(id);
+    if (entity) {
+      this.entities.delete(id);
+      this.emit('entityRemoved', entity);
+    }
   }
 
   updateBlockState(x, y, z, state) {
     this.blockStateUpdates.push({ x, y, z, state });
+    this.emit('blockStateUpdate', { x, y, z, state });
   }
 
   addParticleEffect(effect) {
     this.particleEffects.push(effect);
+    this.emit('particleEffect', effect);
   }
 
   activateBlock(x, y, z, type, data) {
     this.activatedBlocks.push({ x, y, z, type, ...data });
+    this.emit('blockActivated', { x, y, z, type, ...data });
+  }
+
+  playSound(sound, position, volume, pitch) {
+    this.soundEffects.push({ sound, position, volume, pitch });
+    this.emit('soundPlayed', { sound, position, volume, pitch });
   }
 
   reset() {
     this.blockStateUpdates = [];
     this.particleEffects = [];
     this.activatedBlocks = [];
+    this.soundEffects = [];
   }
 }
 
@@ -74,10 +91,12 @@ class TestPlayer extends Player {
     this.gameMode = 'survival';
     this.rotation = { x: 0, y: 0, z: 0 };
     this.sentEvents = [];
+    this.inventory = new Map();
   }
 
   sendEvent(event) {
     this.sentEvents.push(event);
+    this.emit('eventSent', event);
   }
 
   getLookDirection() {
@@ -87,14 +106,25 @@ class TestPlayer extends Player {
       z: Math.cos(this.rotation.y) * Math.cos(this.rotation.x)
     };
   }
+
+  addItem(item) {
+    this.inventory.set(item.id, item);
+    this.emit('itemAdded', item);
+  }
+
+  removeItem(itemId) {
+    const item = this.inventory.get(itemId);
+    if (item) {
+      this.inventory.delete(itemId);
+      this.emit('itemRemoved', item);
+    }
+  }
 }
 
-// Mock entity for testing
-class MockEntity {
+// Test entity implementation
+class TestEntity extends Entity {
   constructor(id, position) {
-    this.id = id;
-    this.position = position || { x: 0, y: 0, z: 0 };
-    this.velocity = { x: 0, y: 0, z: 0 };
+    super(id, position);
     this.health = 10;
     this.maxHealth = 10;
     this.dead = false;
@@ -116,9 +146,16 @@ class MockEntity {
     this.health -= amount;
     if (this.health <= 0) {
       this.dead = true;
+      this.emit('death', { attacker });
       return true;
     }
+    this.emit('damage', { amount, attacker });
     return false;
+  }
+
+  update(deltaTime) {
+    super.update(deltaTime);
+    // Add any test-specific update logic here
   }
 }
 
@@ -455,7 +492,7 @@ describe('Wind Charge', function() {
     it('should damage entities on direct hit', function() {
       // Create a world with a target entity
       const world = new TestWorld();
-      const targetEntity = new MockEntity('target', { x: 6, y: 5, z: 5 });
+      const targetEntity = new TestEntity('target', { x: 6, y: 5, z: 5 });
       world.addEntity(targetEntity);
       
       // Create a wind charge moving toward the target
@@ -482,7 +519,7 @@ describe('Wind Charge', function() {
     it('should apply knockback to hit entities', function() {
       // Create a world with a target entity
       const world = new TestWorld();
-      const targetEntity = new MockEntity('target', { x: 6, y: 5, z: 5 });
+      const targetEntity = new TestEntity('target', { x: 6, y: 5, z: 5 });
       targetEntity.health = 20; // Make it survive the hit
       world.addEntity(targetEntity);
       
@@ -511,17 +548,17 @@ describe('Wind Charge', function() {
       const world = new TestWorld();
       
       // Entity right at the center
-      const closeEntity = new MockEntity('close', { x: 5, y: 5, z: 5 });
+      const closeEntity = new TestEntity('close', { x: 5, y: 5, z: 5 });
       closeEntity.health = 20;
       world.addEntity(closeEntity);
       
       // Entity at the edge of radius
-      const edgeEntity = new MockEntity('edge', { x: 6.5, y: 5, z: 5 });
+      const edgeEntity = new TestEntity('edge', { x: 6.5, y: 5, z: 5 });
       edgeEntity.health = 20;
       world.addEntity(edgeEntity);
       
       // Entity outside radius
-      const farEntity = new MockEntity('far', { x: 10, y: 5, z: 5 });
+      const farEntity = new TestEntity('far', { x: 10, y: 5, z: 5 });
       farEntity.health = 20;
       world.addEntity(farEntity);
       

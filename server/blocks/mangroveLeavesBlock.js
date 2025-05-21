@@ -3,7 +3,7 @@
  * Can be waterlogged and support propagules
  */
 
-const { Block } = require('./baseBlock');
+const Block = require('./baseBlock');
 
 class MangroveLeavesBlock extends Block {
   /**

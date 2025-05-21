@@ -3,7 +3,7 @@
  * Can be waterlogged and planted on various blocks
  */
 
-const { Block } = require('./baseBlock');
+const Block = require('./baseBlock');
 
 class MangrovePropaguleBlock extends Block {
   /**

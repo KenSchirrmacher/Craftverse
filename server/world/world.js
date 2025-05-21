@@ -77,6 +77,22 @@ class World {
     }
     return blocks;
   }
+
+  getParticleCount() {
+    return this.particles.length;
+  }
+
+  getSoundCount() {
+    return this.sounds.length;
+  }
+
+  addParticleEffect(particle) {
+    this.particles.push(particle);
+  }
+
+  playSound(sound) {
+    this.sounds.push(sound);
+  }
 }
 
 module.exports = { World }; 

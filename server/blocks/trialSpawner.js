@@ -3,7 +3,7 @@
  * Part of the Minecraft 1.21 (Tricky Trials) Update
  */
 
-const { Block } = require('./baseBlock');
+const Block = require('./baseBlock');
 const { EventEmitter } = require('events');
 
 class TrialSpawnerBlock extends Block {

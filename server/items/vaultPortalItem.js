@@ -1,26 +1,50 @@
 const Item = require('./item');
 const { ItemRegistry } = require('../registry/itemRegistry');
 const { BlockRegistry } = require('../registry/blockRegistry');
+const VaultPortalBlock = require('../blocks/vaultPortalBlock');
 
 class VaultPortalItem extends Item {
   constructor() {
-    super({
-      id: 'vault_portal',
-      name: 'Vault Portal',
-      maxStackSize: 1,
-      rarity: 'rare',
-      craftingRecipe: {
-        pattern: [
-          ['reinforced_deepslate', 'echo_shard', 'reinforced_deepslate'],
-          ['echo_shard', 'netherite_ingot', 'echo_shard'],
-          ['reinforced_deepslate', 'echo_shard', 'reinforced_deepslate']
-        ],
-        result: {
-          item: 'vault_portal',
-          count: 1
-        }
-      }
-    });
+    super('vault_portal');
+    this.maxStackSize = 1;
+    this.placeable = true;
+  }
+
+  getMaxStackSize() {
+    return this.maxStackSize;
+  }
+
+  isPlaceable() {
+    return this.placeable;
+  }
+
+  use(player, world, position) {
+    if (!this.isPlaceable()) {
+      return { success: false, message: 'Item is not placeable' };
+    }
+
+    const portalBlock = new VaultPortalBlock();
+    const placedBlock = portalBlock.place(world, position);
+
+    if (!placedBlock) {
+      return { success: false, message: 'Could not place portal block' };
+    }
+
+    return { success: true, block: placedBlock };
+  }
+
+  serialize() {
+    return {
+      ...super.serialize(),
+      maxStackSize: this.maxStackSize,
+      placeable: this.placeable
+    };
+  }
+
+  deserialize(data) {
+    super.deserialize(data);
+    this.maxStackSize = data.maxStackSize;
+    this.placeable = data.placeable;
   }
 
   onUse(world, x, y, z, player, face) {

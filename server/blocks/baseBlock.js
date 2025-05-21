@@ -216,12 +216,7 @@ class Block {
    * @returns {Block} Block instance
    */
   static fromJSON(data) {
-    return new Block({
-      id: data.id,
-      name: data.name,
-      rotation: data.rotation,
-      tintColor: data.tintColor
-    });
+    return new Block(data);
   }
 }
 

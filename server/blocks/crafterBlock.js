@@ -4,7 +4,7 @@
  * Enhanced for Minecraft 1.24 Update (Trail Tales)
  */
 
-const { Block } = require('./baseBlock');
+const Block = require('./baseBlock');
 const { EventEmitter } = require('events');
 
 class CrafterBlock extends Block {
