@@ -57,7 +57,7 @@
    - Implement Trial Chambers structure
    - Create The Breeze mob
    - Add Wind Charge item
-   - Implement new copper and tuff block variants
+   - [COMPLETED] Implement new copper and tuff block variants
    - Add Mace weapon
 5. Implement Vault Portal feature for Minecraft 1.24 (Trail Tales)
    - [COMPLETED] Block implementation
