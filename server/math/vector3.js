@@ -28,10 +28,11 @@ class Vector3 {
    * @returns {Vector3} This vector for chaining
    */
   add(v) {
-    this.x += v.x;
-    this.y += v.y;
-    this.z += v.z;
-    return this;
+    return new Vector3(
+      this.x + v.x,
+      this.y + v.y,
+      this.z + v.z
+    );
   }
 
   /**
@@ -40,10 +41,11 @@ class Vector3 {
    * @returns {Vector3} This vector for chaining
    */
   subtract(v) {
-    this.x -= v.x;
-    this.y -= v.y;
-    this.z -= v.z;
-    return this;
+    return new Vector3(
+      this.x - v.x,
+      this.y - v.y,
+      this.z - v.z
+    );
   }
 
   /**
@@ -52,10 +54,11 @@ class Vector3 {
    * @returns {Vector3} This vector for chaining
    */
   multiply(scalar) {
-    this.x *= scalar;
-    this.y *= scalar;
-    this.z *= scalar;
-    return this;
+    return new Vector3(
+      this.x * scalar,
+      this.y * scalar,
+      this.z * scalar
+    );
   }
 
   /**
@@ -64,12 +67,11 @@ class Vector3 {
    * @returns {Vector3} This vector for chaining
    */
   divide(scalar) {
-    if (scalar !== 0) {
-      this.x /= scalar;
-      this.y /= scalar;
-      this.z /= scalar;
-    }
-    return this;
+    return new Vector3(
+      this.x / scalar,
+      this.y / scalar,
+      this.z / scalar
+    );
   }
 
   /**
@@ -93,11 +95,9 @@ class Vector3 {
    * @returns {Vector3} This vector for chaining
    */
   normalize() {
-    const length = this.length();
-    if (length > 0) {
-      this.divide(length);
-    }
-    return this;
+    const len = this.length();
+    if (len === 0) return new Vector3();
+    return this.divide(len);
   }
 
   /**

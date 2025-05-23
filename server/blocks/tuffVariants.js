@@ -17,29 +17,14 @@ class TuffVariantBlock extends Block {
   }
 
   place(world, position) {
-    const blockData = {
-      id: this.id,
-      type: this.id,
-      position: position,
-      properties: { ...this.properties },
-      metadata: {},
-      version: 'v1',
-      state: { ...this.state }
-    };
-    
-    if (world.setBlock(position.x, position.y, position.z, blockData)) {
-      // Return a new instance of the block with the placed data
-      const placedBlock = new this.constructor();
-      placedBlock.id = blockData.id;
-      placedBlock.type = blockData.type;
-      placedBlock.position = blockData.position;
-      placedBlock.properties = blockData.properties;
-      placedBlock.metadata = blockData.metadata;
-      placedBlock.state = blockData.state;
-      placedBlock.version = blockData.version;
-      return placedBlock;
+    this.position = position;
+    this.world = world;
+    if (typeof world.setBlock === 'function') {
+      world.setBlock(position, this);
+    } else if (typeof world.setBlockAt === 'function') {
+      world.setBlockAt(position.x, position.y, position.z, this);
     }
-    return null;
+    return this;
   }
 
   getDrops() {
@@ -47,7 +32,20 @@ class TuffVariantBlock extends Block {
   }
 
   setState(key, value) {
+    if (key === 'facing') {
+      const validDirections = ['north', 'south', 'east', 'west'];
+      if (!validDirections.includes(value)) {
+        throw new Error(`Invalid facing direction: ${value}. Must be one of: ${validDirections.join(', ')}`);
+      }
+    }
     this.state[key] = value;
+    if (this.position && this.world) {
+      const blockData = this.world.getBlock(this.position.x, this.position.y, this.position.z);
+      if (blockData) {
+        blockData.state = { ...this.state };
+        this.world.updateBlock(this.position.x, this.position.y, this.position.z, blockData);
+      }
+    }
     return this;
   }
 
@@ -119,6 +117,72 @@ class TuffVariantBlock extends Block {
     block.version = data.version || 'v1';
     return block;
   }
+
+  getCollisionBox() {
+    return {
+      minX: this.position.x,
+      minY: this.position.y,
+      minZ: this.position.z,
+      maxX: this.position.x + 1,
+      maxY: this.position.y + 1,
+      maxZ: this.position.z + 1
+    };
+  }
+
+  getBoundingBox() {
+    return this.getCollisionBox();
+  }
+
+  canEntityCollide(entity) {
+    return true;
+  }
+
+  resolveEntityCollision(entity) {
+    const collisionBox = this.getCollisionBox();
+    const entityBox = entity.getBoundingBox();
+    
+    // Calculate overlap in each dimension
+    const overlapX = Math.min(collisionBox.maxX - entityBox.minX, entityBox.maxX - collisionBox.minX);
+    const overlapY = Math.min(collisionBox.maxY - entityBox.minY, entityBox.maxY - collisionBox.minY);
+    const overlapZ = Math.min(collisionBox.maxZ - entityBox.minZ, entityBox.maxZ - collisionBox.minZ);
+    
+    // Find the minimum overlap direction
+    const minOverlap = Math.min(overlapX, overlapY, overlapZ);
+    
+    // Resolve collision by moving entity in the direction of minimum overlap
+    if (minOverlap === overlapX) {
+      if (entity.position.x < this.position.x) {
+        entity.position.x = collisionBox.minX - entityBox.width;
+      } else {
+        entity.position.x = collisionBox.maxX;
+      }
+    } else if (minOverlap === overlapY) {
+      if (entity.position.y < this.position.y) {
+        entity.position.y = collisionBox.minY - entityBox.height;
+      } else {
+        entity.position.y = collisionBox.maxY;
+      }
+    } else if (minOverlap === overlapZ) {
+      if (entity.position.z < this.position.z) {
+        entity.position.z = collisionBox.minZ - entityBox.depth;
+      } else {
+        entity.position.z = collisionBox.maxZ;
+      }
+    }
+    
+    return { resolved: true };
+  }
+
+  calculateExplosionDamage(explosion) {
+    const distance = Math.sqrt(
+      Math.pow(this.position.x - explosion.position.x, 2) +
+      Math.pow(this.position.y - explosion.position.y, 2) +
+      Math.pow(this.position.z - explosion.position.z, 2)
+    );
+    
+    const damage = explosion.power * (1 - distance / explosion.radius);
+    return Math.max(0, damage * (1 - this.properties.blastResistance / 100));
+  }
 }
 
 /**
@@ -172,6 +236,33 @@ class TuffBrickStairsBlock extends TuffVariantBlock {
       blastResistance: 6.0,
       isStairs: true
     });
+    this.state = {
+      facing: 'north',
+      half: 'bottom',
+      shape: 'straight'
+    };
+  }
+
+  setState(property, value) {
+    if (property === 'facing') {
+      const validDirections = ['north', 'south', 'east', 'west'];
+      if (!validDirections.includes(value)) {
+        throw new Error(`Invalid facing direction: ${value}. Must be one of: ${validDirections.join(', ')}`);
+      }
+    }
+    this.state[property] = value;
+    if (this.position && this.world) {
+      const blockData = this.world.getBlock(this.position.x, this.position.y, this.position.z);
+      if (blockData) {
+        blockData.state = { ...this.state };
+        this.world.updateBlock(this.position.x, this.position.y, this.position.z, blockData);
+      }
+    }
+    return this;
+  }
+
+  getState() {
+    return this.state;
   }
 }
 

@@ -2,10 +2,69 @@
  * Village and Trading System Test Suite
  * Tests village generation, villager spawning, and trading mechanics
  */
-const VillageGenerator = require('../utils/villageGenerator');
-const VillagerNPC = require('../mobs/villagerNPC');
-const MobManager = require('../mobs/mobManager');
+const { VillageGenerator } = require('../villages/villageGenerator');
+const { MobManager } = require('../mobs/mobManager');
+const { TradingSystem } = require('../villages/tradingSystem');
 const assert = require('assert');
+
+describe('Village Trading Tests', () => {
+  let villageGenerator;
+  let mobManager;
+  let tradingSystem;
+  let testVillage;
+  let testVillager;
+  let testPlayer;
+
+  beforeEach(() => {
+    // Setup test environment
+    villageGenerator = new VillageGenerator({ seed: 12345 });
+    mobManager = new MobManager();
+    tradingSystem = new TradingSystem();
+
+    // Create test village and villager
+    testVillage = villageGenerator.generateVillage({ x: 0, y: 0, z: 0 });
+    testVillager = mobManager.spawnVillager(testVillage, { x: 0, y: 0, z: 0 });
+    testPlayer = {
+      id: 'test_player',
+      name: 'Test Player',
+      inventory: []
+    };
+  });
+
+  test('Villager should have valid trades', () => {
+    const trades = tradingSystem.getVillagerTrades(testVillager);
+    expect(trades).toBeDefined();
+    expect(trades.length).toBeGreaterThan(0);
+  });
+
+  test('Player should be able to trade with villager', () => {
+    const trade = tradingSystem.getVillagerTrades(testVillager)[0];
+    const result = tradingSystem.executeTrade(testVillager, testPlayer, trade);
+    expect(result.success).toBe(true);
+  });
+
+  test('Trade should fail if player lacks required items', () => {
+    const trade = tradingSystem.getVillagerTrades(testVillager)[0];
+    testPlayer.inventory = []; // Empty inventory
+    const result = tradingSystem.executeTrade(testVillager, testPlayer, trade);
+    expect(result.success).toBe(false);
+    expect(result.reason).toBe('insufficient_items');
+  });
+
+  test('Trade should update villager inventory', () => {
+    const trade = tradingSystem.getVillagerTrades(testVillager)[0];
+    const initialInventory = [...testVillager.inventory];
+    tradingSystem.executeTrade(testVillager, testPlayer, trade);
+    expect(testVillager.inventory).not.toEqual(initialInventory);
+  });
+
+  test('Trade should update player inventory', () => {
+    const trade = tradingSystem.getVillagerTrades(testVillager)[0];
+    const initialInventory = [...testPlayer.inventory];
+    tradingSystem.executeTrade(testVillager, testPlayer, trade);
+    expect(testPlayer.inventory).not.toEqual(initialInventory);
+  });
+});
 
 describe('Village and Trading System', () => {
   let villageGenerator;

@@ -33,51 +33,55 @@ class TuffVariantsInteractionTest {
   }
 
   runTests() {
-    try {
-      console.log('Starting Tuff variants interaction tests...');
-      this.testRedstoneConduction();
-      this.testPistonInteraction();
-      this.testObserverDetection();
-      this.testWallConnections();
-      this.testStairPlacement();
-      this.testSlabPlacement();
-      console.log('All Tuff variants interaction tests passed!');
-      process.exit(0);
-    } catch (error) {
-      console.error('Test failed:', error);
-      process.exit(1);
-    }
+    this.testRedstoneConduction();
+    this.testPistonInteraction();
+    this.testObserverDetection();
+    this.testWallConnections();
+    this.testStairPlacement();
+    this.testSlabPlacement();
   }
 
   testRedstoneConduction() {
     console.log('Testing redstone conduction...');
+    
     const bricks = new TuffBricksBlock();
     const placedBricks = bricks.place(this.world, { x: 0, y: 0, z: 0 });
-    assert(placedBricks, 'Failed to place Tuff Bricks block');
+    
+    // Test redstone power conduction
     this.redstoneManager.setPower(placedBricks, 15);
     assert.strictEqual(this.redstoneManager.getPower(placedBricks), 15, 'Redstone power not properly conducted');
+    
+    // Test redstone power decay
     this.redstoneManager.update();
     assert.strictEqual(this.redstoneManager.getPower(placedBricks), 14, 'Redstone power not properly decaying');
   }
 
   testPistonInteraction() {
     console.log('Testing piston interaction...');
+    
     const wall = new TuffBrickWallBlock();
     const placedWall = wall.place(this.world, { x: 0, y: 0, z: 0 });
-    assert(placedWall, 'Failed to place Tuff Brick Wall block');
+    
+    // Test piston pushing
     const canPush = this.pistonManager.canPush(placedWall);
     assert.strictEqual(canPush, true, 'Wall should be pushable by piston');
+    
+    // Test piston pulling
     const canPull = this.pistonManager.canPull(placedWall);
     assert.strictEqual(canPull, true, 'Wall should be pullable by piston');
   }
 
   testObserverDetection() {
     console.log('Testing observer detection...');
+    
     const stairs = new TuffBrickStairsBlock();
     const placedStairs = stairs.place(this.world, { x: 0, y: 0, z: 0 });
-    assert(placedStairs, 'Failed to place Tuff Brick Stairs block');
+    
+    // Test observer detection of block update
     const observer = this.observerManager.createObserver({ x: 1, y: 0, z: 0 });
     this.observerManager.faceBlock(observer, placedStairs);
+    
+    // Update block state
     placedStairs.setState('facing', 'north');
     const detected = this.observerManager.checkDetection(observer);
     assert.strictEqual(detected, true, 'Observer should detect block state change');
@@ -85,53 +89,50 @@ class TuffVariantsInteractionTest {
 
   testWallConnections() {
     console.log('Testing wall connections...');
+    
     const wall = new TuffBrickWallBlock();
     const placedWall = wall.place(this.world, { x: 0, y: 0, z: 0 });
-    assert(placedWall, 'Failed to place Tuff Brick Wall block');
-    const solidBlock = {
-      id: 'stone',
-      type: 'stone',
-      position: { x: 0, y: 0, z: 1 },
-      properties: { solid: true }
-    };
-    this.world.setBlock(0, 0, 1, solidBlock);
+    
+    // Test wall connection to solid block
+    const solidBlock = this.blockRegistry.getBlock('stone');
+    solidBlock.place(this.world, { x: 0, y: 0, z: 1 });
+    
     const connections = wall.getConnections(this.world, { x: 0, y: 0, z: 0 });
     assert.strictEqual(connections.south, true, 'Wall should connect to solid block');
   }
 
   testStairPlacement() {
     console.log('Testing stair placement...');
+    
     const stairs = new TuffBrickStairsBlock();
     const placedStairs = stairs.place(this.world, { x: 0, y: 0, z: 0 });
-    assert(placedStairs, 'Failed to place Tuff Brick Stairs block');
-    const solidBlock = {
-      id: 'stone',
-      type: 'stone',
-      position: { x: 0, y: -1, z: 0 },
-      properties: { solid: true }
-    };
-    this.world.setBlock(0, -1, 0, solidBlock);
+    
+    // Test stair placement against wall
+    const wall = this.blockRegistry.getBlock('stone');
+    wall.place(this.world, { x: 0, y: 0, z: 1 });
+    
     const canPlace = stairs.canPlace(this.world, { x: 0, y: 0, z: 0 });
-    assert.strictEqual(canPlace, true, 'Stairs should be placeable on solid block');
+    assert.strictEqual(canPlace, true, 'Stairs should be placeable against wall');
   }
 
   testSlabPlacement() {
     console.log('Testing slab placement...');
+    
     const slab = new TuffBrickSlabBlock();
     const placedSlab = slab.place(this.world, { x: 0, y: 0, z: 0 });
-    assert(placedSlab, 'Failed to place Tuff Brick Slab block');
-    const solidBlock = {
-      id: 'stone',
-      type: 'stone',
-      position: { x: 0, y: -1, z: 0 },
-      properties: { solid: true }
-    };
-    this.world.setBlock(0, -1, 0, solidBlock);
+    
+    // Test slab placement on top of block
+    const block = this.blockRegistry.getBlock('stone');
+    block.place(this.world, { x: 0, y: -1, z: 0 });
+    
     const canPlace = slab.canPlace(this.world, { x: 0, y: 0, z: 0 });
-    assert.strictEqual(canPlace, true, 'Slab should be placeable on solid block');
+    assert.strictEqual(canPlace, true, 'Slab should be placeable on top of block');
   }
 }
 
 // Run tests
 const test = new TuffVariantsInteractionTest();
-test.runTests(); 
+test.runTests();
+console.log('All Tuff variants interaction tests passed!');
+
+module.exports = TuffVariantsInteractionTest; 

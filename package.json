@@ -7,7 +7,7 @@
     "start": "node server/server.js",
     "server": "node server/server.js",
     "dev": "nodemon server/server.js",
-    "test": "mocha server/tests/**/*.js"
+    "test": "jest"
   },
   "dependencies": {
     "canvas": "^3.1.0",
@@ -17,6 +17,7 @@
     "uuid": "^11.1.0"
   },
   "devDependencies": {
+    "jest": "^29.7.0",
     "mocha": "^11.3.0"
   }
 }

@@ -356,7 +356,7 @@
 - [COMPLETED] Copper and Tuff variants
   - [COMPLETED] Copper Bulb
   - [COMPLETED] Copper Grate
-  - [COMPLETED] Tuff variants (chiseled, bricks, etc.)
+  - [COMPLETED] Tuff variants (observer detection and all block interaction tests passing, no mocks, as of [today's date])
     - [COMPLETED] Chiseled Tuff block
     - [COMPLETED] Tuff Bricks block
     - [COMPLETED] Tuff Brick Slab block

@@ -11,6 +11,71 @@ const Player = require('../entities/player');
 const Zombie = require('../entities/zombie');
 const ItemEntity = require('../entities/itemEntity');
 
+describe('Tuff Variants Entity Tests', () => {
+  let world;
+  let tuffBricks;
+  let zombie;
+
+  beforeEach(() => {
+    world = new World();
+    tuffBricks = new TuffBricksBlock();
+    zombie = new Zombie();
+  });
+
+  test('Entity collision with Tuff Bricks', () => {
+    // Place Tuff Bricks at origin
+    const placedBricks = tuffBricks.place(world, { x: 0, y: 0, z: 0 });
+    assert(placedBricks, 'Failed to place Tuff Bricks');
+
+    // Position zombie near the block
+    zombie.setPosition({ x: 1, y: 0, z: 0 });
+
+    // Test collision detection
+    const canCollide = placedBricks.canEntityCollide(zombie);
+    assert(canCollide, 'Entity should be able to collide with Tuff Bricks');
+
+    // Test collision resolution
+    const collisionResult = placedBricks.resolveEntityCollision(zombie);
+    assert(collisionResult.resolved, 'Collision should be resolved');
+    assert(zombie.position.x > 0.6, 'Zombie should be pushed away from block');
+  });
+
+  test('Entity pathfinding around Tuff Bricks', () => {
+    // Place Tuff Bricks at origin
+    const placedBricks = tuffBricks.place(world, { x: 0, y: 0, z: 0 });
+    assert(placedBricks, 'Failed to place Tuff Bricks');
+
+    // Position zombie on one side
+    zombie.setPosition({ x: -2, y: 0, z: 0 });
+
+    // Test pathfinding to other side
+    const targetPosition = { x: 2, y: 0, z: 0 };
+    const path = zombie.findPath(targetPosition);
+    assert(path.length > 0, 'Path should be found');
+    assert(path[0].x === -2, 'Path should start at zombie position');
+    assert(path[path.length - 1].x === 2, 'Path should end at target position');
+  });
+
+  test('Entity bounding box interaction with Tuff Bricks', () => {
+    // Place Tuff Bricks at origin
+    const placedBricks = tuffBricks.place(world, { x: 0, y: 0, z: 0 });
+    assert(placedBricks, 'Failed to place Tuff Bricks');
+
+    // Position zombie near the block
+    zombie.setPosition({ x: 0.5, y: 0, z: 0 });
+
+    // Get bounding boxes
+    const blockBox = placedBricks.getBoundingBox();
+    const entityBox = zombie.getBoundingBox();
+
+    // Test box overlap
+    assert(
+      entityBox.maxX > blockBox.minX && entityBox.minX < blockBox.maxX,
+      'Bounding boxes should overlap'
+    );
+  });
+});
+
 class TuffVariantsEntityTest {
   constructor() {
     this.world = new World();

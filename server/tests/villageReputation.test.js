@@ -2,17 +2,17 @@
  * Village Reputation System Test
  * Tests player-villager reputation mechanics and effects on trading
  */
-const VillageReputationManager = require('../world/villageReputationManager');
+const { VillageReputationManager } = require('../villages/villageReputation');
 const VillagerNPC = require('../mobs/villagerNPC');
 const assert = require('assert');
 
-describe('Village Reputation System', () => {
+describe('Village Reputation Tests', () => {
   let reputationManager;
   let testVillage;
   let testPlayer;
   let testVillager;
   
-  before(() => {
+  beforeEach(() => {
     // Setup test environment
     reputationManager = new VillageReputationManager();
     
@@ -43,12 +43,36 @@ describe('Village Reputation System', () => {
     );
   });
   
+  test('Initial reputation should be neutral', () => {
+    const reputation = reputationManager.getReputation(testVillager.id);
+    expect(reputation).toBe(0);
+  });
+  
+  test('Reputation should increase when helping villagers', () => {
+    reputationManager.helpVillager(testVillager.id);
+    const reputation = reputationManager.getReputation(testVillager.id);
+    expect(reputation).toBeGreaterThan(0);
+  });
+  
+  test('Reputation should decrease when harming villagers', () => {
+    reputationManager.harmVillager(testVillager.id);
+    const reputation = reputationManager.getReputation(testVillager.id);
+    expect(reputation).toBeLessThan(0);
+  });
+  
+  test('Reputation level should be calculated correctly', () => {
+    // Test different reputation levels
+    reputationManager.setReputation(testVillager.id, 10);
+    expect(reputationManager.getReputationLevel(testVillager.id)).toBe('Hero');
+
+    reputationManager.setReputation(testVillager.id, 0);
+    expect(reputationManager.getReputationLevel(testVillager.id)).toBe('Neutral');
+
+    reputationManager.setReputation(testVillager.id, -10);
+    expect(reputationManager.getReputationLevel(testVillager.id)).toBe('Outcast');
+  });
+  
   describe('Reputation Tracking', () => {
-    it('should start with neutral reputation', () => {
-      const initialRep = reputationManager.getReputation(testVillage.id, testPlayer.id);
-      assert.equal(initialRep, 0, 'Initial reputation should be 0');
-    });
-    
     it('should update reputation based on events', () => {
       // Test trading event
       reputationManager.updateReputation(testVillage.id, testPlayer.id, 'TRADE');
