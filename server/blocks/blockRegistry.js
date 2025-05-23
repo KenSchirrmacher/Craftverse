@@ -68,6 +68,8 @@ class BlockRegistry {
   constructor() {
     // Map of block types by ID
     this.blocks = new Map();
+    // Map of block classes by ID
+    this.blockClasses = new Map();
     
     // Register default blocks
     this.registerDefaultBlocks();
@@ -88,7 +90,30 @@ class BlockRegistry {
     }
     
     this.blocks.set(block.id, block);
+    // Register the class if not already present
+    if (block.constructor && !this.blockClasses.has(block.id)) {
+      this.blockClasses.set(block.id, block.constructor);
+    }
     return true;
+  }
+  
+  /**
+   * Register a block class for a given ID
+   * @param {string} id - Block ID
+   * @param {Function} classRef - Block class/constructor
+   */
+  registerBlockClass(id, classRef) {
+    if (!id || !classRef) return;
+    this.blockClasses.set(id, classRef);
+  }
+  
+  /**
+   * Get a block class by ID
+   * @param {string} id - Block ID
+   * @returns {Function|null} Block class/constructor or null if not found
+   */
+  getBlockClass(id) {
+    return this.blockClasses.get(id) || null;
   }
   
   /**
@@ -417,5 +442,6 @@ class BlockRegistry {
   }
 }
 
-// Export singleton instance
-module.exports = new BlockRegistry(); 
+// Create singleton instance
+const blockRegistry = new BlockRegistry();
+module.exports = { BlockRegistry, blockRegistry }; 

@@ -5,6 +5,17 @@
 
 const assert = require('assert');
 const TestBase = require('./testBase');
+const TuffVariantsTickTest = require('./tuffVariantsTickTest');
+const TuffVariantsTest = require('./tuffVariantsTest');
+const TuffVariantsRecipesTest = require('./tuffVariantsRecipesTest');
+const TuffVariantsIntegrationTest = require('./tuffVariantsIntegrationTest');
+const TuffVariantsWorldGenTest = require('./tuffVariantsWorldGenTest');
+const TuffVariantsRegistrationTest = require('./tuffVariantsRegistrationTest');
+const TuffVariantsRenderingTest = require('./tuffVariantsRenderingTest');
+const TuffVariantsSerializationTest = require('./tuffVariantsSerializationTest');
+const SerializationManagerTest = require('./serializationManagerTest');
+const DataManagerTest = require('./dataManagerTest');
+const BlockStateManagerTest = require('./blockStateManagerTest');
 
 /**
  * Main test framework for Minecraft 1.24 Update
@@ -19,7 +30,11 @@ class Minecraft124TestFramework {
       potteryPatterns: new PotteryPatternsTestSuite(),
       crafterEnhancements: new CrafterEnhancementsTestSuite(),
       trailRuins: new TrailRuinsTestSuite(),
-      vaultPortal: new VaultPortalTestSuite()
+      vaultPortal: new VaultPortalTestSuite(),
+      tuffVariants: new TuffVariantsTestSuite(),
+      serialization: SerializationManagerTest,
+      dataManager: DataManagerTest,
+      blockState: BlockStateManagerTest
     };
   }
 
@@ -581,6 +596,67 @@ class VaultPortalTestSuite extends TestBase {
       assert.strictEqual(reward.items.length > 0, true);
       assert.strictEqual(reward.experience > 0, true);
     });
+  }
+}
+
+/**
+ * Tuff Variants Test Suite
+ */
+class TuffVariantsTestSuite extends TestBase {
+  constructor() {
+    super('Tuff Variants Tests');
+  }
+
+  async runTests() {
+    const tickTest = new TuffVariantsTickTest();
+    const blockTest = new TuffVariantsTest();
+    const recipesTest = new TuffVariantsRecipesTest();
+    const integrationTest = new TuffVariantsIntegrationTest();
+    const worldGenTest = new TuffVariantsWorldGenTest();
+    const registrationTest = new TuffVariantsRegistrationTest();
+    const renderingTest = new TuffVariantsRenderingTest();
+    const serializationTest = new TuffVariantsSerializationTest();
+
+    // Run all test suites
+    tickTest.runTests();
+    blockTest.runTests();
+    recipesTest.runTests();
+    integrationTest.runTests();
+    worldGenTest.runTests();
+    registrationTest.runTests();
+    renderingTest.runTests();
+    serializationTest.runTests();
+
+    // Update test counts
+    this.totalTests = 
+      tickTest.totalTests +
+      blockTest.totalTests +
+      recipesTest.totalTests +
+      integrationTest.totalTests +
+      worldGenTest.totalTests +
+      registrationTest.totalTests +
+      renderingTest.totalTests +
+      serializationTest.totalTests;
+
+    this.passedTests = 
+      tickTest.passedTests +
+      blockTest.passedTests +
+      recipesTest.passedTests +
+      integrationTest.passedTests +
+      worldGenTest.passedTests +
+      registrationTest.passedTests +
+      renderingTest.passedTests +
+      serializationTest.passedTests;
+
+    this.failedTests = 
+      tickTest.failedTests +
+      blockTest.failedTests +
+      recipesTest.failedTests +
+      integrationTest.failedTests +
+      worldGenTest.failedTests +
+      registrationTest.failedTests +
+      renderingTest.failedTests +
+      serializationTest.failedTests;
   }
 }
 

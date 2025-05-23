@@ -1,16 +1,37 @@
 const assert = require('assert');
 const TestWorld = require('./testWorld');
 const { TuffBricksBlock, TuffBrickSlabBlock, TuffBrickStairsBlock, TuffBrickWallBlock, ChiseledTuffBlock } = require('../blocks/tuffVariants');
-const { SerializationManager } = require('../systems/serializationManager');
-const { DataManager } = require('../systems/dataManager');
-const { BlockStateManager } = require('../systems/blockStateManager');
+const { blockRegistry } = require('../blocks/blockRegistry');
+const serializationManager = require('../systems/serializationManager');
+const dataManager = require('../systems/dataManager');
+const blockStateManager = require('../systems/blockStateManager');
 
 class TuffVariantsSerializationTest {
   constructor() {
     this.world = new TestWorld();
-    this.serializationManager = new SerializationManager();
-    this.dataManager = new DataManager();
-    this.blockStateManager = new BlockStateManager();
+    this.serializationManager = serializationManager;
+    this.dataManager = dataManager;
+    this.blockStateManager = blockStateManager;
+    this.blockRegistry = blockRegistry;
+    
+    // Register blocks before testing
+    this.registerBlocks();
+  }
+
+  registerBlocks() {
+    // Create and register block instances
+    const chiseledTuff = new ChiseledTuffBlock();
+    const tuffBricks = new TuffBricksBlock();
+    const tuffBrickSlab = new TuffBrickSlabBlock();
+    const tuffBrickStairs = new TuffBrickStairsBlock();
+    const tuffBrickWall = new TuffBrickWallBlock();
+
+    // Register blocks with their correct types
+    this.blockRegistry.registerBlock(chiseledTuff);
+    this.blockRegistry.registerBlock(tuffBricks);
+    this.blockRegistry.registerBlock(tuffBrickSlab);
+    this.blockRegistry.registerBlock(tuffBrickStairs);
+    this.blockRegistry.registerBlock(tuffBrickWall);
   }
 
   runTests() {
@@ -24,24 +45,36 @@ class TuffVariantsSerializationTest {
   testBlockSerialization() {
     console.log('Testing block serialization...');
     
-    // Test Tuff Bricks serialization
+    // First verify the block is registered
+    const registeredBlock = this.blockRegistry.getBlock('tuff_bricks');
+    assert(registeredBlock, 'Tuff Bricks block not found in registry');
+    
+    // Create a new instance for testing
     const bricks = new TuffBricksBlock();
+    assert(bricks instanceof TuffBricksBlock, 'Failed to create TuffBricksBlock instance');
+    
     const placedBricks = bricks.place(this.world, { x: 0, y: 0, z: 0 });
+    assert(placedBricks, 'Failed to place Tuff Bricks block');
     
     const serializedData = this.serializationManager.serializeBlock(placedBricks);
     const deserializedBlock = this.serializationManager.deserializeBlock(serializedData);
     
+    // Debug output
+    console.log('Original block:', placedBricks);
+    console.log('Deserialized block:', deserializedBlock);
+    
     // Verify serialization
-    assert.strictEqual(deserializedBlock.type === placedBricks.type, true, 'Block type mismatch after serialization');
-    assert.strictEqual(deserializedBlock.position.x === placedBricks.position.x, true, 'Position mismatch after serialization');
-    assert.strictEqual(deserializedBlock.position.y === placedBricks.position.y, true, 'Position mismatch after serialization');
-    assert.strictEqual(deserializedBlock.position.z === placedBricks.position.z, true, 'Position mismatch after serialization');
+    assert.strictEqual(deserializedBlock.id, placedBricks.id, 'Block ID mismatch after serialization');
+    assert.strictEqual(deserializedBlock.type, placedBricks.type, 'Block type mismatch after serialization');
+    assert.deepStrictEqual(deserializedBlock.position, placedBricks.position, 'Position mismatch after serialization');
+    assert.deepStrictEqual(deserializedBlock.properties, placedBricks.properties, 'Properties mismatch after serialization');
+    assert.deepStrictEqual(deserializedBlock.metadata, placedBricks.metadata, 'Metadata mismatch after serialization');
   }
 
   testStatePersistence() {
     console.log('Testing state persistence...');
     
-    // Test Tuff Brick Wall state persistence
+    // Create a new instance for testing
     const wall = new TuffBrickWallBlock();
     const placedWall = wall.place(this.world, { x: 0, y: 0, z: 0 });
     placedWall.setState('north', true);
@@ -59,7 +92,7 @@ class TuffVariantsSerializationTest {
   testDataMigration() {
     console.log('Testing data migration...');
     
-    // Test Tuff Brick Stairs data migration
+    // Create a new instance for testing
     const stairs = new TuffBrickStairsBlock();
     const placedStairs = stairs.place(this.world, { x: 0, y: 0, z: 0 });
     
@@ -75,7 +108,7 @@ class TuffVariantsSerializationTest {
   testVersionCompatibility() {
     console.log('Testing version compatibility...');
     
-    // Test Chiseled Tuff version compatibility
+    // Create a new instance for testing
     const chiseled = new ChiseledTuffBlock();
     const placedChiseled = chiseled.place(this.world, { x: 0, y: 0, z: 0 });
     
@@ -94,7 +127,7 @@ class TuffVariantsSerializationTest {
   testCompression() {
     console.log('Testing data compression...');
     
-    // Test Tuff Brick Slab data compression
+    // Create a new instance for testing
     const slab = new TuffBrickSlabBlock();
     const placedSlab = slab.place(this.world, { x: 0, y: 0, z: 0 });
     

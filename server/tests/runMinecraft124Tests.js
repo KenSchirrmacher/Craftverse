@@ -24,6 +24,10 @@ function parseArgs() {
     console.log('  crafterEnhancements - Crafter Enhancements tests');
     console.log('  trailRuins - Trail Ruins tests');
     console.log('  vaultPortal - Vault Portal tests');
+    console.log('  tuffVariants - Tuff Variants tests');
+    console.log('  serialization - Serialization Manager tests');
+    console.log('  dataManager - Data Manager tests');
+    console.log('  blockState - Block State Manager tests');
     console.log('\nOptions:');
     console.log('  --help, -h - Show this help message');
     process.exit(0);

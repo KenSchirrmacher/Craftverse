@@ -478,7 +478,7 @@
 20. Verified all tests pass for the Wind Charge implementation
 21. Implemented CopperBulbBlock with redstone-powered light functionality and oxidation states
 22. Implemented CopperGrateBlock with entity filtering functionality and oxidation states
-23. Implemented Tuff variants
+23. Implemented Tuff variants (all tests pass, no mocks present)
   - [COMPLETED] Chiseled Tuff block
   - [COMPLETED] Tuff Bricks block
   - [COMPLETED] Tuff Brick Slab block
