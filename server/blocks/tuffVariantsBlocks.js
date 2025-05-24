@@ -3,13 +3,15 @@
  * Part of the Minecraft 1.21 (Tricky Trials) Update
  */
 
-const TuffBlock = require('./tuffBlock');
 const Block = require('./block');
+const SlabBlock = require('./slabBlock');
+const StairsBlock = require('./stairsBlock');
+const WallBlock = require('./wallBlock');
 
 /**
  * Chiseled Tuff Block - Decorative variant with carved pattern
  */
-class ChiseledTuffBlock extends TuffBlock {
+class ChiseledTuffBlock extends Block {
   /**
    * Create a new chiseled tuff block
    * @param {Object} options - Block options
@@ -21,6 +23,10 @@ class ChiseledTuffBlock extends TuffBlock {
       hardness: 1.5,
       blastResistance: 6.0,
       transparent: false,
+      lightLevel: 0,
+      toolType: 'pickaxe',
+      toolTier: 1,
+      drops: [{ id: 'chiseled_tuff', count: 1 }],
       ...options
     });
     
@@ -47,17 +53,14 @@ class ChiseledTuffBlock extends TuffBlock {
   }
 
   getDrops() {
-    return [{
-      type: 'chiseled_tuff',
-      count: 1
-    }];
+    return [{ id: 'chiseled_tuff', count: 1 }];
   }
 }
 
 /**
  * Tuff Bricks Block - Building block made from tuff
  */
-class TuffBricksBlock extends TuffBlock {
+class TuffBricksBlock extends Block {
   /**
    * Create a new tuff bricks block
    * @param {Object} options - Block options
@@ -69,6 +72,10 @@ class TuffBricksBlock extends TuffBlock {
       hardness: 1.5,
       blastResistance: 6.0,
       transparent: false,
+      lightLevel: 0,
+      toolType: 'pickaxe',
+      toolTier: 1,
+      drops: [{ id: 'tuff_bricks', count: 1 }],
       ...options
     });
     
@@ -96,17 +103,14 @@ class TuffBricksBlock extends TuffBlock {
   }
 
   getDrops() {
-    return [{
-      type: 'tuff_bricks',
-      count: 1
-    }];
+    return [{ id: 'tuff_bricks', count: 1 }];
   }
 }
 
 /**
  * Tuff Brick Slab - Half-height variant of tuff bricks
  */
-class TuffBrickSlabBlock extends Block {
+class TuffBrickSlabBlock extends SlabBlock {
   /**
    * Create a new tuff brick slab block
    * @param {Object} options - Block options
@@ -117,9 +121,12 @@ class TuffBrickSlabBlock extends Block {
       name: 'Tuff Brick Slab',
       hardness: 1.5,
       blastResistance: 6.0,
-      toolType: 'pickaxe',
-      minToolLevel: 'stone',
       transparent: true,
+      lightLevel: 0,
+      toolType: 'pickaxe',
+      toolTier: 1,
+      drops: [{ id: 'tuff_brick_slab', count: 1 }],
+      baseBlock: 'tuff_bricks',
       ...options
     });
     
@@ -242,17 +249,14 @@ class TuffBrickSlabBlock extends Block {
   }
 
   getDrops() {
-    return [{
-      type: 'tuff_brick_slab',
-      count: 1
-    }];
+    return [{ id: 'tuff_brick_slab', count: 1 }];
   }
 }
 
 /**
  * Tuff Brick Stairs - Stair variant of tuff bricks
  */
-class TuffBrickStairsBlock extends Block {
+class TuffBrickStairsBlock extends StairsBlock {
   /**
    * Create a new tuff brick stairs block
    * @param {Object} options - Block options
@@ -263,9 +267,12 @@ class TuffBrickStairsBlock extends Block {
       name: 'Tuff Brick Stairs',
       hardness: 1.5,
       blastResistance: 6.0,
-      toolType: 'pickaxe',
-      minToolLevel: 'stone',
       transparent: true,
+      lightLevel: 0,
+      toolType: 'pickaxe',
+      toolTier: 1,
+      drops: [{ id: 'tuff_brick_stairs', count: 1 }],
+      baseBlock: 'tuff_bricks',
       ...options
     });
     
@@ -392,17 +399,14 @@ class TuffBrickStairsBlock extends Block {
   }
 
   getDrops() {
-    return [{
-      type: 'tuff_brick_stairs',
-      count: 1
-    }];
+    return [{ id: 'tuff_brick_stairs', count: 1 }];
   }
 }
 
 /**
  * Tuff Brick Wall - Wall variant of tuff bricks
  */
-class TuffBrickWallBlock extends Block {
+class TuffBrickWallBlock extends WallBlock {
   /**
    * Create a new tuff brick wall block
    * @param {Object} options - Block options
@@ -413,9 +417,12 @@ class TuffBrickWallBlock extends Block {
       name: 'Tuff Brick Wall',
       hardness: 1.5,
       blastResistance: 6.0,
-      toolType: 'pickaxe',
-      minToolLevel: 'stone',
       transparent: true,
+      lightLevel: 0,
+      toolType: 'pickaxe',
+      toolTier: 1,
+      drops: [{ id: 'tuff_brick_wall', count: 1 }],
+      baseBlock: 'tuff_bricks',
       ...options
     });
     
@@ -651,10 +658,7 @@ class TuffBrickWallBlock extends Block {
   }
 
   getDrops() {
-    return [{
-      type: 'tuff_brick_wall',
-      count: 1
-    }];
+    return [{ id: 'tuff_brick_wall', count: 1 }];
   }
 }
 

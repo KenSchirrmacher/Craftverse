@@ -1,21 +1,16 @@
-/**
- * Test runner for Trial Chamber tests
- */
-
-// Import Mocha for testing
 const Mocha = require('mocha');
+
+// Create a new Mocha instance
 const mocha = new Mocha({
-  reporter: 'spec',
-  timeout: 5000
+  timeout: 5000, // 5 second timeout
+  reporter: 'spec'
 });
 
-console.log('Starting Trial Chamber tests...');
-
 // Add the test file
-mocha.addFile('tests/trialChamberTest.js');
+mocha.addFile('tests/stairsBlockTest.js');
 
 // Run the tests
-mocha.run(failures => {
+mocha.run((failures) => {
   if (failures > 0) {
     console.error(`${failures} test(s) failed`);
     process.exit(1);
