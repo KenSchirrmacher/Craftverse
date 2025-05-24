@@ -18,8 +18,14 @@ class ChiseledTuffBlock extends TuffBlock {
     super({
       id: 'chiseled_tuff',
       name: 'Chiseled Tuff',
+      hardness: 1.5,
+      blastResistance: 6.0,
+      transparent: false,
       ...options
     });
+    
+    this.blastResistance = 6.0;
+    this.transparent = false;
     
     // Override textures for chiseled design
     this.textures = {
@@ -39,6 +45,13 @@ class ChiseledTuffBlock extends TuffBlock {
     block.deserialize(data);
     return block;
   }
+
+  getDrops() {
+    return [{
+      type: 'chiseled_tuff',
+      count: 1
+    }];
+  }
 }
 
 /**
@@ -53,8 +66,14 @@ class TuffBricksBlock extends TuffBlock {
     super({
       id: 'tuff_bricks',
       name: 'Tuff Bricks',
+      hardness: 1.5,
+      blastResistance: 6.0,
+      transparent: false,
       ...options
     });
+    
+    this.blastResistance = 6.0;
+    this.transparent = false;
     
     // Override textures for brick pattern
     this.textures = {
@@ -75,6 +94,13 @@ class TuffBricksBlock extends TuffBlock {
     block.deserialize(data);
     return block;
   }
+
+  getDrops() {
+    return [{
+      type: 'tuff_bricks',
+      count: 1
+    }];
+  }
 }
 
 /**
@@ -90,11 +116,15 @@ class TuffBrickSlabBlock extends Block {
       id: 'tuff_brick_slab',
       name: 'Tuff Brick Slab',
       hardness: 1.5,
+      blastResistance: 6.0,
       toolType: 'pickaxe',
       minToolLevel: 'stone',
-      drops: ['tuff_brick_slab'],
+      transparent: true,
       ...options
     });
+    
+    this.blastResistance = 6.0;
+    this.transparent = true;
     
     // Slab-specific properties
     this.isTop = options.isTop !== undefined ? options.isTop : false;
@@ -111,9 +141,6 @@ class TuffBrickSlabBlock extends Block {
       this.isTop ? 
         { minX: 0, minY: 0.5, minZ: 0, maxX: 1, maxY: 1, maxZ: 1 } : // Top slab
         { minX: 0, minY: 0, minZ: 0, maxX: 1, maxY: 0.5, maxZ: 1 };  // Bottom slab
-    
-    // Slabs are transparent for rendering purposes
-    this.transparent = !this.isDouble;
   }
   
   /**
@@ -213,6 +240,13 @@ class TuffBrickSlabBlock extends Block {
     block.deserialize(data);
     return block;
   }
+
+  getDrops() {
+    return [{
+      type: 'tuff_brick_slab',
+      count: 1
+    }];
+  }
 }
 
 /**
@@ -228,11 +262,15 @@ class TuffBrickStairsBlock extends Block {
       id: 'tuff_brick_stairs',
       name: 'Tuff Brick Stairs',
       hardness: 1.5,
+      blastResistance: 6.0,
       toolType: 'pickaxe',
       minToolLevel: 'stone',
-      drops: ['tuff_brick_stairs'],
+      transparent: true,
       ...options
     });
+    
+    this.blastResistance = 6.0;
+    this.transparent = true;
     
     // Stairs-specific properties
     this.facing = options.facing || 'north'; // Direction the stairs face
@@ -246,9 +284,6 @@ class TuffBrickStairsBlock extends Block {
     
     // Stairs have a complex shape, handled by the rendering engine
     this.render = 'stairs';
-    
-    // Stairs are transparent for rendering purposes
-    this.transparent = true;
   }
   
   /**
@@ -355,6 +390,13 @@ class TuffBrickStairsBlock extends Block {
     block.deserialize(data);
     return block;
   }
+
+  getDrops() {
+    return [{
+      type: 'tuff_brick_stairs',
+      count: 1
+    }];
+  }
 }
 
 /**
@@ -370,11 +412,15 @@ class TuffBrickWallBlock extends Block {
       id: 'tuff_brick_wall',
       name: 'Tuff Brick Wall',
       hardness: 1.5,
+      blastResistance: 6.0,
       toolType: 'pickaxe',
       minToolLevel: 'stone',
-      drops: ['tuff_brick_wall'],
+      transparent: true,
       ...options
     });
+    
+    this.blastResistance = 6.0;
+    this.transparent = true;
     
     // Wall-specific properties
     this.up = options.up !== undefined ? options.up : false; // Whether to connect upward
@@ -390,9 +436,6 @@ class TuffBrickWallBlock extends Block {
     
     // Walls have a complex shape, handled by the rendering engine
     this.render = 'wall';
-    
-    // Walls are transparent for rendering purposes
-    this.transparent = true;
   }
   
   /**
@@ -605,6 +648,13 @@ class TuffBrickWallBlock extends Block {
     });
     block.deserialize(data);
     return block;
+  }
+
+  getDrops() {
+    return [{
+      type: 'tuff_brick_wall',
+      count: 1
+    }];
   }
 }
 
