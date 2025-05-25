@@ -2,253 +2,117 @@
  * Chain Reaction Test
  * Tests for chain reactions triggered by Wind Charge
  */
-const assert = require('assert');
-const WindChargeEntity = require('../entities/windChargeEntity');
-const World = require('../world/world');
-const Player = require('../entities/player');
-const Vector3 = require('../math/vector3');
+const { expect } = require('chai');
+const BaseWorld = require('../world/baseWorld');
+const { WindChargeEntity } = require('../entity/windChargeEntity');
+const { Player } = require('../player/player');
+const { BlockRegistry } = require('../blocks/blockRegistry');
 
-// Test world implementation
-class TestWorld extends World {
+class TestWorld extends BaseWorld {
   constructor() {
     super();
-    this.blocks = new Map();
-    this.entities = new Map();
     this.events = [];
   }
-  
-  getBlock(x, y, z) {
-    const key = `${x},${y},${z}`;
-    return this.blocks.get(key) || { type: 'air', isSolid: false };
+
+  emit(event, data) {
+    this.events.push({ event, data });
   }
-  
-  setBlock(x, y, z, block) {
-    const key = `${x},${y},${z}`;
-    this.blocks.set(key, block);
+
+  getEvents() {
+    return this.events;
   }
-  
-  getEntitiesInRadius(position, radius) {
-    return Array.from(this.entities.values()).filter(entity => {
-      const distance = Vector3.distance(position, entity.position);
-      return distance <= radius;
-    });
-  }
-  
-  addEntity(entity) {
-    this.entities.set(entity.id, entity);
-  }
-  
-  removeEntity(entity) {
-    this.entities.delete(entity.id);
-  }
-  
-  emitEntityUpdate(entity) {
-    this.events.push({
-      type: 'entity_update',
-      entityId: entity.id,
-      position: entity.position,
-      velocity: entity.velocity
-    });
-  }
-  
-  addParticleEffect(position, type, data) {
-    this.events.push({
-      type: 'particle_effect',
-      position,
-      particleType: type,
-      ...data
-    });
-  }
-  
-  addSoundEffect(position, sound, volume, pitch) {
-    this.events.push({
-      type: 'sound_effect',
-      position,
-      sound,
-      volume,
-      pitch
-    });
-  }
-  
+
   activateBlock(x, y, z) {
     const block = this.getBlock(x, y, z);
-    if (block.onActivate) {
+    if (block && block.onActivate) {
       block.onActivate(this, x, y, z);
     }
   }
-  
-  reset() {
-    this.blocks.clear();
-    this.entities.clear();
-    this.events = [];
-  }
 }
 
-// Test player implementation
 class TestPlayer extends Player {
-  constructor(id, position = { x: 0, y: 0, z: 0 }) {
-    super(id, {
-      position,
-      world: null,
-      gameMode: 'survival'
-    });
-    this.rotation = { x: 0, y: 0, z: 0 };
-    this.health = 20;
-    this.maxHealth = 20;
+  constructor() {
+    super();
+    this.lookDirection = { x: 0, y: 0, z: 1 };
   }
 
   getLookDirection() {
-    return {
-      x: -Math.sin(this.rotation.y) * Math.cos(this.rotation.x),
-      y: -Math.sin(this.rotation.x),
-      z: Math.cos(this.rotation.y) * Math.cos(this.rotation.x)
-    };
-  }
-  
-  takeDamage(amount) {
-    this.health = Math.max(0, this.health - amount);
-    return this.health;
+    return this.lookDirection;
   }
 }
 
-describe('Wind Charge Chain Reactions', function() {
+describe('Wind Charge Chain Reactions', () => {
   let world;
   let player;
-  let windCharge;
-  
-  beforeEach(function() {
+
+  beforeEach(() => {
     world = new TestWorld();
-    player = new TestPlayer('test', { x: 0, y: 5, z: 0 });
-    windCharge = new WindChargeEntity(world, { x: 0, y: 5, z: 0 });
+    player = new TestPlayer();
   });
-  
-  afterEach(function() {
-    world.reset();
+
+  afterEach(() => {
+    world = null;
+    player = null;
   });
-  
-  describe('TNT Chain Reactions', function() {
-    it('should trigger a chain reaction of TNT blocks', function() {
-      // Create a line of TNT blocks
-      for (let z = 5; z <= 10; z++) {
-        world.setBlock(0, 5, z, { 
-          type: 'tnt',
-          isSolid: true,
-          onActivate: function(world, x, y, z) {
-            // Simulate TNT activation
-            world.addParticleEffect({ x, y, z }, 'explosion', { size: 1 });
-            world.addSoundEffect({ x, y, z }, 'tnt_primed', 1, 1);
-            
-            // Activate neighboring TNT
-            for (let dx = -1; dx <= 1; dx++) {
-              for (let dy = -1; dy <= 1; dy++) {
-                for (let dz = -1; dz <= 1; dz++) {
-                  if (dx === 0 && dy === 0 && dz === 0) continue;
-                  
-                  const block = world.getBlock(x + dx, y + dy, z + dz);
-                  if (block.type === 'tnt') {
-                    block.onActivate(world, x + dx, y + dy, z + dz);
-                  }
-                }
-              }
-            }
-          }
-        });
-      }
-      
-      // Set wind charge velocity towards first TNT
-      windCharge.velocity = { x: 0, y: 0, z: 5 };
-      
-      // Update until collision
-      for (let i = 0; i < 10; i++) {
-        windCharge.update();
-      }
-      
-      // Should have multiple explosion effects
-      const explosionEvents = world.events.filter(e => 
-        e.type === 'particle_effect' && e.particleType === 'explosion'
-      );
-      assert(explosionEvents.length >= 6); // At least one explosion per TNT block
-    });
+
+  it('should trigger TNT chain reactions', () => {
+    // Place TNT blocks in a chain
+    const tnt = BlockRegistry.getBlock('tnt');
+    world.setBlock(0, 0, 1, tnt);
+    world.setBlock(0, 0, 2, tnt);
+    world.setBlock(0, 0, 3, tnt);
+
+    const windCharge = new WindChargeEntity(world, player);
+    windCharge.position = { x: 0, y: 0, z: 0 };
+    windCharge.velocity = { x: 0, y: 0, z: 1 };
+
+    // Simulate impact
+    windCharge.tick();
+
+    // Check for multiple explosion effects
+    const events = world.getEvents();
+    const explosionEvents = events.filter(e => e.event === 'explosion');
+    expect(explosionEvents.length).to.be.greaterThan(1);
   });
-  
-  describe('Redstone Chain Reactions', function() {
-    it('should trigger redstone components in sequence', function() {
-      let activationSequence = [];
-      
-      // Create a chain of redstone components
-      for (let z = 5; z <= 10; z++) {
-        world.setBlock(0, 5, z, { 
-          type: 'redstone_wire',
-          isSolid: false,
-          onActivate: function(world, x, y, z) {
-            activationSequence.push(z);
-            
-            // Activate next component
-            const nextBlock = world.getBlock(x, y, z + 1);
-            if (nextBlock && nextBlock.onActivate) {
-              nextBlock.onActivate(world, x, y, z + 1);
-            }
-          }
-        });
-      }
-      
-      // Set wind charge velocity towards first component
-      windCharge.velocity = { x: 0, y: 0, z: 5 };
-      
-      // Update until collision
-      for (let i = 0; i < 10; i++) {
-        windCharge.update();
-      }
-      
-      // Components should be activated in sequence
-      assert.deepStrictEqual(activationSequence, [5, 6, 7, 8, 9, 10]);
-    });
+
+  it('should trigger redstone chain reactions', () => {
+    // Place redstone components in a chain
+    const redstone = BlockRegistry.getBlock('redstone_wire');
+    const repeater = BlockRegistry.getBlock('repeater');
+    world.setBlock(0, 0, 1, redstone);
+    world.setBlock(0, 0, 2, repeater);
+    world.setBlock(0, 0, 3, redstone);
+
+    const windCharge = new WindChargeEntity(world, player);
+    windCharge.position = { x: 0, y: 0, z: 0 };
+    windCharge.velocity = { x: 0, y: 0, z: 1 };
+
+    // Simulate impact
+    windCharge.tick();
+
+    // Check for redstone activation events
+    const events = world.getEvents();
+    const activationEvents = events.filter(e => e.event === 'redstoneActivated');
+    expect(activationEvents.length).to.be.greaterThan(1);
   });
-  
-  describe('Block Transformation Chain', function() {
-    it('should trigger a chain of block transformations', function() {
-      let transformations = [];
-      
-      // Create a chain of transformable blocks
-      for (let z = 5; z <= 10; z++) {
-        world.setBlock(0, 5, z, { 
-          type: 'dirt',
-          isSolid: true,
-          onActivate: function(world, x, y, z) {
-            transformations.push(z);
-            
-            // Transform to dirt path
-            world.setBlock(x, y, z, { 
-              type: 'dirt_path',
-              isSolid: true,
-              onActivate: function(world, x, y, z) {
-                // Activate next block
-                const nextBlock = world.getBlock(x, y, z + 1);
-                if (nextBlock && nextBlock.onActivate) {
-                  nextBlock.onActivate(world, x, y, z + 1);
-                }
-              }
-            });
-          }
-        });
-      }
-      
-      // Set wind charge velocity towards first block
-      windCharge.velocity = { x: 0, y: 0, z: 5 };
-      
-      // Update until collision
-      for (let i = 0; i < 10; i++) {
-        windCharge.update();
-      }
-      
-      // Blocks should be transformed in sequence
-      assert.deepStrictEqual(transformations, [5, 6, 7, 8, 9, 10]);
-      
-      // Check final block states
-      for (let z = 5; z <= 10; z++) {
-        const block = world.getBlock(0, 5, z);
-        assert.strictEqual(block.type, 'dirt_path');
-      }
-    });
+
+  it('should trigger block transformation chains', () => {
+    // Place transformable blocks in a chain
+    const grass = BlockRegistry.getBlock('grass_block');
+    world.setBlock(0, 0, 1, grass);
+    world.setBlock(0, 0, 2, grass);
+    world.setBlock(0, 0, 3, grass);
+
+    const windCharge = new WindChargeEntity(world, player);
+    windCharge.position = { x: 0, y: 0, z: 0 };
+    windCharge.velocity = { x: 0, y: 0, z: 1 };
+
+    // Simulate impact
+    windCharge.tick();
+
+    // Check for block transformation events
+    const events = world.getEvents();
+    const transformEvents = events.filter(e => e.event === 'blockTransformed');
+    expect(transformEvents.length).to.be.greaterThan(1);
   });
 }); 

@@ -2,18 +2,21 @@
  * Wind Trajectory Predictor Tests
  * Tests for the trajectory prediction system added in the Minecraft 1.24 Update (Trail Tales)
  */
-const assert = require('assert');
+const { expect } = require('chai');
 const WindTrajectoryPredictor = require('../utils/windTrajectoryPredictor');
 const WindChargeItem = require('../items/windChargeItem');
 const Vector3 = require('../math/vector3');
 const World = require('../world/world');
 const Player = require('../entities/player');
+const BaseWorld = require('../world/baseWorld');
+const { WindChargeEntity } = require('../entity/windChargeEntity');
 
 // Test world implementation
-class TestWorld extends World {
+class TestWorld extends BaseWorld {
   constructor() {
     super();
     this.blocks = new Map();
+    this.events = [];
   }
   
   getBlock(x, y, z) {
@@ -24,6 +27,14 @@ class TestWorld extends World {
   setBlock(x, y, z, block) {
     const key = `${x},${y},${z}`;
     this.blocks.set(key, block);
+  }
+
+  emit(event, data) {
+    this.events.push({ event, data });
+  }
+
+  getEvents() {
+    return this.events;
   }
 }
 
@@ -36,14 +47,11 @@ class TestPlayer extends Player {
       gameMode: 'survival'
     });
     this.rotation = { x: 0, y: 0, z: 0 };
+    this.lookDirection = { x: 0, y: 0, z: 1 };
   }
 
   getLookDirection() {
-    return {
-      x: -Math.sin(this.rotation.y) * Math.cos(this.rotation.x),
-      y: -Math.sin(this.rotation.x),
-      z: Math.cos(this.rotation.y) * Math.cos(this.rotation.x)
-    };
+    return this.lookDirection;
   }
 }
 
@@ -171,6 +179,68 @@ describe('Wind Trajectory Predictor', function() {
       assert(result.trajectory);
       assert(Array.isArray(result.trajectory));
     });
+  });
+});
+
+describe('Wind Charge Trajectory Tests', () => {
+  let world;
+  let player;
+
+  beforeEach(() => {
+    world = new TestWorld();
+    player = new TestPlayer();
+  });
+
+  afterEach(() => {
+    world = null;
+    player = null;
+  });
+
+  it('should follow correct trajectory when thrown', () => {
+    const windCharge = new WindChargeEntity(world, player);
+    windCharge.position = { x: 0, y: 0, z: 0 };
+    windCharge.velocity = { x: 0, y: 0, z: 1 };
+
+    // Simulate 10 ticks
+    for (let i = 0; i < 10; i++) {
+      windCharge.tick();
+    }
+
+    // Check final position
+    expect(windCharge.position.z).to.be.greaterThan(0);
+    expect(windCharge.position.y).to.be.lessThan(0); // Should fall due to gravity
+  });
+
+  it('should emit particles during flight', () => {
+    const windCharge = new WindChargeEntity(world, player);
+    windCharge.position = { x: 0, y: 0, z: 0 };
+    windCharge.velocity = { x: 0, y: 0, z: 1 };
+
+    // Simulate 5 ticks
+    for (let i = 0; i < 5; i++) {
+      windCharge.tick();
+    }
+
+    // Check for particle effects
+    const events = world.getEvents();
+    const particleEvents = events.filter(e => e.event === 'particle');
+    expect(particleEvents.length).to.be.greaterThan(0);
+  });
+
+  it('should play sound effects during flight', () => {
+    const windCharge = new WindChargeEntity(world, player);
+    windCharge.position = { x: 0, y: 0, z: 0 };
+    windCharge.velocity = { x: 0, y: 0, z: 1 };
+
+    // Simulate 5 ticks
+    for (let i = 0; i < 5; i++) {
+      windCharge.tick();
+    }
+
+    // Check for sound effects
+    const events = world.getEvents();
+    const soundEvents = events.filter(e => e.event === 'sound');
+    expect(soundEvents.length).to.be.greaterThan(0);
   });
 });
 
