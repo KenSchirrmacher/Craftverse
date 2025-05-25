@@ -54,11 +54,15 @@
 2. Implement Fireflies for the Mangrove Swamp biome
 3. Implement Netherite upgrade template for the 1.20 Update
 4. Begin implementation of Minecraft 1.21 Update (Tricky Trials)
-   - Implement Trial Chambers structure
-   - Create The Breeze mob
-   - Add Wind Charge item
+   - [IN PROGRESS] Implement Trial Chambers structure
+     - [IN PROGRESS] TrialChamber class implementation
+     - [IN PROGRESS] TrialChamberGenerator implementation
+     - [IN PROGRESS] TrialSpawnerBlock implementation
+     - [TODO] Comprehensive test suite
+   - [TODO] Create The Breeze mob
+   - [COMPLETED] Add Wind Charge item
    - [COMPLETED] Implement new copper and tuff block variants
-   - Add Mace weapon
+   - [TODO] Add Mace weapon
 5. Implement Vault Portal feature for Minecraft 1.24 (Trail Tales)
    - [COMPLETED] Block implementation
    - [COMPLETED] Item implementation
