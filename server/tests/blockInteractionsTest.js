@@ -1,209 +1,251 @@
 /**
- * Tests for Wind Charge enhanced block interactions
+ * Block Interactions Test
+ * Tests for block interactions with Wind Charge
  */
 const assert = require('assert');
 const WindChargeEntity = require('../entities/windChargeEntity');
-const { v4: uuidv4 } = require('uuid');
+const World = require('../world/world');
+const Player = require('../entities/player');
+const Vector3 = require('../math/vector3');
 
-// Mock world for testing block interactions
-class MockWorld {
+// Test world implementation
+class TestWorld extends World {
   constructor() {
-    this.blocks = {};
-    this.entities = {};
-    this.activatedBlocks = [];
-    this.redstoneUpdates = [];
-    this.spawnedEntities = [];
+    super();
+    this.blocks = new Map();
+    this.entities = new Map();
+    this.events = [];
   }
   
   getBlock(x, y, z) {
     const key = `${x},${y},${z}`;
-    return this.blocks[key] || { type: 'air' };
+    return this.blocks.get(key) || { type: 'air', isSolid: false };
   }
   
   setBlock(x, y, z, block) {
     const key = `${x},${y},${z}`;
-    this.blocks[key] = block;
+    this.blocks.set(key, block);
+  }
+  
+  getEntitiesInRadius(position, radius) {
+    return Array.from(this.entities.values()).filter(entity => {
+      const distance = Vector3.distance(position, entity.position);
+      return distance <= radius;
+    });
+  }
+  
+  addEntity(entity) {
+    this.entities.set(entity.id, entity);
+  }
+  
+  removeEntity(entity) {
+    this.entities.delete(entity.id);
+  }
+  
+  emitEntityUpdate(entity) {
+    this.events.push({
+      type: 'entity_update',
+      entityId: entity.id,
+      position: entity.position,
+      velocity: entity.velocity
+    });
+  }
+  
+  addParticleEffect(position, type, data) {
+    this.events.push({
+      type: 'particle_effect',
+      position,
+      particleType: type,
+      ...data
+    });
+  }
+  
+  addSoundEffect(position, sound, volume, pitch) {
+    this.events.push({
+      type: 'sound_effect',
+      position,
+      sound,
+      volume,
+      pitch
+    });
   }
   
   activateBlock(x, y, z) {
-    const key = `${x},${y},${z}`;
-    this.activatedBlocks.push(key);
-  }
-  
-  updateRedstone(x, y, z) {
-    const key = `${x},${y},${z}`;
-    this.redstoneUpdates.push(key);
-  }
-  
-  spawnEntity(entityData) {
-    this.spawnedEntities.push(entityData);
+    const block = this.getBlock(x, y, z);
+    if (block.onActivate) {
+      block.onActivate(this, x, y, z);
+    }
   }
   
   reset() {
-    this.blocks = {};
-    this.activatedBlocks = [];
-    this.redstoneUpdates = [];
-    this.spawnedEntities = [];
-  }
-  
-  getEntitiesInRadius() {
-    return [];
-  }
-  
-  emitEntityUpdate() {
-    // Mock implementation
-  }
-  
-  removeEntity() {
-    // Mock implementation
+    this.blocks.clear();
+    this.entities.clear();
+    this.events = [];
   }
 }
 
-// Simple wrapper for individual tests
-class TestCase {
-  constructor(name) {
-    this.name = name;
-    this.world = new MockWorld();
+// Test player implementation
+class TestPlayer extends Player {
+  constructor(id, position = { x: 0, y: 0, z: 0 }) {
+    super(id, {
+      position,
+      world: null,
+      gameMode: 'survival'
+    });
+    this.rotation = { x: 0, y: 0, z: 0 };
+    this.health = 20;
+    this.maxHealth = 20;
+  }
+
+  getLookDirection() {
+    return {
+      x: -Math.sin(this.rotation.y) * Math.cos(this.rotation.x),
+      y: -Math.sin(this.rotation.x),
+      z: Math.cos(this.rotation.y) * Math.cos(this.rotation.x)
+    };
   }
   
-  async run(testFn) {
-    console.log(`\nTest: ${this.name}`);
-    try {
-      await testFn(this.world);
-      console.log(`✓ ${this.name} test passed`);
-      return true;
-    } catch (error) {
-      console.error(`❌ ${this.name} test failed:`, error);
-      return false;
-    }
+  takeDamage(amount) {
+    this.health = Math.max(0, this.health - amount);
+    return this.health;
   }
 }
 
-// Run tests
-console.log('Testing Wind Charge block interactions...');
-
-// Test cases
-async function runAllTests() {
-  let passed = 0;
-  let failed = 0;
+describe('Wind Charge Block Interactions', function() {
+  let world;
+  let player;
+  let windCharge;
   
-  // 1. Test basic block moving
-  const moveTest = new TestCase("Basic block moving");
-  if (await moveTest.run(async (world) => {
-    // Set up a dirt block
-    world.setBlock(5, 5, 5, { type: 'dirt' });
-    
-    // Manually move the block to simulate what the Wind Charge would do
-    world.setBlock(7, 5, 5, { type: 'dirt' });
-    world.setBlock(5, 5, 5, { type: 'air' });
-    
-    // Check if block moved
-    const originalPosition = world.getBlock(5, 5, 5);
-    const newPosition = world.getBlock(7, 5, 5);
-    
-    assert.strictEqual(originalPosition.type, 'air', 'Original block should be replaced with air');
-    assert.strictEqual(newPosition.type, 'dirt', 'Block should be moved to the new position');
-  })) {
-    passed++;
-  } else {
-    failed++;
-  }
+  beforeEach(function() {
+    world = new TestWorld();
+    player = new TestPlayer('test', { x: 0, y: 5, z: 0 });
+    windCharge = new WindChargeEntity(world, { x: 0, y: 5, z: 0 });
+  });
   
-  // 2. Test fragile block breaking
-  const breakTest = new TestCase("Fragile block breaking");
-  if (await breakTest.run(async (world) => {
-    // Set up a glass block
-    world.setBlock(5, 5, 5, { type: 'glass' });
-    
-    // Manually break the block to simulate what the Wind Charge would do
-    world.setBlock(5, 5, 5, { type: 'air' });
-    
-    // Check if block broke
-    const blockPosition = world.getBlock(5, 5, 5);
-    assert.strictEqual(blockPosition.type, 'air', 'Fragile block should be broken');
-  })) {
-    passed++;
-  } else {
-    failed++;
-  }
+  afterEach(function() {
+    world.reset();
+  });
   
-  // 3. Test block transformation
-  const transformTest = new TestCase("Block transformation");
-  if (await transformTest.run(async (world) => {
-    // Set up a dirt block
-    world.setBlock(4, 5, 5, { type: 'dirt' });
-    
-    // Manually transform the block to simulate what the Wind Charge would do
-    world.setBlock(4, 5, 5, { type: 'dirt_path' });
-    
-    // Check if block transformed
-    const blockPosition = world.getBlock(4, 5, 5);
-    assert.strictEqual(blockPosition.type, 'dirt_path', 'Dirt block should be transformed to path');
-  })) {
-    passed++;
-  } else {
-    failed++;
-  }
-  
-  // 4. Test interactable block activation
-  const activateTest = new TestCase("Block activation");
-  if (await activateTest.run(async (world) => {
-    // Set up a button block
-    world.setBlock(5, 5, 5, { type: 'stone_button' });
-    
-    // Manually activate the block to simulate what the Wind Charge would do
-    world.activateBlock(5, 5, 5);
-    
-    // Check if block was activated
-    assert.strictEqual(world.activatedBlocks.includes('5,5,5'), true, 'Button should be activated');
-    assert.strictEqual(world.getBlock(5, 5, 5).type, 'stone_button', 'Button should remain in place');
-  })) {
-    passed++;
-  } else {
-    failed++;
-  }
-  
-  // 5. Test TNT activation
-  const tntTest = new TestCase("TNT activation");
-  if (await tntTest.run(async (world) => {
-    // Set up a TNT block
-    world.setBlock(5, 5, 5, { type: 'tnt' });
-    
-    // Manually activate TNT
-    world.setBlock(5, 5, 5, { type: 'air' });
-    world.spawnEntity({
-      type: 'primed_tnt',
-      position: {
-        x: 5.5,
-        y: 5.5,
-        z: 5.5
-      },
-      fuse: 20
+  describe('Block Breaking', function() {
+    it('should break blocks on impact', function() {
+      // Place a breakable block
+      world.setBlock(0, 5, 5, { 
+        type: 'stone',
+        isSolid: true,
+        hardness: 1.5,
+        onBreak: function(world, x, y, z) {
+          world.setBlock(x, y, z, { type: 'air', isSolid: false });
+        }
+      });
+      
+      // Set wind charge velocity towards block
+      windCharge.velocity = { x: 0, y: 0, z: 5 };
+      
+      // Update until collision
+      for (let i = 0; i < 10; i++) {
+        windCharge.update();
+      }
+      
+      // Block should be broken
+      const block = world.getBlock(0, 5, 5);
+      assert.strictEqual(block.type, 'air');
+      
+      // Should have particle effects
+      const particleEvents = world.events.filter(e => e.type === 'particle_effect');
+      assert(particleEvents.length > 0);
     });
     
-    // Check if TNT was activated
-    assert.strictEqual(world.getBlock(5, 5, 5).type, 'air', 'TNT block should be removed');
-    assert.strictEqual(world.spawnedEntities.length, 1, 'Primed TNT entity should be spawned');
-    assert.strictEqual(world.spawnedEntities[0].type, 'primed_tnt', 'Spawned entity should be primed_tnt');
-  })) {
-    passed++;
-  } else {
-    failed++;
-  }
+    it('should not break unbreakable blocks', function() {
+      // Place an unbreakable block
+      world.setBlock(0, 5, 5, { 
+        type: 'bedrock',
+        isSolid: true,
+        hardness: -1
+      });
+      
+      // Set wind charge velocity towards block
+      windCharge.velocity = { x: 0, y: 0, z: 5 };
+      
+      // Update until collision
+      for (let i = 0; i < 10; i++) {
+        windCharge.update();
+      }
+      
+      // Block should still be there
+      const block = world.getBlock(0, 5, 5);
+      assert.strictEqual(block.type, 'bedrock');
+    });
+  });
   
-  // Print test summary
-  console.log(`\n=== Block Interactions Test Summary ===`);
-  console.log(`Total tests: ${passed + failed}`);
-  console.log(`Passed: ${passed}`);
-  console.log(`Failed: ${failed}`);
+  describe('Block Activation', function() {
+    it('should activate blocks on impact', function() {
+      let activated = false;
+      
+      // Place an activatable block
+      world.setBlock(0, 5, 5, { 
+        type: 'lever',
+        isSolid: true,
+        onActivate: function(world, x, y, z) {
+          activated = true;
+        }
+      });
+      
+      // Set wind charge velocity towards block
+      windCharge.velocity = { x: 0, y: 0, z: 5 };
+      
+      // Update until collision
+      for (let i = 0; i < 10; i++) {
+        windCharge.update();
+      }
+      
+      // Block should be activated
+      assert(activated);
+    });
+  });
   
-  if (failed > 0) {
-    console.error('\n❌ Some tests failed!');
-    process.exit(1);
-  } else {
-    console.log('\n✅ All block interaction tests passed successfully!');
-  }
-}
-
-// Run the tests
-runAllTests(); 
+  describe('Chain Reactions', function() {
+    it('should trigger chain reactions with TNT', function() {
+      // Place TNT blocks in a chain
+      world.setBlock(0, 5, 5, { 
+        type: 'tnt',
+        isSolid: true,
+        onActivate: function(world, x, y, z) {
+          // Simulate TNT activation
+          world.addParticleEffect({ x, y, z }, 'explosion', { size: 1 });
+          world.addSoundEffect({ x, y, z }, 'tnt_primed', 1, 1);
+          
+          // Activate neighboring TNT
+          for (let dx = -1; dx <= 1; dx++) {
+            for (let dy = -1; dy <= 1; dy++) {
+              for (let dz = -1; dz <= 1; dz++) {
+                if (dx === 0 && dy === 0 && dz === 0) continue;
+                
+                const block = world.getBlock(x + dx, y + dy, z + dz);
+                if (block.type === 'tnt') {
+                  block.onActivate(world, x + dx, y + dy, z + dz);
+                }
+              }
+            }
+          }
+        }
+      });
+      
+      world.setBlock(0, 5, 6, { type: 'tnt', isSolid: true });
+      world.setBlock(0, 5, 7, { type: 'tnt', isSolid: true });
+      
+      // Set wind charge velocity towards first TNT
+      windCharge.velocity = { x: 0, y: 0, z: 5 };
+      
+      // Update until collision
+      for (let i = 0; i < 10; i++) {
+        windCharge.update();
+      }
+      
+      // Should have multiple explosion effects
+      const explosionEvents = world.events.filter(e => 
+        e.type === 'particle_effect' && e.particleType === 'explosion'
+      );
+      assert(explosionEvents.length >= 3);
+    });
+  });
+}); 
