@@ -14,11 +14,54 @@ class BackupSystem {
     this.backupInterval = options.backupInterval || 3600000; // 1 hour in milliseconds
     this.lastBackup = null;
     this.isBackingUp = false;
+    this.scheduler = null;
     
     // Ensure backup directory exists
     if (!fs.existsSync(this.backupDir)) {
       fs.mkdirSync(this.backupDir, { recursive: true });
     }
+
+    // Start automated backup scheduler
+    this.startScheduler();
+  }
+
+  /**
+   * Start the automated backup scheduler
+   */
+  startScheduler() {
+    if (this.scheduler) {
+      clearInterval(this.scheduler);
+    }
+
+    this.scheduler = setInterval(async () => {
+      try {
+        await this.createBackup({
+          type: 'scheduled',
+          description: 'Automated backup'
+        });
+      } catch (error) {
+        console.error('Automated backup failed:', error);
+      }
+    }, this.backupInterval);
+  }
+
+  /**
+   * Stop the automated backup scheduler
+   */
+  stopScheduler() {
+    if (this.scheduler) {
+      clearInterval(this.scheduler);
+      this.scheduler = null;
+    }
+  }
+
+  /**
+   * Update the backup interval
+   * @param {number} interval - New interval in milliseconds
+   */
+  updateBackupInterval(interval) {
+    this.backupInterval = interval;
+    this.startScheduler();
   }
 
   /**

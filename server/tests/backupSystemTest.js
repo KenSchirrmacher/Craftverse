@@ -22,6 +22,7 @@ class BackupSystemTest extends TestBase {
     await this.testBackupListing();
     await this.testBackupCleanup();
     await this.testConcurrentBackups();
+    await this.testSchedulerFunctionality();
   }
 
   async testBackupCreation() {
@@ -186,6 +187,46 @@ class BackupSystemTest extends TestBase {
       // Now should be able to create another backup
       const backupId = await backupSystem.createBackup({ description: 'Backup 2' });
       assert.ok(backupId, 'Should be able to create backup after first one completes');
+    });
+  }
+
+  async testSchedulerFunctionality() {
+    this.test('Scheduler Functionality', async () => {
+      const backupSystem = new BackupSystem({
+        backupDir: this.testDir,
+        backupInterval: 1000 // 1 second for testing
+      });
+
+      // Wait for first automated backup
+      await new Promise(resolve => setTimeout(resolve, 1100));
+      
+      const backups = await backupSystem.listBackups();
+      assert.ok(backups.length > 0, 'Automated backup should be created');
+      assert.strictEqual(backups[0].type, 'scheduled', 'Backup should be of type scheduled');
+
+      // Test scheduler stop
+      backupSystem.stopScheduler();
+      const backupCount = backups.length;
+      await new Promise(resolve => setTimeout(resolve, 1100));
+      const newBackups = await backupSystem.listBackups();
+      assert.strictEqual(newBackups.length, backupCount, 'No new backups should be created after stopping scheduler');
+
+      // Test scheduler restart
+      backupSystem.startScheduler();
+      await new Promise(resolve => setTimeout(resolve, 1100));
+      const finalBackups = await backupSystem.listBackups();
+      assert.ok(finalBackups.length > backupCount, 'New backup should be created after restarting scheduler');
+
+      // Test interval update
+      backupSystem.updateBackupInterval(2000);
+      const updatedBackupCount = finalBackups.length;
+      await new Promise(resolve => setTimeout(resolve, 1100));
+      const afterUpdateBackups = await backupSystem.listBackups();
+      assert.strictEqual(afterUpdateBackups.length, updatedBackupCount, 'No new backup should be created before new interval');
+
+      await new Promise(resolve => setTimeout(resolve, 1100));
+      const finalBackupsAfterUpdate = await backupSystem.listBackups();
+      assert.ok(finalBackupsAfterUpdate.length > updatedBackupCount, 'New backup should be created after new interval');
     });
   }
 
