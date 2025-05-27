@@ -42,6 +42,10 @@
 - server/tests/testBase.js - Base class for all test suites providing common functionality
 - server/tests/testWorld.js - Test world implementation for running game tests in isolation
 - server/tests/setup.js - Test setup utilities and configuration
+- server/tests/blockFace.js - Implementation of block face enumeration and utilities for testing
+- server/tests/torchBlock.js - Implementation of torch block for testing block interactions
+- server/tests/smithingManager.js - Implementation of smithing manager for testing crafting and upgrades
+- server/tests/blockBase.js - Base class for block testing with common functionality
 - server/tests/axolotlTest.js - Tests for Axolotl implementation
 - server/tests/aquaticMobsTest.js - Tests for Squid and GlowSquid mobs
 - server/tests/calciteBlockTest.js - Tests for Calcite block
