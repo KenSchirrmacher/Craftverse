@@ -5,12 +5,6 @@
 - server/server.js - Main server implementation, handles socket connections, game state, etc.
 - server/saveSystem.js - Handles saving and loading game data
 
-### Archaeology
-- server/archaeology/archaeologyManager.js - Manages archaeology mechanics and loot generation
-- server/archaeology/brushItem.js - Implementation of the brush tool for excavation
-- server/archaeology/suspiciousSandBlock.js - Implementation of suspicious sand blocks
-- server/archaeology/suspiciousGravelBlock.js - Implementation of suspicious gravel blocks
-
 ### Mobs
 - server/mobs/mobManager.js - Manages mob spawning, updates, and interactions
 - server/mobs/mobBase.js - Base class for all mobs with common functionality
