@@ -23,6 +23,9 @@ class BackupSystemTest extends TestBase {
     await this.testBackupCleanup();
     await this.testConcurrentBackups();
     await this.testSchedulerFunctionality();
+    await this.testErrorHandling();
+    await this.testErrorRecovery();
+    await this.testFailedBackupManifest();
   }
 
   async testBackupCreation() {
@@ -227,6 +230,128 @@ class BackupSystemTest extends TestBase {
       await new Promise(resolve => setTimeout(resolve, 1100));
       const finalBackupsAfterUpdate = await backupSystem.listBackups();
       assert.ok(finalBackupsAfterUpdate.length > updatedBackupCount, 'New backup should be created after new interval');
+    });
+  }
+
+  async testErrorHandling() {
+    this.test('Error Handling and Recovery', async () => {
+      const backupSystem = new BackupSystem({
+        backupDir: this.testDir,
+        maxErrors: 2,
+        recoveryDelay: 100 // 100ms for testing
+      });
+
+      // Simulate backup failure
+      const originalBackupWorldData = backupSystem.backupWorldData;
+      backupSystem.backupWorldData = async () => {
+        throw new Error('Simulated backup failure');
+      };
+
+      // First failure should trigger recovery
+      try {
+        await backupSystem.createBackup();
+        assert.fail('Should throw error');
+      } catch (error) {
+        assert.strictEqual(error.message, 'Simulated backup failure');
+        assert.strictEqual(backupSystem.errorCount, 1);
+      }
+
+      // Second failure should also trigger recovery
+      try {
+        await backupSystem.createBackup();
+        assert.fail('Should throw error');
+      } catch (error) {
+        assert.strictEqual(error.message, 'Simulated backup failure');
+        assert.strictEqual(backupSystem.errorCount, 2);
+      }
+
+      // Third failure should disable the system
+      try {
+        await backupSystem.createBackup();
+        assert.fail('Should throw error');
+      } catch (error) {
+        assert.strictEqual(error.message, 'Backup system disabled due to repeated errors');
+        assert.strictEqual(backupSystem.errorCount, 3);
+        assert.strictEqual(backupSystem.scheduler, null);
+      }
+
+      // Restore original method
+      backupSystem.backupWorldData = originalBackupWorldData;
+    });
+  }
+
+  async testErrorRecovery() {
+    this.test('Error Recovery', async () => {
+      const backupSystem = new BackupSystem({
+        backupDir: this.testDir,
+        maxErrors: 2,
+        recoveryDelay: 100 // 100ms for testing
+      });
+
+      // Simulate temporary failure
+      let failCount = 0;
+      const originalBackupWorldData = backupSystem.backupWorldData;
+      backupSystem.backupWorldData = async () => {
+        if (failCount < 2) {
+          failCount++;
+          throw new Error('Temporary failure');
+        }
+        return originalBackupWorldData.call(backupSystem);
+      };
+
+      // First failure
+      try {
+        await backupSystem.createBackup();
+        assert.fail('Should throw error');
+      } catch (error) {
+        assert.strictEqual(error.message, 'Temporary failure');
+        assert.strictEqual(backupSystem.errorCount, 1);
+      }
+
+      // Second failure
+      try {
+        await backupSystem.createBackup();
+        assert.fail('Should throw error');
+      } catch (error) {
+        assert.strictEqual(error.message, 'Temporary failure');
+        assert.strictEqual(backupSystem.errorCount, 2);
+      }
+
+      // Should succeed on third attempt
+      const backupId = await backupSystem.createBackup();
+      assert.ok(backupId, 'Backup should succeed after recovery');
+      assert.strictEqual(backupSystem.errorCount, 0, 'Error count should be reset after success');
+
+      // Restore original method
+      backupSystem.backupWorldData = originalBackupWorldData;
+    });
+  }
+
+  async testFailedBackupManifest() {
+    this.test('Failed Backup Manifest', async () => {
+      const backupSystem = new BackupSystem({
+        backupDir: this.testDir
+      });
+
+      // Simulate backup failure
+      const originalBackupWorldData = backupSystem.backupWorldData;
+      backupSystem.backupWorldData = async () => {
+        throw new Error('Simulated backup failure');
+      };
+
+      try {
+        await backupSystem.createBackup();
+        assert.fail('Should throw error');
+      } catch (error) {
+        assert.strictEqual(error.message, 'Simulated backup failure');
+      }
+
+      // Verify no backup directory exists (should be cleaned up)
+      const backups = await backupSystem.listBackups();
+      assert.strictEqual(backups.length, 0, 'Failed backup should be cleaned up');
+
+      // Restore original method
+      backupSystem.backupWorldData = originalBackupWorldData;
     });
   }
 

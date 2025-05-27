@@ -15,6 +15,9 @@ class BackupSystem {
     this.lastBackup = null;
     this.isBackingUp = false;
     this.scheduler = null;
+    this.errorCount = 0;
+    this.maxErrors = options.maxErrors || 3;
+    this.recoveryDelay = options.recoveryDelay || 5000; // 5 seconds
     
     // Ensure backup directory exists
     if (!fs.existsSync(this.backupDir)) {
@@ -23,6 +26,34 @@ class BackupSystem {
 
     // Start automated backup scheduler
     this.startScheduler();
+  }
+
+  /**
+   * Handle backup errors and implement recovery
+   * @param {Error} error - The error that occurred
+   * @returns {Promise<void>}
+   */
+  async handleBackupError(error) {
+    this.errorCount++;
+    console.error(`Backup error (${this.errorCount}/${this.maxErrors}):`, error);
+
+    if (this.errorCount >= this.maxErrors) {
+      console.error('Maximum error count reached. Stopping backup scheduler.');
+      this.stopScheduler();
+      throw new Error('Backup system disabled due to repeated errors');
+    }
+
+    // Implement exponential backoff
+    const delay = this.recoveryDelay * Math.pow(2, this.errorCount - 1);
+    console.log(`Waiting ${delay}ms before retrying...`);
+    await new Promise(resolve => setTimeout(resolve, delay));
+  }
+
+  /**
+   * Reset error count on successful backup
+   */
+  resetErrorCount() {
+    this.errorCount = 0;
   }
 
   /**
@@ -39,8 +70,9 @@ class BackupSystem {
           type: 'scheduled',
           description: 'Automated backup'
         });
+        this.resetErrorCount();
       } catch (error) {
-        console.error('Automated backup failed:', error);
+        await this.handleBackupError(error);
       }
     }, this.backupInterval);
   }
@@ -97,7 +129,8 @@ class BackupSystem {
         id: backupId,
         timestamp,
         type: options.type || 'scheduled',
-        description: options.description || 'Automated backup'
+        description: options.description || 'Automated backup',
+        status: 'success'
       });
 
       // Clean up old backups
@@ -106,6 +139,18 @@ class BackupSystem {
       this.lastBackup = timestamp;
       return backupId;
     } catch (error) {
+      // Update manifest with error information
+      if (fs.existsSync(backupPath)) {
+        await this.createBackupManifest(backupPath, {
+          id: backupId,
+          timestamp,
+          type: options.type || 'scheduled',
+          description: options.description || 'Automated backup',
+          status: 'failed',
+          error: error.message
+        });
+      }
+
       // Clean up failed backup
       if (fs.existsSync(backupPath)) {
         fs.rmSync(backupPath, { recursive: true, force: true });
