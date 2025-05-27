@@ -5,30 +5,7 @@
 
 const assert = require('assert');
 const CopperBulbBlock = require('../blocks/copperBulbBlock');
-
-// Mock world for testing
-class MockWorld {
-  constructor() {
-    this.blocks = new Map();
-    this.redstonePower = 0;
-  }
-  
-  getBlockAt(x, y, z) {
-    return this.blocks.get(`${x},${y},${z}`);
-  }
-  
-  setBlockAt(x, y, z, block) {
-    this.blocks.set(`${x},${y},${z}`, block);
-  }
-  
-  getRedstonePowerAt(x, y, z) {
-    return this.redstonePower;
-  }
-  
-  setRedstonePower(power) {
-    this.redstonePower = power;
-  }
-}
+const World = require('../world/world');
 
 /**
  * Run all the tests for CopperBulbBlock
@@ -93,7 +70,7 @@ function run() {
     console.log('\nTesting: Redstone Interaction');
     
     const testBulb = new CopperBulbBlock();
-    const world = new MockWorld();
+    const world = new World();
     const position = { x: 0, y: 0, z: 0 };
     
     // Test initial state
@@ -101,7 +78,7 @@ function run() {
     assert.strictEqual(testBulb.lightLevel, 0, 'initial lightLevel should be 0');
     
     // Apply redstone power
-    world.setRedstonePower(15);
+    world.setRedstonePowerAt(position.x, position.y, position.z, 15);
     
     // Update the bulb
     const update = testBulb.update(world, position, 1);
@@ -124,7 +101,7 @@ function run() {
     // Test power removal
     const poweredBulb = new CopperBulbBlock({ powered: true });
     poweredBulb.lightLevel = poweredBulb.baseLightLevel;
-    world.setRedstonePower(0);
+    world.setRedstonePowerAt(position.x, position.y, position.z, 0);
     
     // Reset cooldown to allow immediate update
     poweredBulb.redstoneCooldown = 0;
@@ -146,7 +123,7 @@ function run() {
     
     // Simulate using a redstone item on the bulb
     const result = interactionBulb.interact(
-      { id: 'player1' }, // Mock player
+      { id: 'player1' }, // Player
       'use_item',
       { item: 'redstone_torch' }
     );
@@ -238,20 +215,11 @@ function run() {
     
     console.log('- Serialization and deserialization test passed');
     
-    console.log('\n✅ ALL TESTS PASSED: CopperBulbBlock tests completed successfully');
+    return true;
   } catch (error) {
-    console.error(`❌ TEST FAILED: ${error.message}`);
-    console.error(error.stack);
-    success = false;
+    console.error('Test failed:', error);
+    return false;
   }
-  
-  return success;
-}
-
-// Run the tests if this file is executed directly
-if (require.main === module) {
-  const success = run();
-  process.exit(success ? 0 : 1);
 }
 
 module.exports = { run }; 

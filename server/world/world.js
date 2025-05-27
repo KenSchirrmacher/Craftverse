@@ -1,14 +1,16 @@
 const { BlockRegistry } = require('../blocks/blockRegistry');
 const { EntityRegistry } = require('../entity/entityRegistry');
+const ParticleSystem = require('../particles/particleSystem');
 
 class World {
   constructor() {
     this.blocks = new Map();
     this.entities = new Map();
     this.blockStates = new Map();
-    this.particleEffects = [];
+    this.particleSystem = new ParticleSystem();
     this.soundEffects = [];
     this.dimension = 'overworld';
+    this.timeOfDay = 0.8; // Start at night
   }
 
   getBlock(x, y, z) {
@@ -40,7 +42,7 @@ class World {
   }
 
   addParticleEffect(effect) {
-    this.particleEffects.push(effect);
+    this.particleSystem.emitParticles(effect);
   }
 
   playSound(sound) {
@@ -79,20 +81,51 @@ class World {
   }
 
   getParticleCount() {
-    return this.particles.length;
+    return this.particleSystem.getParticles().length;
   }
 
   getSoundCount() {
-    return this.sounds.length;
+    return this.soundEffects.length;
   }
 
-  addParticleEffect(particle) {
-    this.particles.push(particle);
+  // Get block at position (alias for getBlock)
+  getBlockAt(x, y, z) {
+    return this.getBlock(x, y, z);
   }
 
-  playSound(sound) {
-    this.sounds.push(sound);
+  // Get highest block at x,z coordinates
+  getHighestBlock(x, z) {
+    for (let y = 255; y >= 0; y--) {
+      const block = this.getBlock(x, y, z);
+      if (block && block.isSolid) {
+        return y;
+      }
+    }
+    return 0;
+  }
+
+  // Update world state
+  update(deltaTime) {
+    // Update particle system
+    this.particleSystem.update(this, deltaTime);
+    
+    // Update entities
+    for (const entity of this.entities.values()) {
+      if (typeof entity.update === 'function') {
+        entity.update(this, [], [], deltaTime);
+      }
+    }
+  }
+
+  // Get all particles
+  getParticles() {
+    return this.particleSystem.getParticlesForRendering();
+  }
+
+  // Clear all particles
+  clearParticles() {
+    this.particleSystem.clear();
   }
 }
 
-module.exports = { World }; 
+module.exports = World; 

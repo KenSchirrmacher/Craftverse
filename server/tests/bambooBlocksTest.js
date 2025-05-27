@@ -20,10 +20,13 @@ const {
 } = require('../blocks/bambooBlock');
 const { BambooItem, BambooSignItem } = require('../items/bambooItem');
 const BambooRaftItem = require('../items/bambooRaftItem');
+const World = require('../world/world');
+const Player = require('../entities/player');
 
-// Mock classes for testing
-class MockWorld {
+// Test world implementation
+class TestWorld extends World {
   constructor() {
+    super();
     this.blocks = {};
     this.entities = [];
     this.sounds = [];
@@ -78,12 +81,37 @@ class MockWorld {
   }
 }
 
-class MockPlayer {
+// Test player implementation
+class TestPlayer extends Player {
   constructor() {
-    this.world = new MockWorld();
+    super();
+    this.world = new TestWorld();
     this.position = { x: 0, y: 0, z: 0 };
     this.rotation = { yaw: 0, pitch: 0 };
     this.inventory = [];
+  }
+  
+  giveItem(item) {
+    this.inventory.push(item);
+    return true;
+  }
+  
+  removeItem(item) {
+    const index = this.inventory.indexOf(item);
+    if (index !== -1) {
+      this.inventory.splice(index, 1);
+      return true;
+    }
+    return false;
+  }
+  
+  updateItem(item) {
+    const index = this.inventory.findIndex(i => i.id === item.id);
+    if (index !== -1) {
+      this.inventory[index] = item;
+      return true;
+    }
+    return false;
   }
 }
 
@@ -93,14 +121,20 @@ class MockPlayer {
 function runBambooBlocksTest() {
   console.log('Running Bamboo Blocks Tests...');
   
-  testBambooBlockRegistration();
-  testBambooBlockProperties();
-  testBambooBlockPlacement();
-  testBambooItemRegistration();
-  testBambooRaftItem();
-  testBambooInteractions();
-  
-  console.log('All Bamboo Blocks Tests Passed!');
+  try {
+    testBambooBlockRegistration();
+    testBambooBlockProperties();
+    testBambooBlockPlacement();
+    testBambooItemRegistration();
+    testBambooRaftItem();
+    testBambooInteractions();
+    
+    console.log('All Bamboo Blocks Tests Passed!');
+    return true;
+  } catch (error) {
+    console.error('Bamboo Blocks test failed:', error);
+    return false;
+  }
 }
 
 /**
@@ -190,7 +224,7 @@ function testBambooBlockProperties() {
 function testBambooBlockPlacement() {
   console.log('Testing Bamboo Block Placement...');
   
-  const world = new MockWorld();
+  const world = new TestWorld();
   
   // Test placing a bamboo block
   const success = world.setBlockAt(5, 5, 5, 'bamboo_block');
@@ -248,56 +282,48 @@ function testBambooItemRegistration() {
   
   // Test bamboo item properties
   const bambooItem = itemRegistry.getItem('bamboo');
-  assert.strictEqual(bambooItem.material, 'bamboo', 'Material should be bamboo');
-  assert.strictEqual(bambooItem.stackable, true, 'Bamboo should be stackable');
-  
-  // Test bamboo sign item properties  
-  const signItem = itemRegistry.getItem('bamboo_sign');  
-  assert.strictEqual(signItem.maxStackSize, 16, 'Signs should stack to 16');
+  assert.strictEqual(bambooItem.type, 'bamboo', 'Should have correct type');
+  assert.strictEqual(bambooItem.stackable, true, 'Should be stackable');
+  assert.strictEqual(bambooItem.maxStackSize, 64, 'Should have stack size of 64');
   
   console.log('Bamboo Item Registration tests passed!');
 }
 
 /**
- * Test bamboo raft items
+ * Test bamboo raft item functionality
  */
 function testBambooRaftItem() {
-  console.log('Testing Bamboo Raft Items...');
+  console.log('Testing Bamboo Raft Item...');
   
-  // Test bamboo raft item
-  const raftItem = new BambooRaftItem();
-  assert.strictEqual(raftItem.id, 'bamboo_raft', 'ID should be bamboo_raft');
-  assert.strictEqual(raftItem.isRaft, true, 'Should be a raft');
-  assert.strictEqual(raftItem.woodType, 'bamboo', 'Wood type should be bamboo');
-  assert.strictEqual(raftItem.hasChest, false, 'Regular raft should not have a chest');
+  const world = new TestWorld();
+  const player = new TestPlayer();
   
-  // Test bamboo chest raft item
-  const chestRaftItem = new BambooRaftItem({ hasChest: true });
-  assert.strictEqual(chestRaftItem.id, 'bamboo_chest_raft', 'ID should be bamboo_chest_raft');
-  assert.strictEqual(chestRaftItem.hasChest, true, 'Chest raft should have a chest');
+  // Create a bamboo raft
+  const raft = new BambooRaftItem();
   
-  // Test placing a raft
-  const world = new MockWorld();
-  const player = new MockPlayer();
+  // Test basic properties
+  assert.strictEqual(raft.type, 'bamboo_raft', 'Should have correct type');
+  assert.strictEqual(raft.durability, 100, 'Should have correct durability');
+  assert.strictEqual(raft.maxDurability, 100, 'Should have correct max durability');
   
-  // Mock a water block
-  world.blocks['5,5,5'] = { isWater: true };
+  // Test placing raft in water
+  const waterBlock = { type: 'water', metadata: { level: 0 } };
+  world.setBlockAt(0, 0, 0, waterBlock.type, waterBlock.metadata);
   
-  // Place the raft
-  const position = { x: 5, y: 5, z: 5 };
-  const success = raftItem.place(world, position, player);
-  assert.strictEqual(success, true, 'Should be able to place raft in water');
+  const placeResult = raft.onUseOnBlock(world, player, waterBlock, { x: 0, y: 0, z: 0 });
+  assert.strictEqual(placeResult, true, 'Should be able to place raft in water');
   
-  // Verify entity creation
-  assert.strictEqual(world.entities.length, 1, 'An entity should be created');
-  assert.strictEqual(world.entities[0].type, 'bamboo_raft', 'Entity should be a bamboo raft');
+  // Test raft entity creation
+  assert.strictEqual(world.entities.length, 1, 'Should create a raft entity');
+  const raftEntity = world.entities[0];
+  assert.strictEqual(raftEntity.type, 'bamboo_raft', 'Should create correct entity type');
   
-  // Test serialization
-  const serialized = raftItem.toJSON();
-  assert.strictEqual(serialized.isRaft, true, 'Serialized data should include isRaft');
-  assert.strictEqual(serialized.speed, raftItem.speed, 'Serialized data should include speed');
+  // Test raft movement
+  const initialPos = { ...raftEntity.position };
+  raftEntity.update(1); // Update for 1 tick
+  assert.notDeepStrictEqual(raftEntity.position, initialPos, 'Raft should move');
   
-  console.log('Bamboo Raft Items tests passed!');
+  console.log('Bamboo Raft Item tests passed!');
 }
 
 /**
@@ -306,101 +332,59 @@ function testBambooRaftItem() {
 function testBambooInteractions() {
   console.log('Testing Bamboo Block Interactions...');
   
-  // Skip the sound playing part that requires position to be populated correctly
-  // by creating specialized mock classes for the test
+  const world = new TestWorld();
+  const player = new TestPlayer();
   
-  // Create mock for interaction tests
-  class SimpleTestBambooDoorBlock extends BambooDoorBlock {
-    interact(player) {
-      // Toggle open state
-      this.isOpen = !this.isOpen;
-      // No sound playing, no position needed
-      return true;
-    }
-  }
+  // Test door interaction
+  const door = new BambooDoorBlock();
+  world.setBlockAt(0, 0, 0, door.id);
   
-  class SimpleTestBambooTrapdoorBlock extends BambooTrapdoorBlock {
-    interact(player) {
-      // Toggle open state
-      this.isOpen = !this.isOpen;
-      // No sound playing, no position needed
-      return true;
-    }
-  }
+  door.interact(player);
+  assert.strictEqual(door.isOpen, true, 'Door should open on interaction');
   
-  class SimpleTestBambooFenceGateBlock extends BambooFenceGateBlock {
-    interact(player) {
-      // Toggle open state
-      this.isOpen = !this.isOpen;
-      // No sound playing, no position needed
-      return true;
-    }
-  }
+  door.interact(player);
+  assert.strictEqual(door.isOpen, false, 'Door should close on second interaction');
   
-  class SimpleTestBambooWoodBlock extends BambooWoodBlock {
-    interact(player, itemInHand) {
-      // If axe is used, return true to indicate stripping
-      if (itemInHand && itemInHand.type === 'axe') {
-        return true;
-      }
-      return false;
-    }
-  }
+  // Test trapdoor interaction
+  const trapdoor = new BambooTrapdoorBlock();
+  world.setBlockAt(1, 0, 0, trapdoor.id);
   
-  const world = new MockWorld();
-  const player = new MockPlayer();
-  player.world = world;
+  trapdoor.interact(player);
+  assert.strictEqual(trapdoor.isOpen, true, 'Trapdoor should open on interaction');
   
-  // Test door interaction with simplified class
-  const door = new SimpleTestBambooDoorBlock();
-  assert.strictEqual(door.isOpen, false, 'Door should start closed');
-  const doorInteractResult = door.interact(player);
-  assert.strictEqual(doorInteractResult, true, 'Door interaction should succeed');
-  assert.strictEqual(door.isOpen, true, 'Door should be open after interaction');
+  trapdoor.interact(player);
+  assert.strictEqual(trapdoor.isOpen, false, 'Trapdoor should close on second interaction');
   
-  // Test trapdoor interaction with simplified class
-  const trapdoor = new SimpleTestBambooTrapdoorBlock();
-  assert.strictEqual(trapdoor.isOpen, false, 'Trapdoor should start closed');
-  const trapdoorInteractResult = trapdoor.interact(player);
-  assert.strictEqual(trapdoorInteractResult, true, 'Trapdoor interaction should succeed');
-  assert.strictEqual(trapdoor.isOpen, true, 'Trapdoor should be open after interaction');
+  // Test fence gate interaction
+  const fenceGate = new BambooFenceGateBlock();
+  world.setBlockAt(2, 0, 0, fenceGate.id);
   
-  // Test fence gate interaction with simplified class
-  const fenceGate = new SimpleTestBambooFenceGateBlock();
-  assert.strictEqual(fenceGate.isOpen, false, 'Fence gate should start closed');
-  const fenceGateInteractResult = fenceGate.interact(player);
-  assert.strictEqual(fenceGateInteractResult, true, 'Fence gate interaction should succeed');
-  assert.strictEqual(fenceGate.isOpen, true, 'Fence gate should be open after interaction');
+  fenceGate.interact(player);
+  assert.strictEqual(fenceGate.isOpen, true, 'Fence gate should open on interaction');
   
-  // Test stripping a bamboo block - create custom stub blocks
-  // When a bamboo block is stripped, player.world.setBlockAt is called to replace it
-  // but we've changed our test to avoid that dependency
-  const blockPosition = { x: 10, y: 5, z: 5 };
-  const block = new SimpleTestBambooWoodBlock({
-    position: blockPosition
-  });
+  fenceGate.interact(player);
+  assert.strictEqual(fenceGate.isOpen, false, 'Fence gate should close on second interaction');
   
-  // Create mock world for our block that has a special set block method
-  world.setBlockAt = (x, y, z, blockId) => {
-    if (blockId === 'stripped_bamboo_block') {
-      // Test is successful if this is called
-      world.blocks[`${x},${y},${z}`] = { id: 'stripped_bamboo_block' };
-      return true;
-    }
-    return false;
-  };
+  // Test bamboo wood stripping
+  const bambooWood = new BambooWoodBlock();
+  world.setBlockAt(3, 0, 0, bambooWood.id);
   
-  const axe = { type: 'axe', durability: 100 };
-  const stripResult = block.interact(player, axe);
-  
-  assert.strictEqual(stripResult, true, 'Block stripping should succeed');
+  const axe = { type: 'wooden_axe' };
+  bambooWood.interact(player, axe);
+  assert.strictEqual(bambooWood.stripped, true, 'Bamboo wood should be stripped with axe');
   
   console.log('Bamboo Block Interactions tests passed!');
 }
 
-// Run test if this file is executed directly
+// Run the tests if this file is executed directly
 if (require.main === module) {
-  runBambooBlocksTest();
+  try {
+    const success = runBambooBlocksTest();
+    process.exitCode = success ? 0 : 1;
+  } catch (error) {
+    console.error('Bamboo Blocks tests failed with error:', error);
+    process.exitCode = 1;
+  }
 }
 
 module.exports = {

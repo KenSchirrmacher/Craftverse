@@ -14,13 +14,34 @@ const {
   NetheriteMaceItem 
 } = require('../items/maceItem');
 const CombatManager = require('../combat/combatManager');
+const Player = require('../entities/player');
+const Entity = require('../entities/entity');
+const World = require('../world/world');
 
 console.log('Running Mace Weapon Tests...');
 
-// Mock player for testing
-class MockPlayer {
+// Test world implementation
+class TestWorld extends World {
+  constructor() {
+    super();
+    this.blocks = new Map();
+  }
+  
+  getBlock(x, y, z) {
+    const key = `${x},${y},${z}`;
+    return this.blocks.get(key) || { type: 'air', isSolid: false };
+  }
+  
+  setBlock(x, y, z, block) {
+    const key = `${x},${y},${z}`;
+    this.blocks.set(key, block);
+  }
+}
+
+// Test player implementation
+class TestPlayer extends Player {
   constructor(id = 'player1') {
-    this.id = id;
+    super(id);
     this.health = 20;
     this.maxHealth = 20;
     this.inventory = [];
@@ -36,10 +57,10 @@ class MockPlayer {
   }
 }
 
-// Mock target for testing
-class MockTarget {
+// Test target implementation
+class TestTarget extends Entity {
   constructor(id = 'target1') {
-    this.id = id;
+    super(id);
     this.health = 20;
     this.maxHealth = 20;
     this.armor = 0;
@@ -142,8 +163,8 @@ function testBasicProperties() {
 
 function testHeavyAttack() {
   const mace = new IronMaceItem();
-  const player = new MockPlayer();
-  const target = new MockTarget();
+  const player = new TestPlayer();
+  const target = new TestTarget();
   
   // Test start charging
   const chargeData = mace.startHeavyAttackCharge(player);
@@ -183,7 +204,7 @@ function testHeavyAttack() {
   assert.strictEqual(player.heavyAttackCooldown.ticksRemaining, mace.heavyAttackCooldownTicks, 'cooldown ticks should match');
   
   // Test falling damage bonus
-  const fallingPlayer = new MockPlayer();
+  const fallingPlayer = new TestPlayer();
   fallingPlayer.velocity.y = -2.0;
   
   mace.startHeavyAttackCharge(fallingPlayer);
@@ -198,8 +219,8 @@ function testHeavyAttack() {
 
 function testArmorPiercing() {
   const mace = new IronMaceItem();
-  const player = new MockPlayer();
-  const target = new MockTarget();
+  const player = new TestPlayer();
+  const target = new TestTarget();
   
   // Test regular attack armor piercing (half effect)
   const regularAttack = mace.attack(player, target);
@@ -215,8 +236,8 @@ function testArmorPiercing() {
 
 function testDurability() {
   const mace = new IronMaceItem();
-  const player = new MockPlayer();
-  const target = new MockTarget();
+  const player = new TestPlayer();
+  const target = new TestTarget();
   
   const initialDurability = mace.durability;
   

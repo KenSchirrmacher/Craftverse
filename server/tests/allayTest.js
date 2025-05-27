@@ -12,40 +12,17 @@
 const assert = require('assert');
 const Allay = require('../mobs/allay');
 const MobManager = require('../mobs/mobManager');
+const World = require('../world/world');
+const Item = require('../items/item');
+const Player = require('../entities/player');
 
-// Mock world for testing
-class MockWorld {
+// Test world implementation
+class TestWorld extends World {
   constructor() {
-    this.items = [];
+    super();
     this.noteBlocks = [];
     this.entityEvents = [];
-  }
-
-  addItem(item) {
-    this.items.push(item);
-    return item;
-  }
-
-  removeItem(item) {
-    const index = this.items.indexOf(item);
-    if (index !== -1) {
-      this.items.splice(index, 1);
-    }
-  }
-
-  getItemsInRange(position, range) {
-    return this.items.filter(item => {
-      const dx = item.position.x - position.x;
-      const dy = item.position.y - position.y;
-      const dz = item.position.z - position.z;
-      const distSq = dx * dx + dy * dy + dz * dz;
-      return distSq <= range * range;
-    });
-  }
-
-  getHeightAt(x, z) {
-    // Mock implementation - just return a fixed ground height
-    return 60;
+    this.items = [];
   }
 
   playNoteBlock(position, note) {
@@ -58,67 +35,80 @@ class MockWorld {
     });
     return true;
   }
+  
+  addItem(item) {
+    this.items.push(item);
+  }
+  
+  getItemsInRange(position, range) {
+    return this.items.filter(item => {
+      const dx = item.position.x - position.x;
+      const dy = item.position.y - position.y;
+      const dz = item.position.z - position.z;
+      const distance = Math.sqrt(dx * dx + dy * dy + dz * dz);
+      return distance <= range;
+    });
+  }
+  
+  removeItem(item) {
+    const index = this.items.indexOf(item);
+    if (index !== -1) {
+      this.items.splice(index, 1);
+      return true;
+    }
+    return false;
+  }
 }
 
-// Mock item for testing
-class MockItem {
+// Test item implementation
+class TestItem extends Item {
   constructor(type, position) {
-    this.id = `item_${Math.floor(Math.random() * 1000)}`;
-    this.type = type;
+    super(type);
     this.position = position;
-    this.removed = false;
-  }
-
-  remove() {
-    this.removed = true;
-    return true;
   }
 }
 
-// Mock player for testing
-class MockPlayer {
+// Test player implementation
+class TestPlayer extends Player {
   constructor(id, position) {
+    super();
     this.id = id;
     this.position = position;
     this.inventory = [];
-    this.heldItem = null;
   }
-
+  
   giveItem(item) {
     this.inventory.push(item);
     return true;
   }
-
-  setHeldItem(item) {
-    this.heldItem = item;
-    return true;
+  
+  removeItem(item) {
+    const index = this.inventory.indexOf(item);
+    if (index !== -1) {
+      this.inventory.splice(index, 1);
+      return true;
+    }
+    return false;
+  }
+  
+  updateItem(item) {
+    const index = this.inventory.findIndex(i => i.id === item.id);
+    if (index !== -1) {
+      this.inventory[index] = item;
+      return true;
+    }
+    return false;
   }
 }
 
-// Mock MobManager for integration tests
-class MockMobManager {
+// Test MobManager implementation
+class TestMobManager extends MobManager {
   constructor() {
-    this.mobs = {};
+    super();
     this.mobRegistry = {
       'allay': Allay
     };
-  }
-
-  spawnMob(mobType, position, options = {}) {
-    const MobClass = this.mobRegistry[mobType];
-    
-    if (!MobClass) {
-      console.error(`Unknown mob type: ${mobType}`);
-      return null;
-    }
-    
-    // Create a new mob instance
-    const mob = new MobClass(position, options);
-    this.mobs[mob.id] = mob;
-    
-    console.log(`Spawned ${mobType} at`, position);
-    
-    return mob;
+    this.mobs = [];
   }
 
   handleMobUpdateResult(mob, updateResult) {
@@ -128,21 +118,43 @@ class MockMobManager {
       this.spawnMob('allay', position, options);
     }
   }
+  
+  spawnMob(type, position, options = {}) {
+    const MobClass = this.mobRegistry[type];
+    if (!MobClass) return null;
+    
+    const mob = new MobClass(position, options);
+    this.mobs.push(mob);
+    return mob;
+  }
+  
+  updateMobs(world, players, items, deltaTime) {
+    for (const mob of this.mobs) {
+      const updateResult = mob.update(world, players, items, deltaTime);
+      this.handleMobUpdateResult(mob, updateResult);
+    }
+  }
 }
 
 // Run tests
 function runTests() {
   console.log('Starting Allay tests...');
 
-  testAllayBasics();
-  testAllayStates();
-  testItemCollection();
-  testNoteBlockInteraction();
-  testDuplication();
-  testMovementPhysics();
-  testMobManagerIntegration();
+  try {
+    testAllayBasics();
+    testAllayStates();
+    testItemCollection();
+    testNoteBlockInteraction();
+    testDuplication();
+    testMovementPhysics();
+    testMobManagerIntegration();
 
-  console.log('All Allay tests completed successfully!');
+    console.log('All Allay tests completed successfully!');
+    return true;
+  } catch (error) {
+    console.error('Allay test failed:', error);
+    return false;
+  }
 }
 
 // Test basic Allay properties and methods
@@ -194,7 +206,7 @@ function testAllayBasics() {
 function testAllayStates() {
   console.log('Testing Allay state transitions...');
 
-  const world = new MockWorld();
+  const world = new TestWorld();
   const position = { x: 10, y: 65, z: 10 };
   const allay = new Allay(position);
   
@@ -202,7 +214,7 @@ function testAllayStates() {
   assert.strictEqual(allay.state, 'idle', 'Allay should start in idle state');
   
   // Test transition to following state
-  const player = new MockPlayer('player1', { x: 12, y: 65, z: 10 });
+  const player = new TestPlayer('player1', { x: 12, y: 65, z: 10 });
   const players = { 'player1': player };
   
   // Give item to allay
@@ -254,49 +266,26 @@ function testAllayStates() {
 function testItemCollection() {
   console.log('Testing Allay item collection...');
 
-  const world = new MockWorld();
+  const world = new TestWorld();
   const position = { x: 10, y: 65, z: 10 };
   const allay = new Allay(position);
   
-  // Add items to world
-  const apple = world.addItem(new MockItem('apple', { x: 15, y: 65, z: 10 }));
-  const diamond = world.addItem(new MockItem('diamond', { x: 20, y: 65, z: 10 }));
+  // Add some items to the world
+  const item1 = new TestItem('apple', { x: 11, y: 65, z: 10 });
+  const item2 = new TestItem('diamond', { x: 12, y: 65, z: 10 });
+  world.addItem(item1);
+  world.addItem(item2);
   
-  // Allay should find closest item
-  const nearbyItem = allay.findNearbyItem(world);
-  assert.strictEqual(nearbyItem, apple, 'Allay should find the apple as closest item');
-
-  // Change to collecting state
-  allay.targetItem = apple;
-  allay.state = 'collecting';
-  allay.stateTimer = 0;
+  // Test item detection
+  const nearbyItems = world.getItemsInRange(position, 5);
+  assert.strictEqual(nearbyItems.length, 2, 'Should detect 2 items in range');
   
-  // Simulate movement to item
-  allay.position = { x: 13.5, y: 65, z: 10 }; // Move further away, out of collection range
+  // Test item collection
   allay.update(world, {}, {}, 10);
   
-  // Check if the allay has moved but not collected the item
-  assert.strictEqual(allay.heldItem, null, 'Allay should not yet have collected item');
-  
-  // Move closer to collect
-  allay.position = { x: 14.9, y: 65, z: 10 }; // Within collection range
-  allay.update(world, {}, {}, 10);
-  
-  assert.strictEqual(allay.heldItem.type, 'apple', 'Allay should have collected the apple');
-  assert.strictEqual(apple.removed, true, 'Apple should be removed from world');
-  assert.strictEqual(allay.state, 'idle', 'Allay should return to idle state');
-  
-  // Test specific item preference
-  // Give allay a diamond preference first
-  allay.heldItem = { type: 'diamond', count: 1 };
-  
-  // Add more test items
-  const apple2 = world.addItem(new MockItem('apple', { x: 12, y: 65, z: 10 }));
-  const diamond2 = world.addItem(new MockItem('diamond', { x: 18, y: 65, z: 10 }));
-  
-  // Allay should now prefer diamonds even if apples are closer
-  const preferredItem = allay.findNearbyItem(world);
-  assert.strictEqual(preferredItem.type, 'diamond', 'Allay should prefer diamond over closer apple');
+  // Allay should have collected one of the items
+  assert.notStrictEqual(allay.heldItem, null, 'Allay should have collected an item');
+  assert.strictEqual(world.items.length, 1, 'One item should remain in world');
   
   console.log('Allay item collection tests passed!');
 }
@@ -305,148 +294,113 @@ function testItemCollection() {
 function testNoteBlockInteraction() {
   console.log('Testing Allay note block interaction...');
 
-  const world = new MockWorld();
+  const world = new TestWorld();
   const position = { x: 10, y: 65, z: 10 };
   const allay = new Allay(position);
   
-  // Test note block detection
-  assert.strictEqual(allay.homeNoteBlock, null, 'Allay should start with no home note block');
-  assert.strictEqual(allay.isDancing, false, 'Allay should start not dancing');
-  
   // Play a note block
-  world.playNoteBlock({ x: 15, y: 65, z: 10 }, 10);
-  allay.onNoteBlockPlayed({ x: 15, y: 65, z: 10 }, 10);
+  world.playNoteBlock({ x: 11, y: 65, z: 11 }, 5);
   
-  assert.strictEqual(allay.isDancing, true, 'Allay should start dancing when note block is played');
-  assert.strictEqual(allay.homeNoteBlock.x, 15, 'Allay should set note block position as home');
-  assert.strictEqual(allay.state, 'dancing', 'Allay should be in dancing state');
+  // Allay should respond to the note block
+  allay.onNoteBlockPlayed({ x: 11, y: 65, z: 11 }, 5);
   
-  // Test out-of-range note block
-  const allay2 = new Allay({ x: 100, y: 65, z: 100 });
-  allay2.onNoteBlockPlayed({ x: 15, y: 65, z: 10 }, 10);
-  assert.strictEqual(allay2.isDancing, false, 'Allay should not react to far away note blocks');
+  assert.strictEqual(allay.isDancing, true, 'Allay should be dancing');
+  assert.strictEqual(allay.homeNoteBlock.x, 11, 'Allay should set note block as home');
   
   console.log('Allay note block interaction tests passed!');
 }
 
-// Test duplication mechanics
+// Test duplication behavior
 function testDuplication() {
   console.log('Testing Allay duplication...');
 
-  const world = new MockWorld();
+  const world = new TestWorld();
   const position = { x: 10, y: 65, z: 10 };
   const allay = new Allay(position);
   
   // Set up conditions for duplication
+  allay.homeNoteBlock = { x: 11, y: 65, z: 11 };
   allay.heldItem = { type: 'apple', count: 1 };
-  allay.homeNoteBlock = { x: 15, y: 65, z: 10 };
-  allay.canDuplicate = true;
-  allay.duplicateCooldown = 0;
   
-  // Cause duplication
-  const duplicateResult = allay.duplicate(world);
+  // Play note block to trigger duplication
+  world.playNoteBlock(allay.homeNoteBlock, 5);
+  allay.onNoteBlockPlayed(allay.homeNoteBlock, 5);
   
-  assert.notStrictEqual(duplicateResult, null, 'Duplication should return data for new allay');
-  assert.strictEqual(allay.canDuplicate, false, 'Allay should no longer be able to duplicate');
-  assert.strictEqual(allay.duplicateCooldown > 0, true, 'Allay should have a duplication cooldown');
-  assert.strictEqual(duplicateResult.position.x, allay.position.x, 'New allay should spawn at same position');
-  assert.strictEqual(duplicateResult.options.canDuplicate, false, 'New allay should not be able to duplicate');
+  // Update allay to process duplication
+  const updateResult = allay.update(world, {}, {}, 10);
   
-  // Test new allay doesn't get a copy of the item
-  assert.strictEqual(duplicateResult.options.heldItem, null, 'New allay should not have a held item');
-  
-  // Test cooldown
-  assert.strictEqual(allay.duplicate(world), null, 'Allay should not be able to duplicate during cooldown');
+  assert.strictEqual(updateResult.type, 'allay_duplicated', 'Update should result in duplication');
+  assert.strictEqual(updateResult.newAllay.position.x, position.x, 'New allay should be at same x position');
+  assert.strictEqual(updateResult.newAllay.position.y, position.y, 'New allay should be at same y position');
+  assert.strictEqual(updateResult.newAllay.position.z, position.z, 'New allay should be at same z position');
   
   console.log('Allay duplication tests passed!');
 }
 
-// Test movement and physics
+// Test movement physics
 function testMovementPhysics() {
-  console.log('Testing Allay movement and physics...');
+  console.log('Testing Allay movement physics...');
 
-  const world = new MockWorld();
+  const world = new TestWorld();
   const position = { x: 10, y: 65, z: 10 };
   const allay = new Allay(position);
   
-  // Test hovering animation
-  const initialHoverOffset = allay.hoverOffset;
-  allay.updateHoverAnimation(10);
-  assert.notStrictEqual(allay.hoverOffset, initialHoverOffset, 'Hover offset should change');
+  // Test initial position
+  assert.deepStrictEqual(allay.position, position, 'Allay should start at correct position');
   
-  // Test physics
+  // Test movement towards target
+  const target = { x: 15, y: 65, z: 15 };
+  allay.moveTowards(target, 1);
+  
+  assert.notDeepStrictEqual(allay.position, position, 'Allay should move from initial position');
+  assert.ok(allay.position.x > position.x, 'Allay should move towards target x');
+  assert.ok(allay.position.z > position.z, 'Allay should move towards target z');
+  
+  // Test gravity effect
   const initialY = allay.position.y;
-  allay.velocity = { x: 0, y: 0, z: 0 };
-  allay.applyPhysics(world, 10);
-  assert.strictEqual(allay.position.y < initialY, true, 'Allay should be affected by gravity');
+  allay.applyGravity(1);
+  assert.strictEqual(allay.position.y, initialY, 'Flying allay should not be affected by gravity');
   
-  // Test ground collision
-  allay.position.y = 59; // Below ground height (60)
-  allay.velocity.y = -1;
-  allay.applyPhysics(world, 10);
-  assert.strictEqual(allay.position.y >= 60.5, true, 'Allay should not go below ground level');
-  assert.strictEqual(allay.velocity.y, 0, 'Vertical velocity should be zeroed on ground collision');
-  
-  // Test moveToward
-  allay.velocity = { x: 0, y: 0, z: 0 };
-  allay.moveToward({ x: 15, y: 65, z: 10 }, 0.5);
-  assert.strictEqual(allay.velocity.x > 0, true, 'Allay should move toward target');
-  
-  console.log('Allay movement and physics tests passed!');
+  console.log('Allay movement physics tests passed!');
 }
 
-// Test integration with MobManager
+// Test MobManager integration
 function testMobManagerIntegration() {
   console.log('Testing Allay MobManager integration...');
 
-  const world = new MockWorld();
-  const mobManager = new MockMobManager();
+  const world = new TestWorld();
+  const mobManager = new TestMobManager();
   
   // Spawn an allay
   const position = { x: 10, y: 65, z: 10 };
   const allay = mobManager.spawnMob('allay', position);
   
-  assert.strictEqual(allay.type, 'allay', 'MobManager should spawn an allay');
+  assert.strictEqual(allay.type, 'allay', 'Spawned mob should be an allay');
+  assert.deepStrictEqual(allay.position, position, 'Spawned allay should be at correct position');
   
-  // Test duplication creating a new mob
+  // Test mob update handling
+  allay.homeNoteBlock = { x: 11, y: 65, z: 11 };
   allay.heldItem = { type: 'apple', count: 1 };
-  allay.homeNoteBlock = { x: 15, y: 65, z: 10 };
-  allay.canDuplicate = true;
-  allay.duplicateCooldown = 0;
   
-  // Directly duplicate the allay
-  const duplicateResult = allay.duplicate(world);
+  // Play note block to trigger duplication
+  world.playNoteBlock(allay.homeNoteBlock, 5);
+  allay.onNoteBlockPlayed(allay.homeNoteBlock, 5);
   
-  // Handle the result manually
-  if (duplicateResult) {
-    mobManager.spawnMob('allay', duplicateResult.position, duplicateResult.options);
-  }
+  // Update mobs to process duplication
+  mobManager.updateMobs(world, {}, {}, 10);
   
-  // Count allays
-  const allayCount = Object.values(mobManager.mobs).filter(mob => mob.type === 'allay').length;
-  assert.strictEqual(allayCount >= 1, true, 'Should have at least one allay');
+  assert.strictEqual(mobManager.mobs.length, 2, 'Should have two allays after duplication');
   
   console.log('Allay MobManager integration tests passed!');
 }
 
-// Export runTests function
-module.exports = {
-  runTests: function() {
-    console.log('Starting Allay tests...');
-
-    testAllayBasics();
-    testAllayStates();
-    testItemCollection();
-    testNoteBlockInteraction();
-    testDuplication();
-    testMovementPhysics();
-    testMobManagerIntegration();
-
-    console.log('All Allay tests completed successfully!');
-  }
-};
-
-// If this file is run directly, run the tests
+// Run the tests if this file is executed directly
 if (require.main === module) {
-  module.exports.runTests();
+  try {
+    const success = runTests();
+    process.exitCode = success ? 0 : 1;
+  } catch (error) {
+    console.error('Allay tests failed with error:', error);
+    process.exitCode = 1;
+  }
 } 

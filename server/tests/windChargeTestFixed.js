@@ -27,7 +27,7 @@ class TestWorld extends World {
   setBlock(x, y, z, block) {
     const key = `${x},${y},${z}`;
     this.blocks.set(key, block);
-    this.emit('blockUpdate', { x, y, z, block });
+    this.blockStateUpdates.push({ x, y, z, block });
   }
   
   getEntitiesInRadius(position, radius) {
@@ -43,38 +43,31 @@ class TestWorld extends World {
   addEntity(entity) {
     this.entities.set(entity.id, entity);
     entity.world = this;
-    this.emit('entityAdded', entity);
   }
   
   removeEntity(id) {
-    const entity = this.entities.get(id);
-    if (entity) {
-      this.entities.delete(id);
-      this.emit('entityRemoved', entity);
-    }
+    this.entities.delete(id);
   }
 
-  updateBlockState(x, y, z, state) {
-    this.blockStateUpdates.push({ x, y, z, state });
-    this.emit('blockStateUpdate', { x, y, z, state });
+  emitEntityUpdate() {
+    // Real implementation would emit events
   }
 
   addParticleEffect(effect) {
     this.particleEffects.push(effect);
-    this.emit('particleEffect', effect);
   }
 
-  activateBlock(x, y, z, type, data) {
-    this.activatedBlocks.push({ x, y, z, type, ...data });
-    this.emit('blockActivated', { x, y, z, type, ...data });
+  addSoundEffect(effect) {
+    this.soundEffects.push(effect);
   }
 
-  playSound(sound, position, volume, pitch) {
-    this.soundEffects.push({ sound, position, volume, pitch });
-    this.emit('soundPlayed', { sound, position, volume, pitch });
+  activateBlock(x, y, z) {
+    this.activatedBlocks.push({ x, y, z });
   }
 
   reset() {
+    this.blocks.clear();
+    this.entities.clear();
     this.blockStateUpdates = [];
     this.particleEffects = [];
     this.activatedBlocks = [];
@@ -84,19 +77,15 @@ class TestWorld extends World {
 
 // Test player implementation
 class TestPlayer extends Player {
-  constructor(id, position) {
-    super(id, position);
+  constructor(id, position = { x: 0, y: 0, z: 0 }) {
+    super(id, {
+      position,
+      world: null,
+      gameMode: 'survival'
+    });
     this.charging = {};
     this.cooldowns = {};
-    this.gameMode = 'survival';
-    this.rotation = { x: 0, y: 0, z: 0 };
     this.sentEvents = [];
-    this.inventory = new Map();
-  }
-
-  sendEvent(event) {
-    this.sentEvents.push(event);
-    this.emit('eventSent', event);
   }
 
   getLookDirection() {
@@ -107,55 +96,31 @@ class TestPlayer extends Player {
     };
   }
 
-  addItem(item) {
-    this.inventory.set(item.id, item);
-    this.emit('itemAdded', item);
-  }
-
-  removeItem(itemId) {
-    const item = this.inventory.get(itemId);
-    if (item) {
-      this.inventory.delete(itemId);
-      this.emit('itemRemoved', item);
-    }
+  sendEvent(event) {
+    this.sentEvents.push(event);
   }
 }
 
 // Test entity implementation
 class TestEntity extends Entity {
-  constructor(id, position) {
-    super(id, position);
-    this.health = 10;
-    this.maxHealth = 10;
-    this.dead = false;
-    this.boundingBox = {
-      min: {
-        x: position.x - 0.3,
-        y: position.y - 0.3,
-        z: position.z - 0.3
-      },
-      max: {
-        x: position.x + 0.3,
-        y: position.y + 0.3,
-        z: position.z + 0.3
-      }
-    };
+  constructor(id, options = {}) {
+    super(options.world, {
+      id,
+      type: 'test_entity',
+      position: options.position || { x: 0, y: 0, z: 0 },
+      velocity: options.velocity || { x: 0, y: 0, z: 0 },
+      width: 0.6,
+      height: 1.8
+    });
+    this.health = options.health || 20;
+    this.velocity = options.velocity || { x: 0, y: 0, z: 0 };
   }
-  
-  takeDamage(amount, attacker) {
+
+  takeDamage(amount, source) {
     this.health -= amount;
     if (this.health <= 0) {
       this.dead = true;
-      this.emit('death', { attacker });
-      return true;
     }
-    this.emit('damage', { amount, attacker });
-    return false;
-  }
-
-  update(deltaTime) {
-    super.update(deltaTime);
-    // Add any test-specific update logic here
   }
 }
 

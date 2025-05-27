@@ -7,57 +7,48 @@
 const assert = require('assert');
 const GlowBerryItem = require('../items/glowBerryItem');
 const { CaveVineHeadBlock } = require('../blocks/caveVineBlock');
+const World = require('../world/world');
+const Player = require('../entities/player');
+const Inventory = require('../inventory/inventory');
 
-// Mock classes
-class MockWorld {
+// Test world implementation
+class TestWorld extends World {
   constructor() {
-    this.blocks = new Map();
+    super();
     this.sounds = [];
     this.items = [];
-  }
-  
-  getBlockAt(x, y, z) {
-    return this.blocks.get(`${x},${y},${z}`);
-  }
-  
-  setBlock(x, y, z, block) {
-    this.blocks.set(`${x},${y},${z}`, block);
-    return true;
-  }
-  
-  removeBlock(x, y, z) {
-    this.blocks.delete(`${x},${y},${z}`);
-    return true;
   }
   
   spawnItem(item, position) {
     this.items.push({ item, position });
   }
+  
+  playSound(sound) {
+    this.sounds.push(sound);
+  }
 }
 
-class MockPlayer {
+// Test player implementation
+class TestPlayer extends Player {
   constructor() {
-    this.inventory = new MockInventory();
+    super();
     this.hunger = 10;
     this.saturation = 5;
     this.position = { x: 0, y: 0, z: 0 };
+    this.inventory = new TestInventory();
   }
 }
 
-class MockInventory {
+// Test inventory implementation
+class TestInventory extends Inventory {
   constructor() {
-    this.items = {};
+    super();
     this.removedItems = {};
-  }
-  
-  addItem(type, count) {
-    this.items[type] = (this.items[type] || 0) + count;
-    return true;
   }
   
   removeItem(type, count) {
     this.removedItems[type] = (this.removedItems[type] || 0) + count;
-    return true;
+    return super.removeItem(type, count);
   }
 }
 
@@ -66,12 +57,12 @@ function runTests() {
   
   // Setup for all tests
   const glowBerry = new GlowBerryItem();
-  const world = new MockWorld();
-  const player = new MockPlayer();
+  const world = new TestWorld();
+  const player = new TestPlayer();
   
   // Set up sound event listener
   glowBerry.on('sound', (sound) => {
-    world.sounds.push(sound);
+    world.playSound(sound);
   });
   
   // Test Basic Properties
@@ -123,12 +114,6 @@ function runTests() {
     type: 'stone', 
     solid: true 
   });
-  
-  // Mock the CaveVineHeadBlock.canPlaceAt method
-  CaveVineHeadBlock.prototype.canPlaceAt = function(world, position) {
-    const blockAbove = world.getBlockAt(position.x, position.y + 1, position.z);
-    return blockAbove && blockAbove.solid;
-  };
   
   // Test successful planting
   world.sounds = []; // Clear sounds

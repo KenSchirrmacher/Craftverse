@@ -334,6 +334,14 @@ class ParticleSystem {
       }
     }
   }
+  
+  /**
+   * Get all active particles (raw objects, for test compatibility)
+   * @returns {Object[]} Array of particle objects
+   */
+  getParticles() {
+    return Array.from(this.particles.values());
+  }
 }
 
 module.exports = ParticleSystem; 

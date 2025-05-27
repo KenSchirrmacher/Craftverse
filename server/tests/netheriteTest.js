@@ -281,6 +281,68 @@ describe('Netherite Implementation Tests', () => {
       assert.equal(result.enchantments, undefined);
     });
   });
+
+  describe('Netherite Upgrade Template', () => {
+    let upgradeTemplate;
+    
+    beforeEach(() => {
+      upgradeTemplate = new NetheriteUpgradeTemplate();
+    });
+    
+    it('should have correct template properties', () => {
+      assert.equal(upgradeTemplate.id, 'netherite_upgrade_smithing_template');
+      assert.equal(upgradeTemplate.stackSize, 1);
+      assert.equal(upgradeTemplate.category, 'smithing_templates');
+      assert.equal(upgradeTemplate.isFireResistant(), true);
+    });
+    
+    it('should be required for netherite upgrades', () => {
+      const { registerSmithingRecipes } = require('../crafting/netheriteRecipes');
+      registerSmithingRecipes(smithingManager);
+      
+      const recipes = smithingManager.getRecipes();
+      const swordRecipe = recipes.find(r => r.result === 'netherite_sword');
+      
+      assert.equal(swordRecipe.template, 'netherite_upgrade_smithing_template');
+      assert.equal(swordRecipe.baseItem, 'diamond_sword');
+      assert.equal(swordRecipe.additionItem, 'netherite_ingot');
+    });
+    
+    it('should be consumed on use', () => {
+      const template = new NetheriteUpgradeTemplate();
+      assert.equal(template.isConsumedOnUse(), true);
+    });
+    
+    it('should have correct crafting recipe', () => {
+      const { registerCraftingRecipes } = require('../crafting/netheriteRecipes');
+      registerCraftingRecipes(craftingManager);
+      
+      const recipes = craftingManager.getRecipes();
+      const templateRecipe = recipes.find(r => r.result === 'netherite_upgrade_smithing_template');
+      
+      assert.equal(templateRecipe.type, 'shaped');
+      assert.deepEqual(templateRecipe.pattern, [
+        'DND',
+        'NCN',
+        'DND'
+      ]);
+      assert.equal(templateRecipe.key.D, 'diamond');
+      assert.equal(templateRecipe.key.N, 'netherrack');
+      assert.equal(templateRecipe.key.C, 'crying_obsidian');
+    });
+    
+    it('should be found in Bastion Remnants', () => {
+      const lootTable = upgradeTemplate.getLootTable();
+      assert.equal(lootTable.structure, 'bastion_remnant');
+      assert.equal(lootTable.chestType, 'treasure');
+      assert.ok(lootTable.chance > 0);
+    });
+    
+    it('should have correct item model and texture', () => {
+      assert.equal(upgradeTemplate.model, 'netherite_upgrade_smithing_template');
+      assert.equal(upgradeTemplate.texture, 'netherite_upgrade_smithing_template');
+    });
+  });
 });
 
 // Export test function

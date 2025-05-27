@@ -6,41 +6,31 @@
 const assert = require('assert');
 const SporeBlossomBlock = require('../blocks/sporeBlossomBlock');
 const ParticleSystem = require('../particles/particleSystem');
+const World = require('../world/world');
 
-// Mock classes
-class MockWorld {
+// Test world implementation
+class TestWorld extends World {
   constructor() {
-    this.blocks = new Map();
-    this.particles = [];
-    this.particleSystem = new ParticleSystem();
-  }
-  
-  getBlockAt(x, y, z) {
-    return this.blocks.get(`${x},${y},${z}`);
-  }
-  
-  setBlock(x, y, z, block) {
-    this.blocks.set(`${x},${y},${z}`, block);
-    return true;
-  }
-  
-  breakBlock(x, y, z, options = {}) {
-    this.blocks.delete(`${x},${y},${z}`);
-    return true;
-  }
-  
-  emitParticles(options) {
-    this.particles.push(options);
-    return this.particleSystem.emitParticles(options);
+    super();
+    this.droppedItems = [];
   }
   
   dropItem(item, position) {
-    this.droppedItems = this.droppedItems || [];
     this.droppedItems.push({ item, position });
+  }
+  
+  breakBlock(x, y, z, options = {}) {
+    const block = this.getBlock(x, y, z);
+    if (block) {
+      this.blocks.delete(`${x},${y},${z}`);
+      return true;
+    }
+    return false;
   }
 }
 
-class MockPlayer {
+// Test player implementation
+class TestPlayer {
   constructor() {
     this.gameMode = 'survival';
   }
@@ -54,8 +44,8 @@ describe('SporeBlossomBlock', function() {
   
   beforeEach(function() {
     sporeBlossomBlock = new SporeBlossomBlock();
-    world = new MockWorld();
-    player = new MockPlayer();
+    world = new TestWorld();
+    player = new TestPlayer();
     
     // Setup solid ceiling block
     world.setBlock(5, 6, 5, {
@@ -166,9 +156,10 @@ describe('SporeBlossomBlock', function() {
       sporeBlossomBlock.update(world, { x: 5, y: 5, z: 5 });
       
       // Should have emitted particles
-      assert.strictEqual(world.particles.length, 1);
-      assert.strictEqual(world.particles[0].type, 'spore');
-      assert.strictEqual(world.particles[0].color, sporeBlossomBlock.particleColor);
+      const particles = world.getParticles();
+      assert.strictEqual(particles.length, 1);
+      assert.strictEqual(particles[0].type, 'spore');
+      assert.strictEqual(particles[0].color, sporeBlossomBlock.particleColor);
     });
     
     it('should emit the correct number of particles', function() {
@@ -182,7 +173,8 @@ describe('SporeBlossomBlock', function() {
       sporeBlossomBlock.update(world, { x: 5, y: 5, z: 5 });
       
       // Should have the specified particle count
-      assert.strictEqual(world.particles[0].count, sporeBlossomBlock.particleCount);
+      const particles = world.getParticles();
+      assert.strictEqual(particles[0].count, sporeBlossomBlock.particleCount);
     });
     
     it('should respect particle rate limiting', function() {
@@ -196,7 +188,8 @@ describe('SporeBlossomBlock', function() {
       sporeBlossomBlock.update(world, { x: 5, y: 5, z: 5 });
       
       // Should not have emitted particles yet
-      assert.strictEqual(world.particles.length, 0);
+      const particles = world.getParticles();
+      assert.strictEqual(particles.length, 0);
     });
     
     it('should emit particles from the correct position', function() {
@@ -210,7 +203,8 @@ describe('SporeBlossomBlock', function() {
       sporeBlossomBlock.update(world, { x: 5, y: 5, z: 5 });
       
       // Should emit from slightly below the block center
-      const emitPos = world.particles[0].position;
+      const particles = world.getParticles();
+      const emitPos = particles[0].position;
       assert.strictEqual(emitPos.x, 5.5); // center X
       assert.strictEqual(emitPos.y, 4.8); // slightly below bottom (5.0 - 0.2)
       assert.strictEqual(emitPos.z, 5.5); // center Z

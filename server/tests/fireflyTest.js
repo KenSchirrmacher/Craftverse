@@ -5,42 +5,51 @@
 
 const assert = require('assert');
 const Firefly = require('../entities/firefly');
+const World = require('../world/world');
+const ParticleSystem = require('../particles/particleSystem');
 
-function runTests() {
-  console.log('Running Firefly entity tests...');
-  
-  // Create mock world with essential methods
-  const mockWorld = {
-    timeOfDay: 0.8, // Night time
-    particleSystem: {
-      emitParticles: (options) => {
-        mockWorld.lastParticleOptions = options;
-        return [1]; // Return mock particle ID
+describe('Firefly Entity', () => {
+  // Test world implementation
+  class TestWorld extends World {
+    constructor() {
+      super();
+      this.blocks = new Map();
+      this.particleSystem = new ParticleSystem();
+      this.timeOfDay = 0.8; // Start at night
+    }
+    
+    getBlockAt(x, y, z) {
+      const key = `${x},${y},${z}`;
+      return this.blocks.get(key) || { type: 'air', isSolid: false };
+    }
+    
+    getHighestBlock(x, z) {
+      return 64; // Simulate flat terrain
+    }
+    
+    setBlock(x, y, z, block) {
+      const key = `${x},${y},${z}`;
+      this.blocks.set(key, block);
+    }
+  }
+
+  let testWorld;
+  let testPlayers;
+
+  beforeEach(() => {
+    testWorld = new TestWorld();
+    testPlayers = [
+      {
+        id: 'player1',
+        position: { x: 100, y: 65, z: 100 }, // Far from the firefly
+        size: { width: 0.6, height: 1.8, depth: 0.6 }
       }
-    },
-    getBlockAt: (x, y, z) => {
-      // Default to air blocks
-      return { type: 'air' };
-    },
-    getHighestBlock: (x, z) => {
-      // Simulate flat terrain at y=64
-      return 64;
-    }
-  };
-  
-  // Create mock players for testing interactions
-  const mockPlayers = [
-    {
-      id: 'player1',
-      position: { x: 100, y: 65, z: 100 }, // Far from the firefly
-      size: { width: 0.6, height: 1.8, depth: 0.6 }
-    }
-  ];
-  
-  try {
-    console.log('Testing basic properties...');
+    ];
+  });
+
+  it('should pass all firefly entity behaviors', () => {
     // Create firefly instance for testing
-    const firefly = new Firefly(mockWorld, {
+    const firefly = new Firefly(testWorld, {
       position: { x: 10, y: 66, z: 10 },
       glowColor: '#FFFF77',
       glowIntensity: 0.8
@@ -62,17 +71,16 @@ function runTests() {
     assert.ok(firefly.size.height < 0.3, 'Firefly should be small');
     assert.ok(firefly.size.depth < 0.3, 'Firefly should be small');
     
-    console.log('Testing lifecycle behavior...');
     // Lifecycle Tests
-    
+    console.log('Testing lifecycle behavior...');
     // Test daytime inactivity
-    mockWorld.timeOfDay = 0.5; // Daytime
-    firefly.update(mockWorld, mockPlayers, [], 100);
+    testWorld.timeOfDay = 0.5; // Daytime
+    firefly.update(testWorld, testPlayers, [], 100);
     assert.strictEqual(firefly.active, false, 'Firefly should be inactive during the day');
     
     // Test nighttime activity
-    mockWorld.timeOfDay = 0.8; // Nighttime
-    firefly.update(mockWorld, mockPlayers, [], 100);
+    testWorld.timeOfDay = 0.8; // Nighttime
+    firefly.update(testWorld, testPlayers, [], 100);
     assert.strictEqual(firefly.active, true, 'Firefly should be active during the night');
     
     console.log('Testing spawn position behavior...');
@@ -85,7 +93,7 @@ function runTests() {
     
     // Update several times
     for (let i = 0; i < 10; i++) {
-      firefly.update(mockWorld, mockPlayers, [], 100);
+      firefly.update(testWorld, testPlayers, [], 100);
     }
     
     const newDistance = firefly.getDistanceFromSpawn();
@@ -97,9 +105,9 @@ function runTests() {
     firefly.glowCycleSpeed = 1.0;
     firefly.glowState = 0;
     
-    firefly.update(mockWorld, mockPlayers, [], 100);
-    firefly.update(mockWorld, mockPlayers, [], 100);
-    firefly.update(mockWorld, mockPlayers, [], 100);
+    firefly.update(testWorld, testPlayers, [], 100);
+    firefly.update(testWorld, testPlayers, [], 100);
+    firefly.update(testWorld, testPlayers, [], 100);
     
     assert.notStrictEqual(initialIntensity, firefly.glowIntensity, 'Glow intensity should change over time');
     
@@ -115,13 +123,13 @@ function runTests() {
     };
     
     // Add the nearby player to the players array
-    mockPlayers.push(nearbyPlayer);
+    testPlayers.push(nearbyPlayer);
     
     // Get initial position
     const initialPosition = { ...firefly.position };
     
     // Update the firefly
-    firefly.update(mockWorld, mockPlayers, [], 200);
+    firefly.update(testWorld, testPlayers, [], 200);
     
     // Calculate direction of movement
     const moveVectorX = firefly.position.x - initialPosition.x;
@@ -140,13 +148,20 @@ function runTests() {
     // Test particle emission
     firefly.lastParticleTime = 0; // Reset to force emission
     firefly.glowIntensity = 1.0; // Maximum glow
-    mockWorld.lastParticleOptions = null;
     
-    firefly.update(mockWorld, mockPlayers, [], 1000);
+    // Clear any existing particles
+    testWorld.particleSystem.clearParticles();
     
-    assert.ok(mockWorld.lastParticleOptions, 'Firefly should emit particles');
-    assert.strictEqual(mockWorld.lastParticleOptions.type, 'firefly_glow', 'Particle type should be firefly_glow');
-    assert.strictEqual(mockWorld.lastParticleOptions.color, firefly.glowColor, 'Particle color should match firefly glow color');
+    firefly.update(testWorld, testPlayers, [], 1000);
+    
+    // Check if particles were emitted
+    const particles = testWorld.particleSystem.getParticles();
+    assert.ok(particles.length > 0, 'Firefly should emit particles');
+    
+    // Verify particle properties
+    const particle = particles[0];
+    assert.strictEqual(particle.type, 'firefly_glow', 'Particle type should be firefly_glow');
+    assert.strictEqual(particle.color, firefly.glowColor, 'Particle color should match firefly glow color');
     
     console.log('Testing light emission...');
     // Test light emission
@@ -175,16 +190,9 @@ function runTests() {
     assert.strictEqual(serializedData.glowColor, firefly.glowColor, 'Serialized data should preserve glow color');
     
     // Test deserialization
-    const restoredFirefly = Firefly.fromJSON(serializedData, mockWorld);
+    const restoredFirefly = Firefly.fromJSON(serializedData, testWorld);
     assert.strictEqual(restoredFirefly.type, 'firefly', 'Deserialized firefly should preserve type');
     assert.deepStrictEqual(restoredFirefly.position, firefly.position, 'Deserialized firefly should preserve position');
     assert.strictEqual(restoredFirefly.glowColor, firefly.glowColor, 'Deserialized firefly should preserve glow color');
-    
-    console.log('All Firefly tests passed!');
-  } catch (error) {
-    console.error('Firefly test failed:', error);
-    throw error;
-  }
-}
-
-module.exports = runTests; 
+  });
+}); 

@@ -4,8 +4,9 @@ const { blockRegistry } = require('../blocks/blockRegistry');
 const { EntityManager } = require('../entity/EntityManager');
 const { PhysicsEngine } = require('../physics/PhysicsEngine');
 
-class TestWorld {
+class TestWorld extends World {
   constructor() {
+    super();
     this.blocks = new Map();
     this.chunks = new Map();
     this.entities = new Map();
@@ -13,6 +14,10 @@ class TestWorld {
     this.chunkManager = new ChunkManager();
     this.entityManager = new EntityManager();
     this.physicsEngine = new PhysicsEngine();
+    this.lastParticleEffect = null;
+    this.lastSoundPlayed = null;
+    this.particleEffects = [];
+    this.soundEffects = [];
   }
 
   getChunkKey(x, z) {
@@ -122,6 +127,38 @@ class TestWorld {
   update() {
     this.physicsEngine.update(this);
     this.entityManager.update(this);
+  }
+
+  // Override particle effect method to track effects
+  addParticleEffect(data) {
+    this.lastParticleEffect = data;
+    this.particleEffects.push(data);
+    return super.addParticleEffect(data);
+  }
+
+  // Override sound effect method to track sounds
+  playSound(data) {
+    this.lastSoundPlayed = data;
+    this.soundEffects.push(data);
+    return super.playSound(data);
+  }
+
+  // Clear tracked effects
+  clearEffects() {
+    this.lastParticleEffect = null;
+    this.lastSoundPlayed = null;
+    this.particleEffects = [];
+    this.soundEffects = [];
+  }
+
+  // Get all particle effects
+  getParticleEffects() {
+    return this.particleEffects;
+  }
+
+  // Get all sound effects
+  getSoundEffects() {
+    return this.soundEffects;
   }
 }
 

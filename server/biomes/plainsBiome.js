@@ -1,10 +1,10 @@
-const Biome = require('./baseBiome');
+const BiomeBase = require('./biomeBase');
 
 /**
  * Plains biome - flat grassland with occasional trees and flowers
  * Represents temperate grasslands with mild weather and fertile soil
  */
-class PlainsBiome extends Biome {
+class PlainsBiome extends BiomeBase {
   /**
    * Create a new Plains biome
    * @param {Object} props - Optional properties to override defaults

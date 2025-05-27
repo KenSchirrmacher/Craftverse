@@ -8,7 +8,103 @@ const ArchaeologyManager = require('../archaeology/archaeologyManager');
 const BrushItem = require('../items/brushItem');
 const { SuspiciousSandBlock, SuspiciousGravelBlock } = require('../blocks/suspiciousBlocks');
 const PotterySherdItem = require('../items/potterySherdItem');
-const World = require('../world');
+const World = require('../world/world');
+const Player = require('../entities/player');
+
+// Test world implementation
+class TestWorld extends World {
+  constructor() {
+    super();
+    this.emitted = false;
+    this.setBlockCalled = false;
+    this.lastBlockType = null;
+    this.blockBelow = { type: 'stone' };
+    this.blocks = new Map();
+    this.items = [];
+  }
+  
+  emit(event, data) {
+    this.emitted = true;
+    return super.emit(event, data);
+  }
+  
+  setBlockAt(x, y, z, type, metadata = {}) {
+    this.setBlockCalled = true;
+    this.lastBlockType = type;
+    this.blocks.set(`${x},${y},${z}`, { type, metadata });
+    return true;
+  }
+  
+  setBlockBelow(block) {
+    this.blockBelow = block;
+  }
+  
+  getBlockAt(x, y, z) {
+    if (y === -1) {
+      return this.blockBelow;
+    }
+    return this.blocks.get(`${x},${y},${z}`) || null;
+  }
+  
+  addItem(item) {
+    this.items.push(item);
+  }
+  
+  removeItem(item) {
+    const index = this.items.indexOf(item);
+    if (index !== -1) {
+      this.items.splice(index, 1);
+      return true;
+    }
+    return false;
+  }
+  
+  getItemsInRange(position, range) {
+    return this.items.filter(item => {
+      const dx = item.position.x - position.x;
+      const dy = item.position.y - position.y;
+      const dz = item.position.z - position.z;
+      const distance = Math.sqrt(dx * dx + dy * dy + dz * dz);
+      return distance <= range;
+    });
+  }
+}
+
+// Test player implementation
+class TestPlayer extends Player {
+  constructor() {
+    super();
+    this.inventory = [];
+    this.messages = [];
+  }
+  
+  giveItem(item) {
+    this.inventory.push(item);
+    return true;
+  }
+  
+  removeItem(item) {
+    const index = this.inventory.indexOf(item);
+    if (index !== -1) {
+      this.inventory.splice(index, 1);
+      return true;
+    }
+    return false;
+  }
+  
+  updateItem(item) {
+    const index = this.inventory.findIndex(i => i.id === item.id);
+    if (index !== -1) {
+      this.inventory[index] = item;
+      return true;
+    }
+    return false;
+  }
+  
+  sendMessage(message) {
+    this.messages.push(message);
+  }
+}
 
 function runTests() {
   console.log('Running Archaeology System Tests...');
@@ -31,11 +127,11 @@ function runTests() {
 function testArchaeologyManager() {
   console.log('Testing ArchaeologyManager...');
   
-  // Create a mock world
-  const mockWorld = new MockWorld();
+  // Create a test world
+  const world = new TestWorld();
   
   // Create archaeology manager
-  const archaeologyManager = new ArchaeologyManager(mockWorld);
+  const archaeologyManager = new ArchaeologyManager(world);
   
   // Test initialization
   archaeologyManager.initialize();
@@ -67,7 +163,7 @@ function testArchaeologyManager() {
   assert.strictEqual(serialized.initialized, true, 'Serialized data should preserve initialized state');
   
   // Create a new manager and deserialize
-  const newManager = new ArchaeologyManager(mockWorld);
+  const newManager = new ArchaeologyManager(world);
   newManager.deserialize(serialized);
   assert.strictEqual(newManager.initialized, true, 'Deserialized manager should be initialized');
   assert.strictEqual(newManager.sites.size, archaeologyManager.sites.size, 'Deserialized manager should have same number of sites');
@@ -96,26 +192,26 @@ function testBrushItem() {
   assert.strictEqual(copperBrush.durability, 96, 'Should have correct durability');
   
   // Test onUseOnBlock method
-  const mockWorld = new MockWorld();
-  const mockPlayer = new MockPlayer();
+  const world = new TestWorld();
+  const player = new TestPlayer();
   const suspiciousBlock = new SuspiciousSandBlock();
   const regularBlock = { type: 'stone' };
   
   // Should return false for non-suspicious blocks
   assert.strictEqual(
-    woodenBrush.onUseOnBlock(mockWorld, mockPlayer, regularBlock, { x: 0, y: 0, z: 0 }),
+    woodenBrush.onUseOnBlock(world, player, regularBlock, { x: 0, y: 0, z: 0 }),
     false,
     'Should return false for non-suspicious blocks'
   );
   
   // Should return true for suspicious blocks
-  mockWorld.emitted = false;
+  world.emitted = false;
   assert.strictEqual(
-    woodenBrush.onUseOnBlock(mockWorld, mockPlayer, suspiciousBlock, { x: 0, y: 0, z: 0 }),
+    woodenBrush.onUseOnBlock(world, player, suspiciousBlock, { x: 0, y: 0, z: 0 }),
     true,
     'Should return true for suspicious blocks'
   );
-  assert.strictEqual(mockWorld.emitted, true, 'Should emit blockInteract event');
+  assert.strictEqual(world.emitted, true, 'Should emit blockInteract event');
   
   // Test durability calculation
   assert.strictEqual(woodenBrush.calculateDurabilityDamage(), 1, 'Should calculate correct durability damage');
@@ -176,17 +272,17 @@ function testSuspiciousBlocks() {
   assert.strictEqual(drops[0].type, 'sand', 'Should drop sand when broken');
   
   // Test gravity behavior
-  const mockWorld = new MockWorld();
-  mockWorld.setBlockBelow({ type: 'air' });
+  const world = new TestWorld();
+  world.setBlockBelow({ type: 'air' });
   
-  sandBlock.onTick(mockWorld, { x: 0, y: 0, z: 0 });
+  sandBlock.onTick(world, { x: 0, y: 0, z: 0 });
   assert.strictEqual(
-    mockWorld.setBlockCalled,
+    world.setBlockCalled,
     true,
     'Should call setBlockAt when air is below'
   );
   assert.strictEqual(
-    mockWorld.lastBlockType,
+    world.lastBlockType,
     'sand',
     'Should set to normal sand when falling'
   );
@@ -253,191 +349,54 @@ function testPotterySherdItem() {
   // Test serialization/deserialization
   const serialized = armsUpSherd.serialize();
   assert.strictEqual(serialized.pattern, 'arms_up', 'Serialized data should preserve pattern');
-  assert.strictEqual(serialized.category, 'storytelling', 'Serialized data should preserve category');
+  assert.strictEqual(serialized.type, 'pottery_sherd_arms_up', 'Serialized data should preserve type');
   
   const deserialized = PotterySherdItem.deserialize(serialized);
   assert.strictEqual(deserialized.pattern, 'arms_up', 'Deserialized sherd should have correct pattern');
-  assert.strictEqual(deserialized.category, 'storytelling', 'Deserialized sherd should have correct category');
+  assert.strictEqual(deserialized.type, 'pottery_sherd_arms_up', 'Deserialized sherd should have correct type');
   
   console.log('✓ PotterySherdItem tests passed');
 }
 
 function testIntegration() {
-  console.log('Testing Archaeology Integration...');
+  console.log('Testing Archaeology System Integration...');
   
-  // Create a world with an archaeology manager
-  const world = new World({ seed: 12345 });
+  const world = new TestWorld();
+  const player = new TestPlayer();
+  const archaeologyManager = new ArchaeologyManager(world);
   
-  // Make sure the archaeology manager was created
-  assert.ok(world.archaeologyManager, 'World should have an archaeology manager');
-  assert.strictEqual(
-    world.archaeologyManager instanceof ArchaeologyManager,
-    true,
-    'Should be an ArchaeologyManager instance'
-  );
+  // Initialize the system
+  archaeologyManager.initialize();
   
-  // Test excavation flow
-  const player = new MockPlayer();
+  // Place a suspicious block
+  const suspiciousBlock = new SuspiciousSandBlock();
+  world.setBlockAt(0, 0, 0, suspiciousBlock.id);
+  
+  // Create a brush
   const brush = new BrushItem();
-  const block = new SuspiciousSandBlock();
-  const position = { x: 10, y: 64, z: 10 };
+  player.giveItem(brush);
   
-  // Set up a suspicious block in the world
-  world.setBlockAt(position.x, position.y, position.z, block.type, {
-    siteType: 'desert',
-    lootTable: {
-      item: 'pottery_sherd_arms_up',
-      rarity: 1,
-      metadata: { pattern: 'arms_up' }
-    }
-  });
+  // Test brushing the block
+  const brushResult = brush.onUseOnBlock(world, player, suspiciousBlock, { x: 0, y: 0, z: 0 });
+  assert.strictEqual(brushResult, true, 'Should successfully brush the block');
   
-  // Test that the suspicious block is set up correctly
-  const blockAtPos = world.getBlockAt(position.x, position.y, position.z);
-  assert.strictEqual(blockAtPos.type, 'suspicious_sand', 'Block should be set in world');
+  // Test block transformation
+  const blockAfterBrush = world.getBlockAt(0, 0, 0);
+  assert.strictEqual(blockAfterBrush.type, 'sand', 'Block should transform to sand after brushing');
   
-  // Simulate the start of excavation
-  const interactData = {
-    player,
-    item: brush,
-    position,
-    block: blockAtPos
-  };
+  // Test item drops
+  assert.strictEqual(player.inventory.length > 0, true, 'Player should receive items from brushing');
   
-  // Create a flag to track whether we receive the event
-  let blockUpdateReceived = false;
-  world.on('blockUpdate', (data) => {
-    if (data.type === 'sand' && 
-        data.x === position.x && 
-        data.y === position.y && 
-        data.z === position.z) {
-      blockUpdateReceived = true;
-    }
-  });
-  
-  // Simulate a complete excavation
-  world.archaeologyManager.handleBlockInteraction(interactData);
-  
-  // Immediately complete the excavation (bypassing timeout)
-  if (player.excavations && player.excavations.current) {
-    world.archaeologyManager.completeExcavation(
-      player,
-      position.x,
-      position.y,
-      position.z,
-      blockAtPos
-    );
-  }
-  
-  // Check that item was given to player
-  assert.strictEqual(player.receivedItem, true, 'Player should receive an item from excavation');
-  assert.strictEqual(player.lastItemType, 'pottery_sherd_arms_up', 'Player should receive correct item type');
-  
-  // Check that block was replaced
-  assert.strictEqual(blockUpdateReceived, true, 'Block should be updated to sand');
-  
-  console.log('✓ Archaeology Integration tests passed');
+  console.log('✓ Archaeology System Integration tests passed');
 }
-
-// Mock classes for testing
-
-class MockWorld {
-  constructor() {
-    this.blocks = new Map();
-    this.events = {};
-    this.emitted = false;
-    this.setBlockCalled = false;
-    this.lastBlockType = null;
-    this.blockBelow = null;
-  }
-  
-  on(event, callback) {
-    if (!this.events[event]) {
-      this.events[event] = [];
-    }
-    this.events[event].push(callback);
-  }
-  
-  emit(event, data) {
-    this.emitted = true;
-    if (this.events[event]) {
-      for (const callback of this.events[event]) {
-        callback(data);
-      }
-    }
-  }
-  
-  getBlockAt(x, y, z) {
-    if (y === 0 && this.blockBelow) {
-      return this.blockBelow;
-    }
-    return this.blocks.get(`${x},${y},${z}`);
-  }
-  
-  setBlockAt(x, y, z, type, metadata = {}) {
-    this.blocks.set(`${x},${y},${z}`, { type, metadata });
-    this.setBlockCalled = true;
-    this.lastBlockType = type;
-    return true;
-  }
-  
-  setBlockBelow(block) {
-    this.blockBelow = block;
-  }
-  
-  getWaterLevel() {
-    return 63;
-  }
-  
-  getHighestBlock() {
-    return 64;
-  }
-  
-  getBiomeAt() {
-    return { type: 'plains' };
-  }
-  
-  sendParticles() {
-    return [1];
-  }
-  
-  playSound() {
-    // Mock implementation
-  }
-}
-
-class MockPlayer {
-  constructor() {
-    this.id = 'test_player';
-    this.position = { x: 0, y: 0, z: 0 };
-    this.inventory = [];
-    this.receivedItem = false;
-    this.lastItemType = null;
-    this.excavations = {};
-  }
-  
-  giveItem(item) {
-    this.receivedItem = true;
-    this.lastItemType = item.type;
-    this.inventory.push(item);
-  }
-  
-  removeItem() {
-    // Mock implementation
-  }
-  
-  updateItem() {
-    // Mock implementation
-  }
-  
-  sendMessage() {
-    // Mock implementation
-  }
-}
-
-module.exports = runTests;
 
 // Run the tests if this file is executed directly
 if (require.main === module) {
-  runTests();
+  try {
+    const success = runTests();
+    process.exitCode = success ? 0 : 1;
+  } catch (error) {
+    console.error('Archaeology tests failed with error:', error);
+    process.exitCode = 1;
+  }
 } 

@@ -8,64 +8,14 @@ const TrialChamber = require('../structures/trialChamber');
 const TrialChamberGenerator = require('../utils/structures/trialChamberGenerator');
 const TrialSpawnerBlock = require('../blocks/trialSpawner');
 const blockRegistry = require('../blocks/blockRegistry');
-
-// Mock world implementation for testing
-class MockWorld {
-  constructor() {
-    this.blocks = new Map();
-    this.entities = [];
-    this.random = Math.random; // Deterministic for tests
-  }
-  
-  getBlock(position) {
-    const key = `${position.x},${position.y},${position.z}`;
-    return this.blocks.get(key) || null;
-  }
-  
-  setBlock(position, block) {
-    const key = `${position.x},${position.y},${position.z}`;
-    this.blocks.set(key, block);
-  }
-  
-  getEntitiesInBox(min, max) {
-    return this.entities.filter(entity => {
-      return entity.position.x >= min.x && entity.position.x <= max.x &&
-             entity.position.y >= min.y && entity.position.y <= max.y &&
-             entity.position.z >= min.z && entity.position.z <= max.z;
-    });
-  }
-  
-  getSpawnPosition() {
-    return { x: 0, y: 64, z: 0 };
-  }
-  
-  spawnMob(type, position) {
-    const mob = {
-      id: `${type}_${Date.now()}`,
-      type: type,
-      position: { ...position },
-      events: {
-        once: (event, callback) => {}
-      },
-      isHostile: ['zombie', 'skeleton', 'creeper', 'spider', 'witch', 'vindicator', 'evoker', 'breeze'].includes(type),
-      trialSpawnerId: null
-    };
-    
-    this.entities.push(mob);
-    return mob;
-  }
-  
-  canSpawnMob(position) {
-    const block = this.getBlock(position);
-    return block && !block.solid;
-  }
-}
+const World = require('../world');
 
 describe('Trial Chamber Tests', () => {
   let world;
   
   beforeEach(() => {
-    world = new MockWorld();
+    world = new World();
+    world.initialize();
   });
   
   describe('TrialChamber', () => {
@@ -256,6 +206,133 @@ describe('Trial Chamber Tests', () => {
       
       // Now should be completed
       assert.ok(chamber.isCompleted());
+    });
+  });
+
+  describe('TrialSpawnerBlock', () => {
+    let spawner;
+    
+    beforeEach(() => {
+      spawner = new TrialSpawnerBlock({
+        totalWaves: 3,
+        maxMobsPerWave: 5,
+        mobTypes: ['zombie', 'skeleton']
+      });
+      
+      spawner.setPosition({ x: 0, y: 0, z: 0 });
+      spawner.setWorld(world);
+    });
+    
+    it('should create a proper spawner instance', () => {
+      assert.strictEqual(spawner.type, 'trial_spawner');
+      assert.strictEqual(spawner.totalWaves, 3);
+      assert.strictEqual(spawner.maxMobsPerWave, 5);
+      assert.deepStrictEqual(spawner.mobTypes, ['zombie', 'skeleton']);
+      assert.strictEqual(spawner.currentWave, 0);
+      assert.strictEqual(spawner.isActive, false);
+      assert.strictEqual(spawner.isCompleted, false);
+    });
+    
+    it('should activate when powered', () => {
+      spawner.onRedstonePower(15);
+      assert.strictEqual(spawner.isActive, true);
+      assert.strictEqual(spawner.currentWave, 1);
+    });
+    
+    it('should spawn mobs for each wave', () => {
+      spawner.activate();
+      
+      // First wave
+      assert.strictEqual(spawner.currentWave, 1);
+      const firstWaveMobs = spawner.spawnWave();
+      assert.ok(firstWaveMobs.length > 0);
+      assert.ok(firstWaveMobs.length <= spawner.maxMobsPerWave);
+      
+      // Second wave
+      spawner.completeWave();
+      assert.strictEqual(spawner.currentWave, 2);
+      const secondWaveMobs = spawner.spawnWave();
+      assert.ok(secondWaveMobs.length > 0);
+      assert.ok(secondWaveMobs.length <= spawner.maxMobsPerWave);
+      
+      // Third wave
+      spawner.completeWave();
+      assert.strictEqual(spawner.currentWave, 3);
+      const thirdWaveMobs = spawner.spawnWave();
+      assert.ok(thirdWaveMobs.length > 0);
+      assert.ok(thirdWaveMobs.length <= spawner.maxMobsPerWave);
+    });
+    
+    it('should complete when all waves are done', () => {
+      spawner.activate();
+      
+      // Complete all waves
+      for (let i = 0; i < spawner.totalWaves; i++) {
+        spawner.completeWave();
+      }
+      
+      assert.strictEqual(spawner.isCompleted, true);
+      assert.strictEqual(spawner.isActive, false);
+    });
+    
+    it('should fail if too many mobs are killed', () => {
+      spawner.activate();
+      spawner.spawnWave();
+      
+      // Kill more mobs than allowed
+      spawner.onMobKilled();
+      spawner.onMobKilled();
+      spawner.onMobKilled();
+      spawner.onMobKilled();
+      spawner.onMobKilled();
+      spawner.onMobKilled();
+      
+      assert.strictEqual(spawner.isFailed, true);
+      assert.strictEqual(spawner.isActive, false);
+    });
+    
+    it('should emit events for state changes', () => {
+      let activationEvent = false;
+      let completionEvent = false;
+      let failureEvent = false;
+      
+      spawner.on('activation', () => activationEvent = true);
+      spawner.on('completion', () => completionEvent = true);
+      spawner.on('failure', () => failureEvent = true);
+      
+      // Test activation
+      spawner.activate();
+      assert.strictEqual(activationEvent, true);
+      
+      // Test completion
+      for (let i = 0; i < spawner.totalWaves; i++) {
+        spawner.completeWave();
+      }
+      assert.strictEqual(completionEvent, true);
+      
+      // Test failure
+      spawner.activate();
+      spawner.spawnWave();
+      for (let i = 0; i < 6; i++) {
+        spawner.onMobKilled();
+      }
+      assert.strictEqual(failureEvent, true);
+    });
+    
+    it('should serialize and deserialize correctly', () => {
+      spawner.activate();
+      spawner.completeWave();
+      
+      const serialized = spawner.serialize();
+      const deserializedSpawner = TrialSpawnerBlock.deserialize(serialized);
+      
+      assert.strictEqual(deserializedSpawner.type, spawner.type);
+      assert.strictEqual(deserializedSpawner.totalWaves, spawner.totalWaves);
+      assert.strictEqual(deserializedSpawner.maxMobsPerWave, spawner.maxMobsPerWave);
+      assert.deepStrictEqual(deserializedSpawner.mobTypes, spawner.mobTypes);
+      assert.strictEqual(deserializedSpawner.currentWave, spawner.currentWave);
+      assert.strictEqual(deserializedSpawner.isActive, spawner.isActive);
+      assert.strictEqual(deserializedSpawner.isCompleted, spawner.isCompleted);
     });
   });
 });

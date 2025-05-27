@@ -36,6 +36,23 @@ class BiomeManager {
   }
 
   /**
+   * Set the noise generators for climate parameters
+   * @param {Object} generators - Object containing noise generators
+   * @param {Object} generators.temperature - Temperature noise generator
+   * @param {Object} generators.precipitation - Precipitation noise generator
+   * @param {Object} generators.continentalness - Continentalness noise generator
+   * @param {Object} generators.erosion - Erosion noise generator
+   * @param {Object} generators.weirdness - Weirdness noise generator
+   */
+  setNoiseGenerators(generators) {
+    this.noiseGenerators = {
+      ...this.noiseGenerators,
+      ...generators
+    };
+    this.biomeCache.clear(); // Clear cache as climate parameters will change
+  }
+
+  /**
    * Add a biome to the manager
    * @param {Biome} biome - Biome instance to add
    */

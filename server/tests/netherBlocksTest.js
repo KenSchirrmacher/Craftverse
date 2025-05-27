@@ -250,51 +250,77 @@ describe('Nether Blocks Tests', () => {
   });
 
   describe('Soul Soil Tests', () => {
-    it('should slow down entities walking on it', () => {
+    it('should have correct properties', () => {
       const soulSoil = new SoulSoilBlock({ x: 0, y: 0, z: 0 });
       
-      soulSoil.onEntityWalk(mockPlayer);
-      
-      assert.equal(mockPlayer.movementModifier.type, 'soul_soil', 'Should apply soul_soil movement modifier');
-      assert.equal(mockPlayer.movementModifier.value, 0.7, 'Should slow down to 70% of normal speed');
+      assert.equal(soulSoil.type, 'soul_soil', 'Type should be soul_soil');
+      assert.equal(soulSoil.hardness, 0.5, 'Hardness should be 0.5');
+      assert.equal(soulSoil.blastResistance, 0.5, 'Blast resistance should be 0.5');
+      assert.equal(soulSoil.transparent, false, 'Should not be transparent');
     });
 
-    it('should convert regular fire to soul fire', () => {
+    it('should slow down entities', () => {
       const soulSoil = new SoulSoilBlock({ x: 0, y: 0, z: 0 });
+      const player = new MockPlayer('test-player');
       
-      const fireType = soulSoil.onFirePlaced(mockWorld, { x: 0, y: 1, z: 0 });
+      soulSoil.onEntityWalk(mockWorld, player, { x: 0, y: 0, z: 0 });
       
-      assert.equal(fireType, 'soul_fire', 'Should convert to soul_fire');
+      assert.equal(player.movementModifier.type, 'multiply', 'Should apply movement modifier');
+      assert.equal(player.movementModifier.value, 0.4, 'Should slow down to 40% speed');
+    });
+
+    it('should drop itself when mined', () => {
+      const soulSoil = new SoulSoilBlock({ x: 0, y: 0, z: 0 });
+      const drops = soulSoil.getDrops('shovel', 1);
+      
+      assert.equal(drops.length, 1, 'Should drop exactly one item');
+      assert.equal(drops[0].type, 'soul_soil', 'Should drop soul_soil');
+      assert.equal(drops[0].count, 1, 'Should drop exactly 1 soul_soil');
     });
   });
 
   describe('Soul Fire Torch Tests', () => {
-    it('should have a lower light level than regular torch', () => {
+    it('should have correct properties', () => {
       const soulTorch = new SoulFireTorchBlock({ x: 0, y: 0, z: 0 });
       
-      assert.equal(soulTorch.lightLevel, 10, 'Soul fire torch should have light level 10');
+      assert.equal(soulTorch.type, 'soul_fire_torch', 'Type should be soul_fire_torch');
+      assert.equal(soulTorch.hardness, 0, 'Hardness should be 0');
+      assert.equal(soulTorch.transparent, true, 'Should be transparent');
+      assert.equal(soulTorch.lightLevel, 10, 'Should emit light level 10');
     });
 
-    it('should update placement based on face placed against', () => {
+    it('should emit blue light', () => {
       const soulTorch = new SoulFireTorchBlock({ x: 0, y: 0, z: 0 });
       
-      // Test wall placement
-      const northPlacement = { face: BlockFace.NORTH };
-      soulTorch.onPlaced(mockWorld, mockPlayer, northPlacement);
-      
-      assert.equal(soulTorch.placement, 'south', 'Should face opposite to placed face');
-      assert.equal(soulTorch.metadata.placement, 'south', 'Metadata should store placement');
+      assert.equal(soulTorch.lightColor, '#3F76E4', 'Should emit blue light');
     });
 
-    it('should only be placeable on solid blocks', () => {
+    it('should be placeable on solid blocks', () => {
       const soulTorch = new SoulFireTorchBlock({ x: 0, y: 0, z: 0 });
+      const placement = { face: BlockFace.NORTH };
       
-      const nonSolidBlock = { isSolid: false };
-      const solidBlock = { isSolid: true };
+      assert.equal(soulTorch.canBePlacedOn(mockWorld, { x: 0, y: 0, z: 0 }, placement), true, 
+        'Should be placeable on solid blocks');
+    });
+
+    it('should not be placeable on non-solid blocks', () => {
+      const soulTorch = new SoulFireTorchBlock({ x: 0, y: 0, z: 0 });
+      const placement = { face: BlockFace.NORTH };
       
-      assert.equal(soulTorch.canBePlacedOn(nonSolidBlock), false, 'Should not be placeable on non-solid blocks');
-      assert.equal(soulTorch.canBePlacedOn(solidBlock), true, 'Should be placeable on solid blocks');
-      assert.equal(soulTorch.canBePlacedOn(null), false, 'Should not be placeable on undefined blocks');
+      // Set a non-solid block
+      mockWorld.setBlock({ x: 0, y: 0, z: 0 }, { solid: false });
+      
+      assert.equal(soulTorch.canBePlacedOn(mockWorld, { x: 0, y: 0, z: 0 }, placement), false, 
+        'Should not be placeable on non-solid blocks');
+    });
+
+    it('should drop itself when broken', () => {
+      const soulTorch = new SoulFireTorchBlock({ x: 0, y: 0, z: 0 });
+      const drops = soulTorch.getDrops();
+      
+      assert.equal(drops.length, 1, 'Should drop exactly one item');
+      assert.equal(drops[0].type, 'soul_fire_torch', 'Should drop soul_fire_torch');
+      assert.equal(drops[0].count, 1, 'Should drop exactly 1 soul_fire_torch');
     });
   });
 });

@@ -190,6 +190,25 @@ class BiomeBase {
       flatter: null  // Biome to transition to when getting flatter
     };
   }
+
+  /**
+   * Determine if this biome is valid for the given climate parameters
+   * @param {Object} params - Climate parameters
+   * @returns {boolean}
+   */
+  isValidForClimate(params) {
+    // Use a threshold for match score (e.g., 0.6)
+    return this.evaluateMatch(params) >= 0.6;
+  }
+
+  /**
+   * Get a fitness score for this biome given climate parameters
+   * @param {Object} params - Climate parameters
+   * @returns {number} - Fitness score (higher is better)
+   */
+  getFitnessScore(params) {
+    return this.evaluateMatch(params);
+  }
 }
 
 module.exports = BiomeBase; 

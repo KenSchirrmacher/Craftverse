@@ -1,10 +1,10 @@
-const Biome = require('./baseBiome');
+const BiomeBase = require('./biomeBase');
 
 /**
  * Desert biome - sandy, hot biome with few vegetation and structures
  * Represents arid regions with extreme heat and minimal rainfall
  */
-class DesertBiome extends Biome {
+class DesertBiome extends BiomeBase {
   /**
    * Create a new Desert biome
    * @param {Object} props - Optional properties to override defaults

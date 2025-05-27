@@ -5,41 +5,8 @@
 
 const assert = require('assert');
 const CopperGrateBlock = require('../blocks/copperGrateBlock');
-
-// Mock entity for testing
-class MockEntity {
-  constructor(type, size = 'normal') {
-    this.type = type;
-    this.size = size;
-    this.noCollision = false;
-    this.velocity = { x: 1.0, y: 0.5, z: 1.0 };
-  }
-}
-
-// Mock world for testing entity interactions
-class MockWorld {
-  constructor() {
-    this.entities = [];
-    this.blocks = new Map();
-  }
-  
-  getBlockAt(x, y, z) {
-    return this.blocks.get(`${x},${y},${z}`);
-  }
-  
-  setBlockAt(x, y, z, block) {
-    this.blocks.set(`${x},${y},${z}`, block);
-  }
-  
-  addEntity(entity) {
-    this.entities.push(entity);
-  }
-  
-  getEntitiesInBox(x1, y1, z1, x2, y2, z2) {
-    // In the mock, just return all entities
-    return this.entities;
-  }
-}
+const Entity = require('../entities/entity');
+const World = require('../world/world');
 
 /**
  * Run all the tests for CopperGrateBlock
@@ -111,7 +78,7 @@ function run() {
     console.log('\nTesting: Filter Efficiency Update On Oxidation');
     
     const testGrate = new CopperGrateBlock();
-    const world = new MockWorld();
+    const world = new World();
     const position = { x: 0, y: 0, z: 0 };
     
     // Initial state
@@ -135,13 +102,13 @@ function run() {
     console.log('\nTesting: Entity Filtering');
     
     // Test always-pass entities
-    const itemEntity = new MockEntity('item');
+    const itemEntity = new Entity('item', { type: 'item' });
     const canItemPass = testGrate.canEntityPassThrough(itemEntity);
     assert.strictEqual(canItemPass, true, 'items should always pass through');
     
     // Test small entity with probability
     const oxidizedGrate = new CopperGrateBlock({ oxidationState: 'oxidized' });
-    const batEntity = new MockEntity('bat');
+    const batEntity = new Entity('bat', { type: 'bat' });
     
     // With 70% efficiency (oxidized), we expect most entities to pass
     let passCount = 0;
@@ -161,7 +128,7 @@ function run() {
     console.log('- Small entity pass rate test passed');
     
     // Test larger entity blocking
-    const zombieEntity = new MockEntity('zombie');
+    const zombieEntity = new Entity('zombie', { type: 'zombie' });
     const canZombiePass = testGrate.canEntityPassThrough(zombieEntity);
     assert.strictEqual(canZombiePass, false, 'larger entities should be blocked');
     
@@ -171,13 +138,13 @@ function run() {
     console.log('\nTesting: Entity Processing');
     
     const processingGrate = new CopperGrateBlock();
-    const processingWorld = new MockWorld();
+    const processingWorld = new World();
     const processingPosition = { x: 0, y: 0, z: 0 };
     
     // Add entities to the world
-    const testItemEntity = new MockEntity('item');
-    const testBatEntity = new MockEntity('bat');
-    const testZombieEntity = new MockEntity('zombie');
+    const testItemEntity = new Entity('item', { type: 'item' });
+    const testBatEntity = new Entity('bat', { type: 'bat' });
+    const testZombieEntity = new Entity('zombie', { type: 'zombie' });
     
     processingWorld.addEntity(testItemEntity);
     processingWorld.addEntity(testBatEntity);
@@ -248,20 +215,11 @@ function run() {
     
     console.log('- Serialization and deserialization test passed');
     
-    console.log('\n✅ ALL TESTS PASSED: CopperGrateBlock tests completed successfully');
+    return true;
   } catch (error) {
-    console.error(`❌ TEST FAILED: ${error.message}`);
-    console.error(error.stack);
-    success = false;
+    console.error('Test failed:', error);
+    return false;
   }
-  
-  return success;
-}
-
-// Run the tests if this file is executed directly
-if (require.main === module) {
-  const success = run();
-  process.exit(success ? 0 : 1);
 }
 
 module.exports = { run }; 
