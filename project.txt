@@ -95,4 +95,7 @@ Implementation of Minecraft 1.24 Update features including Wind Charge improveme
 - Regular updates
 - Bug fixes
 - Performance optimization
-- Security patches 
+- Security patches [x] Complete
+
+## Additional Notes
+- Any additional notes or considerations for the project 

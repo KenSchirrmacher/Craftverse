@@ -1,0 +1,75 @@
+# Craftverse - Directory Structure
+
+## Server
+### Main Files
+// ... existing code ...
+
+### Entities
+// ... existing code ...
+- server/entities/windChargeEntity.js - Implementation of Wind Charge projectile entity that moves blocks and entities, includes visual effects, sound effects, trail particles, and charge level scaling
+- server/entities/firefly.js - Implementation of Firefly entity with light emission and day/night cycle behavior
+- server/entities/raft.js - Implementation of Raft entity with bamboo variant and chest variants
+- server/entities/boat.js - Implementation of Boat entity with chest variants and inventory system
+- server/entities/areaEffectCloud.js - Implementation of area effect clouds from potions
+- server/entities/thrownPotion.js - Implementation of thrown potion entities
+- server/entities/statusEffectsManager.js - Manages status effects on entities
+- server/entities/endCrystal.js - Implementation of end crystals for the Ender Dragon fight
+- server/entities/enderDragon.js - Implementation of the Ender Dragon boss
+- server/entities/entityManager.js - Manages all entities in the game world
+- server/entities/statusEffectManager.js - Manages status effects on entities
+
+### Tests
+// ... existing code ...
+- server/tests/windChargeVisualsTest.js - Tests for Wind Charge visual and audio effects, including explosion particles, sound effects, trail particles, and charge level scaling
+- server/tests/windChargeChainReactionTest.js - Tests for Wind Charge chain reaction mechanics and cascading explosions
+- server/tests/windChargeBlockInteractionTest.js - Tests for Wind Charge interactions with various block types
+- server/tests/windTrajectoryTest.js - Tests for Wind Charge trajectory prediction system
+- server/tests/chainReactionTest.js - Tests for chain reaction mechanics in various game systems
+- server/tests/blockInteractionsTest.js - Tests for block interaction mechanics
+- server/tests/runWindChargeTest.js - Test runner for the Wind Charge tests
+- server/tests/runWindChargeChainReactionTest.js - Test runner for Wind Charge chain reaction tests
+- server/tests/runWindChargeBlockTest.js - Test runner for Wind Charge block interaction tests
+- server/tests/fireflyTest.js - Tests for Firefly entity implementation
+- server/tests/raftTest.js - Tests for Raft entity implementation
+- server/tests/boatWithChestTest.js - Tests for Boat with Chest implementation
+- server/tests/runBoatWithChestTest.js - Test runner for Boat with Chest tests
+- server/tests/vaultPortalTest.js - Tests for Vault Portal implementation
+- server/tests/vaultPortalSystemTest.js - Tests for Vault Portal system integration
+- server/tests/minecraft124TestFramework.js - Test framework for the Minecraft 1.24 Update (Trail Tales) features
+- server/tests/runMinecraft124Tests.js - Test runner for the Minecraft 1.24 Update test framework
+- server/tests/tuffVariantsTest.js - Tests for Tuff variants implementation
+- server/tests/tuffVariants.test.js - Additional tests for Tuff variants
+- server/tests/tuffVariantsEntityTest.js - Tests for Tuff variants entity interactions
+- server/tests/tuffVariantsObserverTest.js - Tests for Tuff variants observer interactions
+- server/tests/tuffVariantsInteractionTest.js - Tests for Tuff variants block interactions
+- server/tests/tuffVariantsSerializationTest.js - Tests for Tuff variants serialization
+- server/tests/tuffVariantsTickTest.js - Tests for Tuff variants tick behavior
+- server/tests/tuffVariantsWorldGenTest.js - Tests for Tuff variants world generation
+- server/tests/tuffVariantsIntegrationTest.js - Tests for Tuff variants integration
+- server/tests/tuffVariantsRecipesTest.js - Tests for Tuff variants crafting recipes
+- server/tests/tuffVariantsRegistrationTest.js - Tests for Tuff variants registration
+- server/tests/tuffVariantsCopperTest.js - Tests for Tuff variants copper interactions
+- server/tests/tuffVariantsMudTest.js - Tests for Tuff variants mud interactions
+- server/tests/tuffVariantsMangroveTest.js - Tests for Tuff variants mangrove interactions
+- server/tests/tuffVariantsFireflyTest.js - Tests for Tuff variants firefly interactions
+- server/tests/tuffVariantsFrogTest.js - Tests for Tuff variants frog interactions
+- server/tests/tuffVariantsPowderSnowTest.js - Tests for Tuff variants powder snow interactions
+- server/tests/tuffVariantsSpecialFluidTest.js - Tests for Tuff variants special fluid interactions
+- server/tests/tuffVariantsFluidTest.js - Tests for Tuff variants fluid interactions
+- server/tests/tuffVariantsRedstoneTest.js - Tests for Tuff variants redstone interactions
+- server/tests/tuffVariantsRecipeTest.js - Tests for Tuff variants recipe system
+- server/tests/tuffVariantsRenderingTest.js - Tests for Tuff variants rendering
+- server/tests/tuffVariantsErrorHandlingTest.js - Tests for Tuff variants error handling
+- server/tests/tuffVariantsPerformanceTest.js - Tests for Tuff variants performance
+- server/tests/tuffVariantsNetworkTest.js - Tests for Tuff variants networking
+- server/tests/tuffVariantsPhysicsTest.js - Tests for Tuff variants physics
+- server/tests/tuffVariantsLootTest.js - Tests for Tuff variants loot system
+- server/tests/tuffVariantsStateTest.js - Tests for Tuff variants state management
+- server/tests/tuffVariantsParticleTest.js - Tests for Tuff variants particle effects
+- server/tests/tuffVariantsLightTest.js - Tests for Tuff variants lighting
+- server/tests/tuffVariantsExplosionTest.js - Tests for Tuff variants explosion behavior
+- server/tests/tuffVariantsDurabilityTest.js - Tests for Tuff variants durability
+- server/tests/tuffVariantsSoundTest.js - Tests for Tuff variants sound effects
+- server/tests/tuffVariantsPlacementTest.js - Tests for Tuff variants block placement
+
+// ... rest of existing code ... 

@@ -48,10 +48,10 @@ class WindChargeEntity extends Entity {
     
     // Wind charge specific properties
     this.shooter = options.shooter || null;
-    this.damage = options.damage || 5;
+    this.damage = this.calculateDamage();
     this.direction = options.direction || { x: 0, y: 0, z: 0 };
     this.moveDistance = options.moveDistance || 1;
-    this.explosionRadius = options.radius || 1.5;
+    this.explosionRadius = this.calculateRadius();
     this.hasExploded = false;
     this.particles = [];
     
@@ -80,6 +80,15 @@ class WindChargeEntity extends Entity {
     this.particleColors = ['#a0e6ff', '#80d0ff', '#60b8ff']; // Colors for weak, medium, strong
     this.particleSizes = [0.2, 0.3, 0.4]; // Sizes for weak, medium, strong
     this.particleDensity = [1, 1.5, 2]; // Multiplier for particle count
+    
+    // Security limits
+    this.maxDamage = 20;
+    this.maxRadius = 5;
+    this.maxChainReactions = 3;
+    this.cooldown = 20; // 1 second at 20 ticks per second
+    
+    // Current state
+    this.chainReactions = 0;
   }
   
   /**
@@ -108,6 +117,10 @@ class WindChargeEntity extends Entity {
     
     // Check for collisions
     this.checkCollisions();
+    
+    if (this.cooldown > 0) {
+      this.cooldown--;
+    }
   }
   
   /**
@@ -992,7 +1005,8 @@ class WindChargeEntity extends Entity {
       chargeLevel: this.chargeLevel,
       chargeName: this.chargeName,
       powerLevel: this.powerLevel,
-      hasExploded: this.hasExploded
+      hasExploded: this.hasExploded,
+      chainReactions: this.chainReactions
     };
   }
   
@@ -1014,7 +1028,8 @@ class WindChargeEntity extends Entity {
       chargeLevel: data.chargeLevel,
       chargeName: data.chargeName,
       powerLevel: data.powerLevel,
-      hasExploded: data.hasExploded
+      hasExploded: data.hasExploded,
+      chainReactions: data.chainReactions
     });
   }
   
@@ -1561,6 +1576,18 @@ class WindChargeEntity extends Entity {
     
     // Default sound
     return 'block.stone.break';
+  }
+
+  calculateDamage() {
+    const baseDamage = 5;
+    const multiplier = 1 + (this.chargeLevel * 0.5);
+    return Math.min(baseDamage * multiplier, this.maxDamage);
+  }
+
+  calculateRadius() {
+    const baseRadius = 1.5;
+    const multiplier = 1 + (this.chargeLevel * 0.3);
+    return Math.min(baseRadius * multiplier, this.maxRadius);
   }
 }
 

@@ -1,63 +1,61 @@
 /**
- * Block - Base class for all block types
- * Handles common block functionality and properties
+ * BlockBase - Base class for all blocks
+ * Provides common functionality and properties for all blocks
  */
-const { v4: uuidv4 } = require('uuid');
+const { BlockFace } = require('./blockFace');
 
-class Block {
+class BlockBase {
   /**
-   * Create a block
+   * Create a new block
    * @param {Object} options - Block options
    */
   constructor(options = {}) {
-    // Basic properties
-    this.id = options.id || 'block';
-    this.name = options.name || 'Block';
+    this.id = options.id || 'unknown';
+    this.name = options.name || 'Unknown Block';
     this.type = options.type || 'block';
-    this.subtype = options.subtype || 'solid';
-    
-    // Physical properties
-    this.isSolid = options.isSolid !== undefined ? options.isSolid : true;
-    this.isTransparent = options.isTransparent !== undefined ? options.isTransparent : false;
-    this.isLiquid = options.isLiquid !== undefined ? options.isLiquid : false;
-    this.isAir = options.isAir !== undefined ? options.isAir : false;
-    
-    // Visual properties
-    this.texture = options.texture || 'stone';
-    this.textures = options.textures || {
-      top: this.texture,
-      bottom: this.texture,
-      front: this.texture,
-      back: this.texture,
-      left: this.texture,
-      right: this.texture
-    };
-    this.tint = options.tint || null;
+    this.isSolid = options.isSolid ?? true;
+    this.isTransparent = options.isTransparent ?? false;
     this.lightLevel = options.lightLevel || 0;
-    this.lightOpacity = options.lightOpacity || 15;
-    
-    // State properties
-    this.state = options.state || {};
-    this.variant = options.variant || 'default';
-    this.age = options.age || 0;
-    this.ticks = options.ticks || 0;
-    
-    // Interaction properties
     this.hardness = options.hardness || 1.0;
     this.resistance = options.resistance || 1.0;
-    this.toolType = options.toolType || null;
-    this.minToolTier = options.minToolTier || 0;
-    this.drops = options.drops || [];
-    this.experience = options.experience || 0;
-    
-    // Special properties
-    this.isRedstoneConductor = options.isRedstoneConductor !== undefined ? options.isRedstoneConductor : true;
-    this.isRedstonePowerSource = options.isRedstonePowerSource !== undefined ? options.isRedstonePowerSource : false;
-    this.isContainer = options.isContainer !== undefined ? options.isContainer : false;
-    this.isInteractable = options.isInteractable !== undefined ? options.isInteractable : false;
-    
-    // Unique identifier for this block instance
-    this.instanceId = options.instanceId || uuidv4();
+    this.properties = new Map(options.properties || []);
+    this.state = new Map(options.state || []);
+  }
+  
+  /**
+   * Get a block property
+   * @param {string} key - Property key
+   * @returns {*} Property value
+   */
+  getProperty(key) {
+    return this.properties.get(key);
+  }
+  
+  /**
+   * Set a block property
+   * @param {string} key - Property key
+   * @param {*} value - Property value
+   */
+  setProperty(key, value) {
+    this.properties.set(key, value);
+  }
+  
+  /**
+   * Get a block state value
+   * @param {string} key - State key
+   * @returns {*} State value
+   */
+  getState(key) {
+    return this.state.get(key);
+  }
+  
+  /**
+   * Set a block state value
+   * @param {string} key - State key
+   * @param {*} value - State value
+   */
+  setState(key, value) {
+    this.state.set(key, value);
   }
   
   /**
@@ -76,26 +74,31 @@ class Block {
   }
   
   /**
+   * Get the block's light emission
+   * @returns {number} The light level
+   */
+  getLightLevel() {
+    return this.lightLevel;
+  }
+  
+  /**
+   * Get the block's light absorption
+   * @returns {number} The light absorption
+   */
+  getLightAbsorption() {
+    return this.isTransparent ? 0 : 15;
+  }
+  
+  /**
    * Check if the block can be placed at the given position
    * @param {Object} world - The world instance
    * @param {number} x - X coordinate
    * @param {number} y - Y coordinate
    * @param {number} z - Z coordinate
+   * @param {string} face - The face to place against
    * @returns {boolean} Whether the block can be placed
    */
-  canPlaceAt(world, x, y, z) {
-    // Check if the position is valid
-    const currentBlock = world.getBlock(x, y, z);
-    if (currentBlock && currentBlock.isSolid) {
-      return false;
-    }
-    
-    // Check if there's a solid block below
-    const belowBlock = world.getBlock(x, y - 1, z);
-    if (!belowBlock || !belowBlock.isSolid) {
-      return false;
-    }
-    
+  canPlaceAt(world, x, y, z, face) {
     return true;
   }
   
@@ -105,125 +108,43 @@ class Block {
    * @param {number} x - X coordinate
    * @param {number} y - Y coordinate
    * @param {number} z - Z coordinate
-   * @param {Object} player - The player placing the block
-   * @returns {boolean} Whether the placement was successful
+   * @param {string} face - The face to place against
    */
-  onPlace(world, x, y, z, player) {
-    if (!this.canPlaceAt(world, x, y, z)) {
-      return false;
-    }
-    
-    // Set the block
-    world.setBlock(x, y, z, this);
-    
-    // Emit block update event
-    world.emitBlockUpdate(x, y, z);
-    
-    return true;
+  onPlace(world, x, y, z, face) {
+    // Override in subclasses
   }
   
   /**
-   * Handle block break
+   * Handle block breaking
    * @param {Object} world - The world instance
    * @param {number} x - X coordinate
    * @param {number} y - Y coordinate
    * @param {number} z - Z coordinate
-   * @param {Object} player - The player breaking the block
-   * @returns {boolean} Whether the break was successful
    */
-  onBreak(world, x, y, z, player) {
-    // Check if the player has the right tool
-    if (this.toolType && player.getHeldItem()) {
-      const heldItem = player.getHeldItem();
-      if (heldItem.type !== this.toolType || heldItem.tier < this.minToolTier) {
-        return false;
-      }
-    }
-    
-    // Remove the block
-    world.setBlock(x, y, z, null);
-    
-    // Drop items
-    this.dropItems(world, x, y, z, player);
-    
-    // Emit block update event
-    world.emitBlockUpdate(x, y, z);
-    
-    return true;
+  onBreak(world, x, y, z) {
+    // Override in subclasses
   }
   
   /**
-   * Drop items when the block is broken
+   * Handle block update
    * @param {Object} world - The world instance
    * @param {number} x - X coordinate
    * @param {number} y - Y coordinate
    * @param {number} z - Z coordinate
-   * @param {Object} player - The player breaking the block
    */
-  dropItems(world, x, y, z, player) {
-    // Drop configured items
-    for (const drop of this.drops) {
-      if (Math.random() < drop.chance) {
-        const count = Math.floor(drop.count * (1 + Math.random() * drop.variance));
-        world.dropItem(x, y, z, drop.item, count);
-      }
-    }
-    
-    // Drop experience
-    if (this.experience > 0) {
-      world.dropExperience(x, y, z, this.experience);
-    }
+  onUpdate(world, x, y, z) {
+    // Override in subclasses
   }
   
   /**
-   * Handle block update (e.g., from neighbor changes)
+   * Handle neighbor block update
    * @param {Object} world - The world instance
    * @param {number} x - X coordinate
    * @param {number} y - Y coordinate
    * @param {number} z - Z coordinate
    */
   onNeighborUpdate(world, x, y, z) {
-    // Base implementation does nothing
-  }
-  
-  /**
-   * Handle block tick
-   * @param {Object} world - The world instance
-   * @param {number} x - X coordinate
-   * @param {number} y - Y coordinate
-   * @param {number} z - Z coordinate
-   */
-  onTick(world, x, y, z) {
-    this.ticks++;
-  }
-  
-  /**
-   * Handle block interaction
-   * @param {Object} world - The world instance
-   * @param {number} x - X coordinate
-   * @param {number} y - Y coordinate
-   * @param {number} z - Z coordinate
-   * @param {Object} player - The player interacting with the block
-   * @returns {boolean} Whether the interaction was handled
-   */
-  onInteract(world, x, y, z, player) {
-    return false;
-  }
-  
-  /**
-   * Get the block's light emission
-   * @returns {number} The light level
-   */
-  getLightLevel() {
-    return this.lightLevel;
-  }
-  
-  /**
-   * Get the block's light opacity
-   * @returns {number} The light opacity
-   */
-  getLightOpacity() {
-    return this.lightOpacity;
+    // Override in subclasses
   }
   
   /**
@@ -235,42 +156,35 @@ class Block {
       id: this.id,
       name: this.name,
       type: this.type,
-      subtype: this.subtype,
       isSolid: this.isSolid,
       isTransparent: this.isTransparent,
-      isLiquid: this.isLiquid,
-      isAir: this.isAir,
-      texture: this.texture,
-      textures: this.textures,
-      tint: this.tint,
       lightLevel: this.lightLevel,
-      lightOpacity: this.lightOpacity,
-      state: this.state,
-      variant: this.variant,
-      age: this.age,
-      ticks: this.ticks,
       hardness: this.hardness,
       resistance: this.resistance,
-      toolType: this.toolType,
-      minToolTier: this.minToolTier,
-      drops: this.drops,
-      experience: this.experience,
-      isRedstoneConductor: this.isRedstoneConductor,
-      isRedstonePowerSource: this.isRedstonePowerSource,
-      isContainer: this.isContainer,
-      isInteractable: this.isInteractable,
-      instanceId: this.instanceId
+      properties: Array.from(this.properties.entries()),
+      state: Array.from(this.state.entries())
     };
   }
   
   /**
    * Deserialize the block state
    * @param {Object} data - The serialized state
-   * @returns {Block} The deserialized block
+   * @returns {BlockBase} The deserialized block
    */
   static deserialize(data) {
-    return new Block(data);
+    return new BlockBase({
+      id: data.id,
+      name: data.name,
+      type: data.type,
+      isSolid: data.isSolid,
+      isTransparent: data.isTransparent,
+      lightLevel: data.lightLevel,
+      hardness: data.hardness,
+      resistance: data.resistance,
+      properties: data.properties,
+      state: data.state
+    });
   }
 }
 
-module.exports = Block; 
+module.exports = BlockBase; 

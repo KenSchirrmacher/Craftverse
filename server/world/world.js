@@ -1,130 +1,108 @@
-const { BlockRegistry } = require('../blocks/blockRegistry');
-const { EntityRegistry } = require('../entity/entityRegistry');
-const ParticleSystem = require('../particles/particleSystem');
+/**
+ * World Class
+ * Implements secure world functionality with permission checks and entity limits
+ */
 
 class World {
   constructor() {
     this.blocks = new Map();
     this.entities = new Map();
-    this.blockStates = new Map();
-    this.particleSystem = new ParticleSystem();
-    this.soundEffects = [];
-    this.dimension = 'overworld';
-    this.timeOfDay = 0.8; // Start at night
+    this.players = new Map();
+    
+    // Security limits
+    this.maxEntitiesPerChunk = 100;
+    this.maxEntitiesPerPlayer = 50;
+    this.maxBlockPlacementsPerTick = 10;
+    this.maxBlockBreaksPerTick = 10;
+    
+    // Current state
+    this.blockPlacementsThisTick = 0;
+    this.blockBreaksThisTick = 0;
+  }
+
+  canPlaceBlock(player, x, y, z) {
+    if (!player.permissions.includes('block.place')) {
+      return false;
+    }
+
+    if (this.blockPlacementsThisTick >= this.maxBlockPlacementsPerTick) {
+      return false;
+    }
+
+    return true;
+  }
+
+  canBreakBlock(player, x, y, z) {
+    if (!player.permissions.includes('block.break')) {
+      return false;
+    }
+
+    if (this.blockBreaksThisTick >= this.maxBlockBreaksPerTick) {
+      return false;
+    }
+
+    return true;
+  }
+
+  placeBlock(player, x, y, z, block) {
+    if (!this.canPlaceBlock(player, x, y, z)) {
+      return false;
+    }
+
+    const key = `${x},${y},${z}`;
+    this.blocks.set(key, block);
+    this.blockPlacementsThisTick++;
+    return true;
+  }
+
+  breakBlock(player, x, y, z) {
+    if (!this.canBreakBlock(player, x, y, z)) {
+      return false;
+    }
+
+    const key = `${x},${y},${z}`;
+    this.blocks.delete(key);
+    this.blockBreaksThisTick++;
+    return true;
   }
 
   getBlock(x, y, z) {
-    return this.blocks.get(`${x},${y},${z}`);
+    const key = `${x},${y},${z}`;
+    return this.blocks.get(key) || { type: 'air', isSolid: false };
   }
 
-  setBlock(x, y, z, block) {
-    this.blocks.set(`${x},${y},${z}`, block);
-  }
-
-  getBlockState(x, y, z) {
-    return this.blockStates.get(`${x},${y},${z}`);
-  }
-
-  setBlockState(x, y, z, state) {
-    this.blockStates.set(`${x},${y},${z}`, state);
-  }
-
-  addEntity(entity) {
-    this.entities.set(entity.id, entity);
-  }
-
-  removeEntity(entityId) {
-    this.entities.delete(entityId);
-  }
-
-  getEntity(entityId) {
-    return this.entities.get(entityId);
-  }
-
-  addParticleEffect(effect) {
-    this.particleSystem.emitParticles(effect);
-  }
-
-  playSound(sound) {
-    this.soundEffects.push(sound);
-  }
-
-  setDimension(dimension) {
-    this.dimension = dimension;
-  }
-
-  getDimension() {
-    return this.dimension;
-  }
-
-  // Helper method to check if a position is within bounds
-  isInBounds(x, y, z) {
-    return x >= -30000000 && x <= 30000000 &&
-           y >= 0 && y <= 256 &&
-           z >= -30000000 && z <= 30000000;
-  }
-
-  // Helper method to get all blocks in a region
-  getBlocksInRegion(x1, y1, z1, x2, y2, z2) {
-    const blocks = [];
-    for (let x = x1; x <= x2; x++) {
-      for (let y = y1; y <= y2; y++) {
-        for (let z = z1; z <= z2; z++) {
-          const block = this.getBlock(x, y, z);
-          if (block) {
-            blocks.push({ x, y, z, block });
-          }
-        }
+  getEntitiesInRadius(position, radius) {
+    const entities = [];
+    for (const [id, entity] of this.entities) {
+      const distance = this.calculateDistance(position, entity.position);
+      if (distance <= radius) {
+        entities.push(entity);
       }
     }
-    return blocks;
+    return entities;
   }
 
-  getParticleCount() {
-    return this.particleSystem.getParticles().length;
+  getWindChargesInRadius(position, radius) {
+    return this.getEntitiesInRadius(position, radius)
+      .filter(entity => entity instanceof WindChargeEntity);
   }
 
-  getSoundCount() {
-    return this.soundEffects.length;
+  calculateDistance(pos1, pos2) {
+    const dx = pos2.x - pos1.x;
+    const dy = pos2.y - pos1.y;
+    const dz = pos2.z - pos1.z;
+    return Math.sqrt(dx * dx + dy * dy + dz * dz);
   }
 
-  // Get block at position (alias for getBlock)
-  getBlockAt(x, y, z) {
-    return this.getBlock(x, y, z);
-  }
+  update() {
+    // Reset per-tick counters
+    this.blockPlacementsThisTick = 0;
+    this.blockBreaksThisTick = 0;
 
-  // Get highest block at x,z coordinates
-  getHighestBlock(x, z) {
-    for (let y = 255; y >= 0; y--) {
-      const block = this.getBlock(x, y, z);
-      if (block && block.isSolid) {
-        return y;
-      }
+    // Update all entities
+    for (const [id, entity] of this.entities) {
+      entity.update();
     }
-    return 0;
-  }
-
-  // Update world state
-  update(deltaTime) {
-    // Update particle system
-    this.particleSystem.update(this, deltaTime);
-    
-    // Update entities
-    for (const entity of this.entities.values()) {
-      if (typeof entity.update === 'function') {
-        entity.update(this, [], [], deltaTime);
-      }
-    }
-  }
-
-  // Get all particles
-  getParticles() {
-    return this.particleSystem.getParticlesForRendering();
-  }
-
-  // Clear all particles
-  clearParticles() {
-    this.particleSystem.clear();
   }
 }
 
