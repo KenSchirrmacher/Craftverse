@@ -2,188 +2,24 @@
 
 ## Server
 ### Main Files
-- server/server.js - Main server implementation, handles socket connections, game state, etc.
-- server/saveSystem.js - Handles saving and loading game data
-
-### Archaeology
-- server/archaeology/archaeologyManager.js - Manages archaeology mechanics and loot generation
-- server/archaeology/brushItem.js - Implementation of the brush tool for excavation
-- server/archaeology/suspiciousSandBlock.js - Implementation of suspicious sand blocks
-- server/archaeology/suspiciousGravelBlock.js - Implementation of suspicious gravel blocks
-
-### Mobs
-- server/mobs/mobManager.js - Manages mob spawning, updates, and interactions
-- server/mobs/mobBase.js - Base class for all mobs with common functionality
-- server/mobs/passiveMobs.js - Implementation of passive mobs (Sheep, Cow, Pig, Chicken, etc.)
-- server/mobs/neutralMobs.js - Implementation of neutral mobs (Wolf, Spider, Enderman, Goat, etc.)
-- server/mobs/hostileMobs.js - Implementation of hostile mobs (Zombie, Skeleton, Creeper, etc.)
-- server/mobs/netherMobs.js - Implementation of nether-specific mobs (Piglin, Hoglin, etc.)
-- server/mobs/aquaticMobs.js - Implementation of aquatic mobs (Squid, GlowSquid, etc.)
-- server/mobs/axolotl.js - Implementation of Axolotl mob for Caves & Cliffs update
-- server/mobs/frogAndTadpole.js - Implementation of Frog and Tadpole mobs for the Wild Update
-- server/mobs/villagerNPC.js - Implementation of Villager NPCs with professions and trading
-- server/mobs/zombieVillager.js - Implementation of Zombie Villagers with curing mechanics
-- server/mobs/warden.js - Implementation of Warden mob with vibration-based sensing AI
-- server/mobs/allay.js - Implementation of Allay mob with flying, item collection, and note block interaction
-- server/mobs/breeze.js - Implementation of Breeze mob with wind-based attacks and flying mechanics for 1.21 Tricky Trials update
-- server/mobs/copperGolem.js - Implementation of Copper Golem mob for the 1.23 Update
-- server/mobs/trailblazerVillager.js - TrailblazerVillager class that extends VillagerNPC with specialized exploration-focused behavior and trades
+// ... existing code ...
 
 ### Entities
-- server/entities/entity.js - Base class for all entities in the game
-- server/entities/entityManager.js - Manages all entities in the game world
-- server/entities/entityFactory.js - Factory for creating different entity types
-- server/entities/boat.js - Implementation of the boat entity, including boats with chests for the Wild Update
-- server/entities/thrownPotion.js - Implementation of thrown potion entities
+// ... existing code ...
+- server/entities/windChargeEntity.js - Implementation of Wind Charge projectile entity that moves blocks and entities, includes visual effects, sound effects, trail particles, and charge level scaling
+- server/entities/firefly.js - Implementation of Firefly entity with light emission and day/night cycle behavior
+- server/entities/raft.js - Implementation of Raft entity with bamboo variant and chest variants
+- server/entities/boat.js - Implementation of Boat entity with chest variants and inventory system
 - server/entities/areaEffectCloud.js - Implementation of area effect clouds from potions
+- server/entities/thrownPotion.js - Implementation of thrown potion entities
+- server/entities/statusEffectsManager.js - Manages status effects on entities
 - server/entities/endCrystal.js - Implementation of end crystals for the Ender Dragon fight
 - server/entities/enderDragon.js - Implementation of the Ender Dragon boss
+- server/entities/entityManager.js - Manages all entities in the game world
 - server/entities/statusEffectManager.js - Manages status effects on entities
-- server/entities/windChargeEntity.js - Implementation of Wind Charge projectile entity that moves blocks and entities, includes visual effects, sound effects, trail particles, and charge level scaling
-
-### Items
-- server/items/item.js - Base class for all items in the game
-- server/items/flintAndSteelItem.js - Implementation of flint and steel for lighting fires and portals
-- server/items/foodItem.js - Base class for food items with hunger and saturation restoration
-- server/items/glowBerryItem.js - Implementation of the glow berry item that can be eaten as food and used to plant cave vines
-- server/items/inkSacItem.js - Implementation of ink sacs obtained from squids
-- server/items/netheriteItems.js - Implementation of netherite equipment and tools
-- server/items/potionItem.js - Implementation of potions with various effects
-- server/items/potionRecipes.js - Implementation of brewing recipes
-- server/items/potionRegistry.js - Registry of all potion types and effects
-- server/items/shield.js - Implementation of shield mechanics
-- server/items/shieldItem.js - Implementation of shield items with durability and banner patterns
-- server/items/specialArrows.js - Implementation of special arrow types like tipped arrows
-- server/items/itemRegistry.js - Central registry for all items in the game
-- server/items/boatItem.js - Implementation of boat items, including boats with chests for the Wild Update
-- server/items/netheriteUpgradeTemplate.js - Implementation of the smithing template required for upgrading diamond equipment to netherite in the 1.20 update
-- server/items/windChargeItem.js - Implementation of Wind Charge item from the 1.21 Tricky Trials update, thrown to push entities and blocks
-- server/items/potterySherdItem.js - Implementation of pottery sherds, archaeological artifacts
-- server/items/chiseledBookshelfItem.js - Implementation of the Chiseled Bookshelf item that places the bookshelf block
-- server/items/mapItem.js - Base map item implementation that shows the world
-- server/items/biomeMapItem.js - Specialized map for finding specific biomes
-- server/items/structureMapItem.js - Specialized map for finding structures
-- server/items/compassItem.js - Base compass implementation for directional guidance
-- server/items/explorerCompassItem.js - Specialized compass that points to unexplored areas, biomes, or structures
-- server/items/trailMarkerItem.js - Placeable markers for creating exploration paths
-- server/items/ancientSeedItem.js - Implementation of Ancient Seeds items for the 1.23 Update
-
-### Blocks
-- server/blocks/amethystBlock.js - Implementation of amethyst block and amethyst cluster growth
-- server/blocks/amethystCluster.js - Implementation of amethyst clusters
-- server/blocks/baseBlock.js - Base Block class for all block types with common functionality
-- server/blocks/blockRegistry.js - Registry for block types with management functionality
-- server/blocks/buddingAmethyst.js - Implementation of budding amethyst block
-- server/blocks/calciteBlock.js - Implementation of calcite found in amethyst geodes
-- server/blocks/candleBlock.js - Implementation of candles with stacking and colored variants
-- server/blocks/caveVineBlock.js - Implementation of cave vines that can grow and produce glow berries
-- server/blocks/cavesCliffsBlocks.js - Implementation of various Caves & Cliffs blocks
-- server/blocks/chorusPlantBlock.js - Implementation of End chorus plants
-- server/blocks/deepslateVariants.js - Implementation of deepslate and its variants
-- server/blocks/dripleafBlock.js - Implementation of big and small dripleaf plants
-- server/blocks/dripstoneBlock.js - Implementation of dripstone block
-- server/blocks/endGatewayBlock.js - Implementation of End gateway blocks for teleportation
-- server/blocks/endPortalBlock.js - Implementation of End portal blocks
-- server/blocks/endPortalFrameBlock.js - Implementation of End portal frame blocks
-- server/blocks/fireBlock.js - Implementation of fire blocks with spreading mechanics
-- server/blocks/largeAmethystBud.js - Implementation of large amethyst buds
-- server/blocks/mediumAmethystBud.js - Implementation of medium amethyst buds
-- server/blocks/mossBlock.js - Implementation of moss blocks with spreading mechanics
-- server/blocks/netherBlocks.js - Implementation of Nether-specific blocks
-- server/blocks/netherPortalBlock.js - Implementation of Nether portal blocks
-- server/blocks/pointedDripstoneBlock.js - Implementation of pointed dripstone with growth/falling
-- server/blocks/powderSnowBlock.js - Implementation of powder snow with entity sinking
-- server/blocks/prismarineBlocks.js - Implementation of prismarine blocks for ocean monuments
-- server/blocks/smallAmethystBud.js - Implementation of small amethyst buds
-- server/blocks/soulFireTorch.js - Implementation of soul fire torches
-- server/blocks/sporeBlossomBlock.js - Implementation of spore blossom with particle effects
-- server/blocks/tuffBlock.js - Implementation of tuff found near geodes and in dripstone caves
-- server/blocks/sculkBlock.js - Implementation of the base sculk block for the Deep Dark biome
-- server/blocks/sculkVeinBlock.js - Implementation of sculk vein blocks that grow on surfaces
-- server/blocks/sculkCatalystBlock.js - Implementation of sculk catalyst for spreading sculk
-- server/blocks/sculkSensorBlock.js - Implementation of sculk sensor with vibration detection
-- server/blocks/sculkShriekerBlock.js - Implementation of sculk shrieker for summoning the Warden
-- server/blocks/chiseledBookshelfBlock.js - Implementation of the Chiseled Bookshelf block for the Trails & Tales Update
-- server/blocks/ancientPlantBlock.js - Implementation of Ancient Plants that grow from Ancient Seeds
-
-### Biomes
-- server/biomes/baseBiome.js - Base class for all biomes
-- server/biomes/biomeManager.js - Manages biome selection and blending
-- server/biomes/biomeRegistry.js - Registry of all available biomes
-- server/biomes/desertBiome.js - Implementation of desert biome
-- server/biomes/forestBiome.js - Implementation of forest biome
-- server/biomes/jungleBiome.js - Implementation of jungle biome
-- server/biomes/lushCavesBiome.js - Implementation of lush caves biome for Caves & Cliffs
-- server/biomes/mountainsBiome.js - Implementation of mountains biome
-- server/biomes/mountainGoatBiome.js - Implementation of mountain goat biome variant
-- server/biomes/oceanBiome.js - Implementation of ocean biomes
-- server/biomes/plainsBiome.js - Implementation of plains biome
-- server/biomes/deepDarkBiome.js - Implementation of deep dark biome for the Wild Update
-
-### World
-- server/world/chunkLoader.js - Handles loading and unloading chunks as needed
-- server/world/dimensionManager.js - Manages different dimensions (Overworld, Nether, End)
-- server/world/endDimension.js - Implementation of End dimension
-- server/world/netherDimension.js - Implementation of Nether dimension
-- server/world/portalManager.js - Manages portal creation and teleportation
-- server/world/villageReputationManager.js - Manages player reputation with villages
-- server/world/worldGenerator.js - Handles world generation
-
-### Utils
-- server/utils/mathUtils.js - Utility functions for mathematics
-- server/utils/noiseGenerator.js - Noise generation for terrain
-- server/utils/structureGenerator.js - Handles generation of structures
-- server/utils/villageGenerator.js - Handles generation of villages
-- server/utils/structures/ancientCityGenerator.js - Handles generation of Ancient City structures in Deep Dark biomes
-
-### Particles
-- server/particles/particleSystem.js - Particle management system for visual effects
-
-### Weather
-- server/weather/weatherSystem.js - Weather system that manages weather states and transitions
 
 ### Tests
-- server/tests/testBase.js - Base class for all test suites providing common functionality
-- server/tests/testWorld.js - Test world implementation for running game tests in isolation
-- server/tests/setup.js - Test setup utilities and configuration
-- server/tests/axolotlTest.js - Tests for Axolotl implementation
-- server/tests/aquaticMobsTest.js - Tests for Squid and GlowSquid mobs
-- server/tests/calciteBlockTest.js - Tests for Calcite block
-- server/tests/candleBlockTest.js - Tests for Candle blocks including colored variants and stacking
-- server/tests/deepslateVariantsTest.js - Tests for Deepslate variants
-- server/tests/glowBerryTest.js - Comprehensive tests for glow berries and cave vines implementation
-- server/tests/goatTest.js - Tests for Goat implementation
-- server/tests/mountainGoatBiomeTest.js - Tests for Mountain Goat biome
-- server/tests/netherBlocksTest.js - Tests for Nether blocks
-- server/tests/powderSnowBlockTest.js - Tests for Powder Snow block
-- server/tests/sporeBlossomTest.js - Tests for Spore Blossom implementation
-- server/tests/tuffBlockTest.js - Tests for Tuff block
-- server/tests/archaeologyTest.js - Tests for archaeology system implementation
-- server/tests/weatherSystemTest.js - Tests for the Weather System implementation
-- server/tests/weatherLightningIntegrationTest.js - Integration tests for Weather System and Lightning Rod
-- server/tests/simpleLightningTest.js - Simple tests focusing on core functionality of lightning
-- server/tests/deepDarkBiomeTest.js - Tests for the Deep Dark biome implementation
-- server/tests/sculkBlockTest.js - Tests for the base SculkBlock implementation
-- server/tests/sculkVeinTest.js - Tests for SculkVeinBlock implementation
-- server/tests/sculkCatalystTest.js - Tests for SculkCatalystBlock implementation
-- server/tests/sculkSensorTest.js - Tests for SculkSensorBlock vibration detection
-- server/tests/sculkShriekerTest.js - Tests for SculkShriekerBlock warning and Warden summoning
-- server/tests/wardenTest.js - Tests for the Warden mob implementation and vibration sensing behavior
-- server/tests/runWardenTest.js - Test runner for the Warden tests
-- server/tests/ancientCityTest.js - Tests for Ancient City structure generation
-- server/tests/runAncientCityTest.js - Test runner for Ancient City tests
-- server/tests/frogAndTadpoleTest.js - Tests for Frog and Tadpole mobs implementation
-- server/tests/runFrogAndTadpoleTest.js - Test runner for Frog and Tadpole tests
-- server/tests/allayTest.js - Tests for Allay mob implementation with item collection and note block behaviors
-- server/tests/runAllayTest.js - Test runner for Allay tests
-- server/tests/boatWithChestTest.js - Tests for Boat with Chest implementation, inventory system, and item drop mechanics
-- server/tests/runBoatWithChestTest.js - Test runner for Boat with Chest tests
-- server/tests/chiseledBookshelfTest.js - Tests for the Chiseled Bookshelf implementation
-- server/tests/netheriteUpgradeTemplateTest.js - Tests for the Netherite Upgrade Template implementation
-- server/tests/runNetheriteUpgradeTemplateTest.js - Test runner for the Netherite Upgrade Template tests
-- server/tests/breezeTest.js - Tests for the Breeze mob implementation with flying mechanics and wind attacks
-- server/tests/runBreezeTest.js - Test runner for the Breeze mob tests
-- server/tests/windChargeTest.js - Tests for the Wind Charge item and entity implementation with block and entity pushing mechanics
+// ... existing code ...
 - server/tests/windChargeVisualsTest.js - Tests for Wind Charge visual and audio effects, including explosion particles, sound effects, trail particles, and charge level scaling
 - server/tests/windChargeChainReactionTest.js - Tests for Wind Charge chain reaction mechanics and cascading explosions
 - server/tests/windChargeBlockInteractionTest.js - Tests for Wind Charge interactions with various block types
@@ -193,22 +29,47 @@
 - server/tests/runWindChargeTest.js - Test runner for the Wind Charge tests
 - server/tests/runWindChargeChainReactionTest.js - Test runner for Wind Charge chain reaction tests
 - server/tests/runWindChargeBlockTest.js - Test runner for Wind Charge block interaction tests
-- server/tests/trailblazerTest.js - Test suite for Trailblazer villager profession, maps, compass, and markers
-- server/tests/runTrailblazerTest.js - Test runner for the Trailblazer tests
-- server/tests/ancientSeedsTest.js - Tests for the Ancient Seeds feature, including seed variants, plant growth, crossbreeding, and special effects
-- server/tests/runAncientSeedsTest.js - Test runner for the Ancient Seeds feature tests
-- server/tests/minecraft123IntegrationTest.js - Integration tests for all Minecraft 1.23 Update features to ensure they work together correctly
-- server/tests/runMinecraft123IntegrationTest.js - Test runner for the Minecraft 1.23 Update integration tests
+- server/tests/fireflyTest.js - Tests for Firefly entity implementation
+- server/tests/raftTest.js - Tests for Raft entity implementation
+- server/tests/boatWithChestTest.js - Tests for Boat with Chest implementation
+- server/tests/runBoatWithChestTest.js - Test runner for Boat with Chest tests
+- server/tests/vaultPortalTest.js - Tests for Vault Portal implementation
+- server/tests/vaultPortalSystemTest.js - Tests for Vault Portal system integration
 - server/tests/minecraft124TestFramework.js - Test framework for the Minecraft 1.24 Update (Trail Tales) features
 - server/tests/runMinecraft124Tests.js - Test runner for the Minecraft 1.24 Update test framework
+- server/tests/tuffVariantsTest.js - Tests for Tuff variants implementation
+- server/tests/tuffVariants.test.js - Additional tests for Tuff variants
+- server/tests/tuffVariantsEntityTest.js - Tests for Tuff variants entity interactions
+- server/tests/tuffVariantsObserverTest.js - Tests for Tuff variants observer interactions
+- server/tests/tuffVariantsInteractionTest.js - Tests for Tuff variants block interactions
+- server/tests/tuffVariantsSerializationTest.js - Tests for Tuff variants serialization
+- server/tests/tuffVariantsTickTest.js - Tests for Tuff variants tick behavior
+- server/tests/tuffVariantsWorldGenTest.js - Tests for Tuff variants world generation
+- server/tests/tuffVariantsIntegrationTest.js - Tests for Tuff variants integration
+- server/tests/tuffVariantsRecipesTest.js - Tests for Tuff variants crafting recipes
+- server/tests/tuffVariantsRegistrationTest.js - Tests for Tuff variants registration
+- server/tests/tuffVariantsCopperTest.js - Tests for Tuff variants copper interactions
+- server/tests/tuffVariantsMudTest.js - Tests for Tuff variants mud interactions
+- server/tests/tuffVariantsMangroveTest.js - Tests for Tuff variants mangrove interactions
+- server/tests/tuffVariantsFireflyTest.js - Tests for Tuff variants firefly interactions
+- server/tests/tuffVariantsFrogTest.js - Tests for Tuff variants frog interactions
+- server/tests/tuffVariantsPowderSnowTest.js - Tests for Tuff variants powder snow interactions
+- server/tests/tuffVariantsSpecialFluidTest.js - Tests for Tuff variants special fluid interactions
+- server/tests/tuffVariantsFluidTest.js - Tests for Tuff variants fluid interactions
+- server/tests/tuffVariantsRedstoneTest.js - Tests for Tuff variants redstone interactions
+- server/tests/tuffVariantsRecipeTest.js - Tests for Tuff variants recipe system
+- server/tests/tuffVariantsRenderingTest.js - Tests for Tuff variants rendering
+- server/tests/tuffVariantsErrorHandlingTest.js - Tests for Tuff variants error handling
+- server/tests/tuffVariantsPerformanceTest.js - Tests for Tuff variants performance
+- server/tests/tuffVariantsNetworkTest.js - Tests for Tuff variants networking
+- server/tests/tuffVariantsPhysicsTest.js - Tests for Tuff variants physics
+- server/tests/tuffVariantsLootTest.js - Tests for Tuff variants loot system
+- server/tests/tuffVariantsStateTest.js - Tests for Tuff variants state management
+- server/tests/tuffVariantsParticleTest.js - Tests for Tuff variants particle effects
+- server/tests/tuffVariantsLightTest.js - Tests for Tuff variants lighting
+- server/tests/tuffVariantsExplosionTest.js - Tests for Tuff variants explosion behavior
+- server/tests/tuffVariantsDurabilityTest.js - Tests for Tuff variants durability
+- server/tests/tuffVariantsSoundTest.js - Tests for Tuff variants sound effects
+- server/tests/tuffVariantsPlacementTest.js - Tests for Tuff variants block placement
 
-## Client
-- public/index.html - Main client page
-- public/js/client.js - Client-side game logic
-- public/js/renderer.js - Handles rendering the game world
-- public/css/styles.css - Styling for the game interface
-
-## Core Files
-- ai-logic.txt - Tracks the development progress and implementation details
-- project.txt - Project tracking for current development focus
-- directory.txt - This file, listing all important files in the project 
+// ... rest of existing code ... 
