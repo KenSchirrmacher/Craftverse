@@ -7,4 +7,6 @@
 - server/tests/smithingManager.js - Implementation of smithing manager for testing crafting and upgrades
 - server/tests/blockBase.js - Base class for block testing with common functionality
 - server/tests/testInfrastructureTest.js - Tests for core test infrastructure components
-- server/tests/runTestInfrastructureTest.js - Test runner for test infrastructure tests 
+- server/tests/runTestInfrastructureTest.js - Test runner for test infrastructure tests
+- server/tests/coreComponentsTest.js - Comprehensive tests for core block and smithing components
+- server/tests/runCoreComponentsTest.js - Test runner for core components tests 
