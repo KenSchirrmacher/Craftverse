@@ -51,19 +51,31 @@
 
 ## Current Tasks
 1. ~~Implement Echo Shards as chest loot in Ancient Cities~~
-2. Implement Fireflies for the Mangrove Swamp biome
-3. Implement Netherite upgrade template for the 1.20 Update
-4. Begin implementation of Minecraft 1.21 Update (Tricky Trials)
+2. ~~Implement Fireflies for the Mangrove Swamp biome~~
+3. ~~Implement Netherite upgrade template for the 1.20 Update~~
+4. ~~Begin implementation of Minecraft 1.21 Update (Tricky Trials)~~
    - [COMPLETED] Implement Trial Chambers structure
      - [COMPLETED] TrialChamber class implementation
      - [COMPLETED] TrialChamberGenerator implementation
      - [COMPLETED] TrialSpawnerBlock implementation
      - [COMPLETED] Comprehensive test suite
-   - [TODO] Create The Breeze mob
+   - [COMPLETED] Create The Breeze mob
    - [COMPLETED] Add Wind Charge item
    - [COMPLETED] Implement new copper and tuff block variants
-   - [TODO] Add Mace weapon
-5. Implement Vault Portal feature for Minecraft 1.24 (Trail Tales)
+   - [COMPLETED] Add Mace weapon
+     - [COMPLETED] Base Mace class implementation
+     - [COMPLETED] Material variants (Wood, Stone, Iron, Gold, Diamond, Netherite)
+     - [COMPLETED] Heavy attack mechanics
+     - [COMPLETED] Armor piercing system
+     - [COMPLETED] Fall damage bonus
+     - [COMPLETED] Comprehensive test suite
+   - [COMPLETED] Wind Charge Visuals
+     - [COMPLETED] Explosion visual effects
+     - [COMPLETED] Sound effects
+     - [COMPLETED] Trail particle effects
+     - [COMPLETED] Charge level scaling
+     - [COMPLETED] Comprehensive test suite with real implementations
+5. ~~Implement Vault Portal feature for Minecraft 1.24 (Trail Tales)~~
    - [COMPLETED] Block implementation
    - [COMPLETED] Item implementation
    - [COMPLETED] Dimension implementation
@@ -133,24 +145,24 @@
 34. Created comprehensive tests for Firefly entity
 35. Implemented Raft system with bamboo variant and chest variants
 36. Created tests for all raft types and their functionality
-6. Verified all tests pass for the CrafterBlock implementation (note: minor serialization warning present but non-critical)
-7. Identified minor serialization issue in CrafterBlock implementation that is handled by error catching
-41. Enhanced WindChargeEntity with chain reaction capability for cascading explosions
-42. Implemented line of sight checking to prevent chain reactions through solid blocks
-43. Added visual and audio effects for chain reactions
-44. Created comprehensive tests for chain reaction functionality
-45. Verified all chain reaction tests are passing
-46. Implemented expanded block interactions for Wind Charges with specialized behaviors
-47. Created customized visual and audio effects for block interactions
-48. Added specialized interactions for bells, note blocks, campfires, and wind turbines
-49. Created comprehensive tests for all new Wind Charge block interactions
-50. Verified all block interaction tests are passing
-51. Implemented Recipe Memory System for CrafterBlock to remember successful recipes
-52. Added Signal Strength Output based on crafting progress
-53. Implemented Automated Recipe Management with slot locking and redstone modes
-54. Created Visual Feedback System with particles and sounds for different states
-55. Created comprehensive tests for all Crafter Block enhancements
-56. Verified all Crafter Block enhancement tests are passing
+37. Enhanced WindChargeEntity with chain reaction capability for cascading explosions
+38. Implemented line of sight checking to prevent chain reactions through solid blocks
+39. Added visual and audio effects for chain reactions
+40. Created comprehensive tests for chain reaction functionality
+41. Verified all chain reaction tests are passing
+42. Implemented expanded block interactions for Wind Charges with specialized behaviors
+43. Created customized visual and audio effects for block interactions
+44. Added specialized interactions for bells, note blocks, campfires, and wind turbines
+45. Created comprehensive tests for all new Wind Charge block interactions
+46. Verified all block interaction tests are passing
+47. Implemented Recipe Memory System for CrafterBlock to remember successful recipes
+48. Added Signal Strength Output based on crafting progress
+49. Implemented Automated Recipe Management with slot locking and redstone modes
+50. Created Visual Feedback System with particles and sounds for different states
+51. Created comprehensive tests for all Crafter Block enhancements
+52. Verified all Crafter Block enhancement tests are passing
+53. Created comprehensive test suite for Mangrove Swamp biome
+54. Verified all Mangrove Swamp biome tests are passing
 
 ## Next Milestones
 1. Review and test all Caves & Cliffs features
@@ -194,7 +206,7 @@
   - [COMPLETED] Echo Shards
 
 ## Current Tasks
-1. Prepare for implementation of Trails & Tales Update features
+1. ~~Prepare for implementation of Trails & Tales Update features~~
 
 ## Completed Tasks
 1. Analyzed and verified Weather System implementation
@@ -242,58 +254,6 @@
   - [COMPLETED] SuspiciousBlocks
   - [COMPLETED] PotterySherdItem
   - [COMPLETED] ArchaeologyManager
-  - [COMPLETED] World integration
-  - [COMPLETED] Tests
-  - [COMPLETED] Biome integration for site generation
-- [COMPLETED] Sniffer mob
-  - [COMPLETED] Basic mob implementation
-  - [COMPLETED] Sniffing behavior
-  - [COMPLETED] Digging behavior
-  - [COMPLETED] Baby-to-adult growth
-  - [COMPLETED] Breeding mechanics
-  - [COMPLETED] Drops and interactions
-  - [COMPLETED] Tests
-- [COMPLETED] Cherry blossom biome
-  - [COMPLETED] Cherry Grove biome with appropriate terrain and features
-  - [COMPLETED] Cherry trees
-    - [COMPLETED] Cherry Log blocks
-    - [COMPLETED] Cherry Leaves blocks with petal particles
-    - [COMPLETED] Cherry Sapling blocks with proper growth mechanics
-  - [COMPLETED] Integration with world generation
-  - [COMPLETED] Tests for all Cherry Blossom components
-- [COMPLETED] Camel mob
-  - [COMPLETED] Basic mob implementation with sitting/standing mechanics
-  - [COMPLETED] Two-player riding support
-  - [COMPLETED] Dash ability when sprinting
-  - [COMPLETED] Breeding mechanics with cactus
-  - [COMPLETED] Age growth from baby to adult
-  - [COMPLETED] Tests validating all Camel functionality
-- [COMPLETED] Armor trims
-  - [COMPLETED] ArmorItem with trim support
-  - [COMPLETED] ArmorTrimItem smithing templates
-  - [COMPLETED] SmithingTable integration
-  - [COMPLETED] Comprehensive test coverage
-- [COMPLETED] Complete pottery system
-  - [COMPLETED] PotBase item implementation
-  - [COMPLETED] DecoratedPotItem with sherd customization
-  - [COMPLETED] DecoratedPot block with inventory capability
-  - [COMPLETED] Crafting recipes for pottery combinations
-  - [COMPLETED] PotterySherdItem with various patterns
-  - [COMPLETED] Comprehensive test coverage
-- [COMPLETED] Hanging signs
-  - [COMPLETED] SignBlock base implementation
-  - [COMPLETED] HangingSignBlock implementation
-  - [COMPLETED] HangingSignItem for placement
-  - [COMPLETED] Multiple wood types support
-  - [COMPLETED] Multiple attachment types (ceiling, chain, wall)
-  - [COMPLETED] Crafting recipes for all variants
-  - [COMPLETED] Comprehensive test coverage
-- [COMPLETED] Chiseled bookshelf
-  - [COMPLETED] ChiseledBookshelfBlock implementation
-  - [COMPLETED] ChiseledBookshelfItem for placement
-  - [COMPLETED] Book storage functionality with 6 slots
-  - [COMPLETED] Redstone signal output based on filled slots
-  - [COMPLETED] Comprehensive test coverage
 
 # Current Project: 1.20 Update Implementation
 
@@ -761,11 +721,21 @@ All implementations include proper integration with existing game systems, compr
 
 ## Feature Status
 - [COMPLETED] Wind Charge Improvements
-  - [COMPLETED] Charging mechanics with power scaling
-  - [COMPLETED] Trajectory prediction system
-  - [COMPLETED] Chain reactions capability
+  - [COMPLETED] Chain reaction capability
   - [COMPLETED] Block interactions
-  - [COMPLETED] Visual and audio enhancements
+  - [COMPLETED] Visual effects
+    - [COMPLETED] Explosion particles
+    - [COMPLETED] Trail particles
+    - [COMPLETED] Charge level scaling
+  - [COMPLETED] Audio effects
+    - [COMPLETED] Explosion sounds
+    - [COMPLETED] Charge level scaling
+  - [COMPLETED] Comprehensive test suite
+    - [COMPLETED] Visual effects tests
+    - [COMPLETED] Audio effects tests
+    - [COMPLETED] Trail particle tests
+    - [COMPLETED] Charge level scaling tests
+    - [COMPLETED] Real implementation tests
 - [COMPLETED] Trail Ruins Structures
   - [COMPLETED] Structure generation with proper layouts
   - [COMPLETED] Biome-specific variants
