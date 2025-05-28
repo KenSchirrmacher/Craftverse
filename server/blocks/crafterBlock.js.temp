@@ -181,22 +181,12 @@ class CrafterBlock extends Block {
       return false;
     }
     
-    // Convert flat inventory to 3x3 grid
-    const grid = [];
-    for (let y = 0; y < 3; y++) {
-      const row = [];
-      for (let x = 0; x < 3; x++) {
-        row.push(this.inventory[y * 3 + x]);
-      }
-      grid.push(row);
-    }
-    
-    const recipe = recipeManager.findMatchingRecipe(grid);
+    const recipe = recipeManager.findMatchingRecipe(this.recipeMemory);
     if (!recipe) {
       return false;
     }
     
-    return recipeManager.matchesPattern(grid, recipe.pattern, recipe.alternatives);
+    return recipeManager.matchesPattern(this.inventory, recipe.pattern, recipe.alternatives);
   }
 
   calculateRecipeCompleteness() {
@@ -209,22 +199,12 @@ class CrafterBlock extends Block {
       return 0;
     }
     
-    // Convert flat inventory to 3x3 grid
-    const grid = [];
-    for (let y = 0; y < 3; y++) {
-      const row = [];
-      for (let x = 0; x < 3; x++) {
-        row.push(this.inventory[y * 3 + x]);
-      }
-      grid.push(row);
-    }
-    
-    const recipe = recipeManager.findMatchingRecipe(grid);
+    const recipe = recipeManager.findMatchingRecipe(this.recipeMemory);
     if (!recipe) {
       return 0;
     }
     
-    return recipeManager.calculatePatternCompleteness(grid, recipe.pattern, recipe.alternatives);
+    return recipeManager.calculatePatternCompleteness(this.inventory, recipe.pattern, recipe.alternatives);
   }
 
   setCraftingMode(mode) {
@@ -280,17 +260,7 @@ class CrafterBlock extends Block {
 
     if (this.outputSlot !== null) return false;
 
-    // Convert flat inventory to 3x3 grid
-    const grid = [];
-    for (let y = 0; y < 3; y++) {
-      const row = [];
-      for (let x = 0; x < 3; x++) {
-        row.push(this.inventory[y * 3 + x]);
-      }
-      grid.push(row);
-    }
-
-    const result = recipeManager.craftItem(grid);
+    const result = recipeManager.craftItem(this.inventory);
     if (!result) return false;
 
     this.outputSlot = result;
@@ -306,17 +276,7 @@ class CrafterBlock extends Block {
     const recipeManager = this.world.getRecipeManager();
     if (!recipeManager) return;
 
-    // Convert flat inventory to 3x3 grid
-    const grid = [];
-    for (let y = 0; y < 3; y++) {
-      const row = [];
-      for (let x = 0; x < 3; x++) {
-        row.push(this.inventory[y * 3 + x]);
-      }
-      grid.push(row);
-    }
-
-    const recipe = recipeManager.findMatchingRecipe(grid);
+    const recipe = recipeManager.findMatchingRecipe(this.inventory);
     if (!recipe) return;
 
     for (let y = 0; y < 3; y++) {
@@ -348,8 +308,8 @@ class CrafterBlock extends Block {
     if (completeness === 0) {
       return 0;
     } else if (completeness < 100) {
-      // Scale 0-100% to 1-7 range
-      return 1 + Math.round((completeness / 100) * 6);
+      const scaledValue = 1 + Math.round((completeness / 100) * 6);
+      return scaledValue;
     } else if (this.outputSlot) {
       return 15;
     } else {

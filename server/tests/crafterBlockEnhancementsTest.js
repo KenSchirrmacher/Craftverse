@@ -4,6 +4,8 @@
 
 const assert = require('assert');
 const CrafterBlock = require('../blocks/crafterBlock');
+const World = require('../world/world');
+const RecipeManager = require('../crafting/recipeManager');
 
 /**
  * Run the tests
@@ -30,8 +32,14 @@ function runTests() {
   
   console.log('\nRecipe Memory System:');
   
+  // Create a fresh world and recipe manager
+  const world = new World();
+  const recipeManager = new RecipeManager();
+  world.setRecipeManager(recipeManager);
+  
   // Create a fresh crafter block for tests
   let crafterBlock = new CrafterBlock();
+  crafterBlock.setWorld(world);
   
   runTest('Should initially have no recipe memory', () => {
     assert.strictEqual(crafterBlock.recipeMemory, null);
@@ -41,6 +49,7 @@ function runTests() {
   runTest('Should save recipe memory when output is taken in template mode', () => {
     // Reset block
     crafterBlock = new CrafterBlock();
+    crafterBlock.setWorld(world);
     
     // Set crafting mode to template
     crafterBlock.setCraftingMode('template');
@@ -65,14 +74,14 @@ function runTests() {
       }
     });
     
-    // Mock a crafted result
-    crafterBlock.outputSlot = { id: 'wooden_pickaxe', count: 1 };
+    // Attempt crafting
+    crafterBlock.attemptCrafting();
     
     // Get the output (should trigger recipe memory saving)
     const output = crafterBlock.getOutput();
     
     // Verify output was returned
-    assert.deepStrictEqual(output, { id: 'wooden_pickaxe', count: 1 });
+    assert.ok(output, 'Should have crafted an item');
     
     // Verify recipe memory was saved
     assert.notStrictEqual(crafterBlock.recipeMemory, null);
@@ -81,7 +90,7 @@ function runTests() {
     assert.strictEqual(crafterBlock.recipeMemory[2], null);
     
     // Verify recipe result was saved
-    assert.deepStrictEqual(crafterBlock.recipeResult, { id: 'wooden_pickaxe', count: 1 });
+    assert.deepStrictEqual(crafterBlock.recipeResult, output);
   });
   
   runTest('Should not save recipe memory in manual mode', () => {
@@ -357,6 +366,7 @@ function runTests() {
   runTest('Should properly serialize and deserialize enhanced properties', () => {
     // Reset block
     crafterBlock = new CrafterBlock();
+    crafterBlock.setWorld(world);
     
     // Setup block with enhanced properties
     crafterBlock.recipeMemory = [
@@ -372,44 +382,18 @@ function runTests() {
     // Add some inventory items
     crafterBlock.placeItem(1, { id: 'stone', count: 3 });
     
-    // Mock a simple serialize method since we're testing the block's serialization logic
-    const mockSerialize = function() {
-      // Just manually construct the serialized data
-      return {
-        position: this.position,
-        inventory: this.inventory,
-        outputSlot: this.outputSlot,
-        facing: this.facing,
-        powered: this.powered,
-        recipeMemory: this.recipeMemory,
-        recipeResult: this.recipeResult,
-        craftingMode: this.craftingMode,
-        slotsLocked: this.slotsLocked,
-        redstoneMode: this.redstoneMode
-      };
-    };
-    
-    // Replace the original method temporarily
-    const originalSerialize = crafterBlock.serialize;
-    crafterBlock.serialize = mockSerialize;
-    
     // Serialize
     const serialized = crafterBlock.serialize();
     
-    // Restore original method
-    crafterBlock.serialize = originalSerialize;
-    
     // Deserialize into a new block
-    const deserializedBlock = CrafterBlock.deserialize(serialized);
+    const deserializedBlock = CrafterBlock.deserialize(serialized, world);
     
     // Verify enhanced properties
     assert.deepStrictEqual(deserializedBlock.recipeMemory, crafterBlock.recipeMemory);
     assert.deepStrictEqual(deserializedBlock.recipeResult, crafterBlock.recipeResult);
     assert.strictEqual(deserializedBlock.craftingMode, crafterBlock.craftingMode);
-    assert.strictEqual(deserializedBlock.slotsLocked[0], crafterBlock.slotsLocked[0]);
+    assert.deepStrictEqual(deserializedBlock.slotsLocked, crafterBlock.slotsLocked);
     assert.strictEqual(deserializedBlock.redstoneMode, crafterBlock.redstoneMode);
-    
-    // Verify inventory
     assert.deepStrictEqual(deserializedBlock.inventory[1], crafterBlock.inventory[1]);
   });
   

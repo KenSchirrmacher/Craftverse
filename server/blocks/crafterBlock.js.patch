@@ -1,0 +1,75 @@
+matchesRecipeMemory() {
+  if (!this.recipeMemory) {
+    return false;
+  }
+  
+  const recipeManager = this.world.getRecipeManager();
+  if (!recipeManager) {
+    return false;
+  }
+  
+  // Convert flat inventory to 3x3 grid
+  const grid = [];
+  for (let y = 0; y < 3; y++) {
+    const row = [];
+    for (let x = 0; x < 3; x++) {
+      row.push(this.inventory[y * 3 + x]);
+    }
+    grid.push(row);
+  }
+  
+  const recipe = recipeManager.findMatchingRecipe(grid);
+  if (!recipe) {
+    return false;
+  }
+  
+  return recipeManager.matchesPattern(grid, recipe.pattern, recipe.alternatives);
+}
+
+calculateRecipeCompleteness() {
+  if (!this.recipeMemory) {
+    return 0;
+  }
+  
+  const recipeManager = this.world.getRecipeManager();
+  if (!recipeManager) {
+    return 0;
+  }
+  
+  // Convert flat inventory to 3x3 grid
+  const grid = [];
+  for (let y = 0; y < 3; y++) {
+    const row = [];
+    for (let x = 0; x < 3; x++) {
+      row.push(this.inventory[y * 3 + x]);
+    }
+    grid.push(row);
+  }
+  
+  const recipe = recipeManager.findMatchingRecipe(grid);
+  if (!recipe) {
+    return 0;
+  }
+  
+  return recipeManager.calculatePatternCompleteness(grid, recipe.pattern, recipe.alternatives);
+}
+
+getComparatorOutput() {
+  if (!this.recipeMemory) {
+    const filledSlots = this.inventory.filter(item => item !== null).length;
+    return Math.min(15, Math.round((filledSlots / this.inventorySize) * 15));
+  }
+  
+  const completeness = this.calculateRecipeCompleteness();
+  
+  if (completeness === 0) {
+    return 0;
+  } else if (completeness < 100) {
+    // Scale 0-100% to 1-7 range
+    return 1 + Math.round((completeness / 100) * 6);
+  } else if (this.outputSlot) {
+    return 15;
+  } else {
+    return 14;
+  }
+} 
