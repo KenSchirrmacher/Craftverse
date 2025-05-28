@@ -114,6 +114,7 @@ Implementation of Minecraft 1.24 Update features including Wind Charge improveme
   * Automatic error recovery with retry mechanism
   * Failed backup cleanup and manifest tracking
   * Scheduler control (start/stop/update interval)
+  * Full documentation available in docs/backup-system.md
 
 ## Maintenance
 - Regular updates
