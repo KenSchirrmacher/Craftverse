@@ -21,6 +21,7 @@ const WeatherSystem = require('./weather/weatherSystem');
 const BlockRegistry = require('./blocks/blockRegistry');
 const ItemRegistry = require('./items/itemRegistry');
 const CraftingManager = require('./crafting/craftingManager');
+const BackupSystem = require('./backup/backupSystem');
 
 const app = express();
 const httpServer = createServer(app);
@@ -242,6 +243,15 @@ global.villageReputationManager = new VillageReputationManager();
 // Initialize managers
 global.craftingManager = new CraftingManager();
 global.craftingManager.registerDefaultRecipes();
+
+// Initialize backup system
+global.backupSystem = new BackupSystem({
+  backupDir: path.join(__dirname, '../backups'),
+  maxBackups: 10,
+  backupInterval: 3600000, // 1 hour
+  maxErrors: 3,
+  recoveryDelay: 5000 // 5 seconds
+});
 
 // Generate initial world
 function generateWorld() {
@@ -1459,6 +1469,7 @@ io.on('connection', (socket) => {
 const PORT = process.env.PORT || 3000;
 httpServer.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
+  console.log('Backup system initialized');
 });
 
 // Function to calculate XP required for a level
