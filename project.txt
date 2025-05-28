@@ -68,6 +68,16 @@ Implementation of Minecraft 1.24 Update features including Wind Charge improveme
 - [x] Update directory.txt with new files
 - Status: Complete
 
+### 7. Firefly Implementation
+- [x] Implement firefly entity
+- [x] Add day/night behavior
+- [x] Create group behavior system
+- [x] Implement light emission
+- [x] Add particle effects
+- [x] Create comprehensive tests
+- [x] Update documentation
+- Status: Complete
+
 ## Dependencies
 - Node.js v18+
 - Minecraft Server 1.24

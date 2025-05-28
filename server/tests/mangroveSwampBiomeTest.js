@@ -7,6 +7,7 @@ const assert = require('assert');
 const MangroveSwampBiome = require('../biomes/mangroveSwampBiome');
 const World = require('../world/world');
 const Firefly = require('../entities/firefly');
+const ParticleSystem = require('../particles/particleSystem');
 
 describe('Mangrove Swamp Biome', () => {
   // Test world implementation
@@ -16,6 +17,7 @@ describe('Mangrove Swamp Biome', () => {
       this.blocks = new Map();
       this.entities = new Map();
       this.timeOfDay = 0.8; // Start at night
+      this.particleSystem = new ParticleSystem();
     }
     
     getBlockAt(x, y, z) {
@@ -33,6 +35,10 @@ describe('Mangrove Swamp Biome', () => {
     
     getEntitiesInRadius(position, radius) {
       return Array.from(this.entities.values());
+    }
+
+    getHighestBlock(x, z) {
+      return 64; // Simulate flat terrain
     }
   }
 
@@ -133,5 +139,107 @@ describe('Mangrove Swamp Biome', () => {
     assert.ok(biome.hasFeature('frogs'));
     assert.ok(biome.hasFeature('water_pools'));
     assert.ok(!biome.hasFeature('nonexistent_feature'));
+  });
+
+  it('should spawn fireflies in appropriate locations', () => {
+    // Set up test environment
+    testWorld.blocks.set('100,64,100', { type: 'mangrove_log' });
+    testWorld.blocks.set('100,65,100', { type: 'mangrove_leaves' });
+    
+    const position = { x: 100, y: 65, z: 100 };
+    const radius = 16;
+    const random = () => 0.5;
+    
+    biome.generateAmbientEntities(testWorld, position, radius, random);
+    
+    const entities = testWorld.getEntitiesInRadius(position, radius);
+    const fireflies = entities.filter(e => e.type === 'firefly');
+    
+    // Verify firefly positions
+    fireflies.forEach(firefly => {
+      assert.ok(firefly.position.y >= 65, 'Fireflies should spawn above ground level');
+      assert.ok(firefly.position.y <= 70, 'Fireflies should not spawn too high');
+      
+      // Check if near mangrove trees
+      const nearTree = testWorld.getBlockAt(
+        Math.floor(firefly.position.x),
+        Math.floor(firefly.position.y),
+        Math.floor(firefly.position.z)
+      ).type === 'mangrove_leaves';
+      
+      assert.ok(nearTree, 'Fireflies should spawn near mangrove trees');
+    });
+  });
+
+  it('should handle firefly group behavior', () => {
+    const position = { x: 100, y: 65, z: 100 };
+    const radius = 16;
+    const random = () => 0.5;
+    
+    biome.generateAmbientEntities(testWorld, position, radius, random);
+    
+    const entities = testWorld.getEntitiesInRadius(position, radius);
+    const fireflies = entities.filter(e => e.type === 'firefly');
+    
+    // Check for group formation
+    const groups = new Map();
+    fireflies.forEach(firefly => {
+      if (firefly.groupId) {
+        if (!groups.has(firefly.groupId)) {
+          groups.set(firefly.groupId, []);
+        }
+        groups.get(firefly.groupId).push(firefly);
+      }
+    });
+    
+    // Verify group properties
+    groups.forEach((group, groupId) => {
+      assert.ok(group.length >= 2, 'Groups should have at least 2 fireflies');
+      assert.ok(group.length <= 5, 'Groups should not be too large');
+      
+      // Check group leader
+      const leader = group.find(f => f.isGroupLeader);
+      assert.ok(leader, 'Each group should have a leader');
+      
+      // Check group cohesion
+      const leaderPos = leader.position;
+      group.forEach(firefly => {
+        if (firefly !== leader) {
+          const distance = Math.sqrt(
+            Math.pow(firefly.position.x - leaderPos.x, 2) +
+            Math.pow(firefly.position.y - leaderPos.y, 2) +
+            Math.pow(firefly.position.z - leaderPos.z, 2)
+          );
+          assert.ok(distance <= 3, 'Group members should stay close to leader');
+        }
+      });
+    });
+  });
+
+  it('should handle firefly day/night cycle', () => {
+    const position = { x: 100, y: 65, z: 100 };
+    const radius = 16;
+    const random = () => 0.5;
+    
+    // Spawn fireflies at night
+    testWorld.timeOfDay = 0.8;
+    biome.generateAmbientEntities(testWorld, position, radius, random);
+    
+    const entities = testWorld.getEntitiesInRadius(position, radius);
+    const fireflies = entities.filter(e => e.type === 'firefly');
+    
+    // Verify night behavior
+    fireflies.forEach(firefly => {
+      assert.ok(firefly.active, 'Fireflies should be active at night');
+      assert.ok(firefly.glowIntensity > 0, 'Fireflies should glow at night');
+    });
+    
+    // Update to daytime
+    testWorld.timeOfDay = 0.5;
+    fireflies.forEach(firefly => {
+      firefly.update(testWorld, [], [], 100);
+      assert.ok(!firefly.active, 'Fireflies should be inactive during day');
+      assert.strictEqual(firefly.glowIntensity, 0, 'Fireflies should not glow during day');
+    });
   });
 }); 

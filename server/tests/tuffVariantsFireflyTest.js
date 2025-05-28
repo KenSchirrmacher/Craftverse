@@ -9,17 +9,24 @@ const {
 const World = require('../world/world');
 const Firefly = require('../entities/firefly');
 const LightBlock = require('../blocks/lightBlock');
+const ParticleSystem = require('../particles/particleSystem');
 
 class TuffVariantsFireflyTest {
   constructor() {
     this.world = new World();
+    this.world.blocks = new Map();
+    this.world.particleSystem = new ParticleSystem();
+    this.world.timeOfDay = 0.8; // Start at night
+    this.world.entities = new Map();
   }
 
   runTests() {
+    console.log('Running Tuff Variants Firefly Tests...');
     this.testFireflyInteraction();
     this.testFireflyLighting();
     this.testFireflyMovement();
     this.testFireflyBehavior();
+    console.log('All Tuff variants firefly tests passed!');
   }
 
   testFireflyInteraction() {
@@ -30,16 +37,19 @@ class TuffVariantsFireflyTest {
     const placedBricks = bricks.place(this.world, { x: 0, y: 0, z: 0 });
     
     // Create firefly
-    const firefly = new Firefly();
-    const placedFirefly = firefly.spawn(this.world, { x: 0, y: 1, z: 0 });
+    const firefly = new Firefly(this.world, {
+      position: { x: 0, y: 1, z: 0 },
+      glowColor: '#FFFF77',
+      glowIntensity: 0.8
+    });
     
     // Test firefly placement
     assert.strictEqual(placedBricks.canSupportFirefly(), true);
-    assert.strictEqual(placedFirefly.isValidPlacement(), true);
+    assert.strictEqual(firefly.isValidPlacement(), true);
     
     // Test firefly properties
-    assert.strictEqual(placedFirefly.getLightLevel(), 0);
-    assert.strictEqual(placedFirefly.getSize(), 'small');
+    assert.strictEqual(firefly.getLightLevel(), 0);
+    assert.strictEqual(firefly.getSize(), 'small');
   }
 
   testFireflyLighting() {
@@ -50,13 +60,16 @@ class TuffVariantsFireflyTest {
     const placedWall = wall.place(this.world, { x: 0, y: 0, z: 0 });
     
     // Create firefly
-    const firefly = new Firefly();
-    const placedFirefly = firefly.spawn(this.world, { x: 0, y: 1, z: 0 });
+    const firefly = new Firefly(this.world, {
+      position: { x: 0, y: 1, z: 0 },
+      glowColor: '#FFFF77',
+      glowIntensity: 0.8
+    });
     
     // Test firefly lighting
-    assert.strictEqual(placedFirefly.canEmitLight(), true);
-    placedFirefly.emitLight();
-    assert.strictEqual(placedFirefly.getLightLevel(), 3);
+    assert.strictEqual(firefly.canEmitLight(), true);
+    firefly.emitLight();
+    assert.strictEqual(firefly.getLightLevel(), 3);
     
     // Test light block creation
     const lightBlock = new LightBlock();
@@ -72,19 +85,22 @@ class TuffVariantsFireflyTest {
     const placedSlab = slab.place(this.world, { x: 0, y: 0, z: 0 });
     
     // Create firefly
-    const firefly = new Firefly();
-    const placedFirefly = firefly.spawn(this.world, { x: 0, y: 1, z: 0 });
+    const firefly = new Firefly(this.world, {
+      position: { x: 0, y: 1, z: 0 },
+      glowColor: '#FFFF77',
+      glowIntensity: 0.8
+    });
     
     // Test firefly movement
-    assert.strictEqual(placedFirefly.canMove(), true);
-    const initialPos = placedFirefly.getPosition();
-    placedFirefly.move({ x: 1, y: 0, z: 0 });
-    assert.strictEqual(placedFirefly.getPosition().x, initialPos.x + 1);
+    assert.strictEqual(firefly.canMove(), true);
+    const initialPos = firefly.getPosition();
+    firefly.move({ x: 1, y: 0, z: 0 });
+    assert.strictEqual(firefly.getPosition().x, initialPos.x + 1);
     
     // Test movement patterns
-    assert.strictEqual(placedFirefly.getMovementPattern(), 'random');
-    placedFirefly.setMovementPattern('circular');
-    assert.strictEqual(placedFirefly.getMovementPattern(), 'circular');
+    assert.strictEqual(firefly.getMovementPattern(), 'random');
+    firefly.setMovementPattern('circular');
+    assert.strictEqual(firefly.getMovementPattern(), 'circular');
   }
 
   testFireflyBehavior() {
@@ -95,29 +111,31 @@ class TuffVariantsFireflyTest {
     const placedStairs = stairs.place(this.world, { x: 0, y: 0, z: 0 });
     
     // Create firefly
-    const firefly = new Firefly();
-    const placedFirefly = firefly.spawn(this.world, { x: 0, y: 1, z: 0 });
+    const firefly = new Firefly(this.world, {
+      position: { x: 0, y: 1, z: 0 },
+      glowColor: '#FFFF77',
+      glowIntensity: 0.8
+    });
     
     // Test firefly behavior
-    assert.strictEqual(placedFirefly.getBehavior(), 'idle');
-    placedFirefly.setBehavior('mating');
-    assert.strictEqual(placedFirefly.getBehavior(), 'mating');
+    assert.strictEqual(firefly.getBehavior(), 'idle');
+    firefly.setBehavior('mating');
+    assert.strictEqual(firefly.getBehavior(), 'mating');
     
     // Test behavior transitions
-    assert.strictEqual(placedFirefly.canTransitionBehavior(), true);
-    placedFirefly.transitionBehavior('feeding');
-    assert.strictEqual(placedFirefly.getBehavior(), 'feeding');
+    assert.strictEqual(firefly.canTransitionBehavior(), true);
+    firefly.transitionBehavior('feeding');
+    assert.strictEqual(firefly.getBehavior(), 'feeding');
     
     // Test behavior effects
-    assert.strictEqual(placedFirefly.getLightPattern(), 'steady');
-    placedFirefly.setLightPattern('flashing');
-    assert.strictEqual(placedFirefly.getLightPattern(), 'flashing');
+    assert.strictEqual(firefly.getLightPattern(), 'steady');
+    firefly.setLightPattern('flashing');
+    assert.strictEqual(firefly.getLightPattern(), 'flashing');
   }
 }
 
 // Run tests
 const test = new TuffVariantsFireflyTest();
 test.runTests();
-console.log('All Tuff variants firefly interaction tests passed!');
 
 module.exports = TuffVariantsFireflyTest; 
