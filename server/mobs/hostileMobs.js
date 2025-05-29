@@ -915,6 +915,20 @@ class Silverfish extends MobBase {
     this.isHiding = data.isHiding || false;
     this.hiddenBlock = data.hiddenBlock || null;
   }
+
+  checkSkyExposure(x, y, z) {
+    if (!this.world) return false;
+    
+    // Check if there are any solid blocks above this position
+    for (let checkY = y + 1; checkY < this.world.getMaxHeight(); checkY++) {
+      const block = this.world.getBlock(x, checkY, z);
+      if (block && block.isSolid) {
+        return false;
+      }
+    }
+    
+    return true;
+  }
 }
 
 module.exports = {

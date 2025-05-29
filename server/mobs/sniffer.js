@@ -582,6 +582,15 @@ class Sniffer extends MobBase {
     if (data.wasSheared !== undefined) this.wasSheared = data.wasSheared;
     if (data.headRaised !== undefined) this.headRaised = data.headRaised;
   }
+  
+  emitEvent(eventName, data) {
+    if (this.world && this.world.emit) {
+      this.world.emit(eventName, {
+        entityId: this.id,
+        ...data
+      });
+    }
+  }
 }
 
 module.exports = Sniffer; 

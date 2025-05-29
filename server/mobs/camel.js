@@ -725,6 +725,15 @@ class Camel extends MobBase {
     
     return camel;
   }
+  
+  emitEvent(eventName, data) {
+    if (this.world && this.world.emit) {
+      this.world.emit(eventName, {
+        entityId: this.id,
+        ...data
+      });
+    }
+  }
 }
 
 module.exports = Camel; 

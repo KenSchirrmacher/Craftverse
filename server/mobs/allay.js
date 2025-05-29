@@ -697,6 +697,15 @@ class Allay extends MobBase {
     if (data.canDuplicate !== undefined) this.canDuplicate = data.canDuplicate;
     if (data.duplicateCooldown !== undefined) this.duplicateCooldown = data.duplicateCooldown;
   }
+  
+  emitEvent(eventName, data) {
+    if (this.world && this.world.emit) {
+      this.world.emit(eventName, {
+        entityId: this.id,
+        ...data
+      });
+    }
+  }
 }
 
 module.exports = Allay; 

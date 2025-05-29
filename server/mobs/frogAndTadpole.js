@@ -261,6 +261,15 @@ class Tadpole extends MobBase {
     if (data.isInWater !== undefined) this.isInWater = data.isInWater;
     if (data.waterSuffocationTimer !== undefined) this.waterSuffocationTimer = data.waterSuffocationTimer;
   }
+
+  emitEvent(eventName, data) {
+    if (this.world && this.world.emit) {
+      this.world.emit(eventName, {
+        entityId: this.id,
+        ...data
+      });
+    }
+  }
 }
 
 /**
@@ -693,6 +702,15 @@ class Frog extends MobBase {
     if (data.tongueAttackCooldown !== undefined) this.tongueAttackCooldown = data.tongueAttackCooldown;
     if (data.isInWater !== undefined) this.isInWater = data.isInWater;
     if (data.isOnLily !== undefined) this.isOnLily = data.isOnLily;
+  }
+
+  emitEvent(eventName, data) {
+    if (this.world && this.world.emit) {
+      this.world.emit(eventName, {
+        entityId: this.id,
+        ...data
+      });
+    }
   }
 }
 
