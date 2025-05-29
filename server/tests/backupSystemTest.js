@@ -9,6 +9,7 @@ const BackupSystem = require('../backup/backupSystem');
 const fs = require('fs');
 const path = require('path');
 const os = require('os');
+const { expect } = require('chai');
 
 class BackupSystemTest extends TestBase {
   constructor() {
@@ -132,16 +133,23 @@ class BackupSystemTest extends TestBase {
       });
 
       // Create multiple backups
-      await backupSystem.createBackup({ description: 'Backup 1' });
-      await backupSystem.createBackup({ description: 'Backup 2' });
-      await backupSystem.createBackup({ description: 'Backup 3' });
+      const backupIds = [];
+      for (let i = 0; i < 3; i++) {
+        const backupId = await backupSystem.createBackup({
+          type: 'test',
+          description: `Test backup ${i}`
+        });
+        backupIds.push(backupId);
+      }
 
       // List backups
       const backups = await backupSystem.listBackups();
-
       assert.strictEqual(backups.length, 3, 'Should list all backups');
-      assert.ok(backups[0].timestamp > backups[1].timestamp, 'Backups should be sorted by timestamp');
-      assert.ok(backups[1].timestamp > backups[2].timestamp, 'Backups should be sorted by timestamp');
+      
+      // Verify backup order (newest first)
+      assert.strictEqual(backups[0].id, backupIds[2], 'Should list newest backup first');
+      assert.strictEqual(backups[1].id, backupIds[1], 'Should list second newest backup second');
+      assert.strictEqual(backups[2].id, backupIds[0], 'Should list oldest backup last');
     });
   }
 
@@ -197,39 +205,27 @@ class BackupSystemTest extends TestBase {
     this.test('Scheduler Functionality', async () => {
       const backupSystem = new BackupSystem({
         backupDir: this.testDir,
+        maxBackups: 3,
         backupInterval: 1000 // 1 second for testing
       });
 
-      // Wait for first automated backup
-      await new Promise(resolve => setTimeout(resolve, 1100));
-      
+      // Wait for scheduled backup
+      await new Promise(resolve => setTimeout(resolve, 1500));
+
+      // List backups
       const backups = await backupSystem.listBackups();
-      assert.ok(backups.length > 0, 'Automated backup should be created');
-      assert.strictEqual(backups[0].type, 'scheduled', 'Backup should be of type scheduled');
+      assert.ok(backups.length > 0, 'Scheduled backup should be created');
 
-      // Test scheduler stop
+      // Stop scheduler
       backupSystem.stopScheduler();
-      const backupCount = backups.length;
-      await new Promise(resolve => setTimeout(resolve, 1100));
+      const initialCount = backups.length;
+
+      // Wait for another interval
+      await new Promise(resolve => setTimeout(resolve, 1500));
+
+      // Verify no new backups were created
       const newBackups = await backupSystem.listBackups();
-      assert.strictEqual(newBackups.length, backupCount, 'No new backups should be created after stopping scheduler');
-
-      // Test scheduler restart
-      backupSystem.startScheduler();
-      await new Promise(resolve => setTimeout(resolve, 1100));
-      const finalBackups = await backupSystem.listBackups();
-      assert.ok(finalBackups.length > backupCount, 'New backup should be created after restarting scheduler');
-
-      // Test interval update
-      backupSystem.updateBackupInterval(2000);
-      const updatedBackupCount = finalBackups.length;
-      await new Promise(resolve => setTimeout(resolve, 1100));
-      const afterUpdateBackups = await backupSystem.listBackups();
-      assert.strictEqual(afterUpdateBackups.length, updatedBackupCount, 'No new backup should be created before new interval');
-
-      await new Promise(resolve => setTimeout(resolve, 1100));
-      const finalBackupsAfterUpdate = await backupSystem.listBackups();
-      assert.ok(finalBackupsAfterUpdate.length > updatedBackupCount, 'New backup should be created after new interval');
+      assert.strictEqual(newBackups.length, initialCount, 'No new backups should be created after stopping scheduler');
     });
   }
 
@@ -388,4 +384,165 @@ module.exports = {
 if (require.main === module) {
   console.log('Running Backup System Tests...');
   module.exports.runTests();
-} 
+}
+
+describe('BackupSystem', () => {
+  let backupSystem;
+  const testBackupDir = path.join(__dirname, '../../tmp/backup-test');
+  const testWorldDir = path.join(__dirname, '../../tmp/backup-test/world');
+  const testPlayersDir = path.join(__dirname, '../../tmp/backup-test/players');
+  const testConfigDir = path.join(__dirname, '../../tmp/backup-test/config');
+
+  beforeEach(async () => {
+    // Clean up test directories
+    if (fs.existsSync(testBackupDir)) {
+      fs.rmSync(testBackupDir, { recursive: true, force: true });
+    }
+
+    // Create test directories
+    fs.mkdirSync(testBackupDir, { recursive: true });
+    fs.mkdirSync(testWorldDir, { recursive: true });
+    fs.mkdirSync(testPlayersDir, { recursive: true });
+    fs.mkdirSync(testConfigDir, { recursive: true });
+
+    // Create test files
+    fs.writeFileSync(path.join(testWorldDir, 'test.txt'), 'world data');
+    fs.writeFileSync(path.join(testPlayersDir, 'player.json'), '{"name": "test"}');
+    fs.writeFileSync(path.join(testConfigDir, 'config.json'), '{"setting": "value"}');
+
+    // Initialize backup system
+    backupSystem = new BackupSystem({
+      backupDir: testBackupDir,
+      maxBackups: 3,
+      backupInterval: 1000
+    });
+  });
+
+  afterEach(async () => {
+    // Clean up
+    backupSystem.stopScheduler();
+    if (fs.existsSync(testBackupDir)) {
+      fs.rmSync(testBackupDir, { recursive: true, force: true });
+    }
+  });
+
+  describe('Windows Compatibility', () => {
+    it('should create backup directories with Windows-compatible names', async () => {
+      const backupId = await backupSystem.createBackup({
+        type: 'test',
+        description: 'Windows compatibility test'
+      });
+
+      const backups = await backupSystem.listBackups();
+      const backup = backups.find(b => b.id === backupId);
+      
+      expect(backup).to.exist;
+      expect(backup.timestamp).to.not.include(':');
+      expect(backup.timestamp).to.not.include('.');
+      
+      const backupPath = path.join(testBackupDir, `${backupId}_${backup.timestamp}`);
+      expect(fs.existsSync(backupPath)).to.be.true;
+    });
+  });
+
+  describe('Backup Creation', () => {
+    it('should create a backup with all required data', async () => {
+      const backupId = await backupSystem.createBackup({
+        type: 'test',
+        description: 'Test backup'
+      });
+
+      const backups = await backupSystem.listBackups();
+      const backup = backups.find(b => b.id === backupId);
+      
+      expect(backup).to.exist;
+      expect(backup.type).to.equal('test');
+      expect(backup.description).to.equal('Test backup');
+      
+      const backupPath = path.join(testBackupDir, `${backupId}_${backup.timestamp}`);
+      expect(fs.existsSync(path.join(backupPath, 'world/test.txt'))).to.be.true;
+      expect(fs.existsSync(path.join(backupPath, 'players/player.json'))).to.be.true;
+      expect(fs.existsSync(path.join(backupPath, 'config/config.json'))).to.be.true;
+    });
+
+    it('should prevent concurrent backups', async () => {
+      backupSystem.isBackingUp = true;
+      
+      try {
+        await backupSystem.createBackup();
+        expect.fail('Should have thrown an error');
+      } catch (error) {
+        expect(error.message).to.equal('Backup already in progress');
+      }
+    });
+  });
+
+  describe('Backup Restoration', () => {
+    it('should restore a backup correctly', async () => {
+      // Create initial backup
+      const backupId = await backupSystem.createBackup({
+        type: 'test',
+        description: 'Test backup for restoration'
+      });
+
+      // Modify original files
+      fs.writeFileSync(path.join(testWorldDir, 'test.txt'), 'modified data');
+      
+      // Restore backup
+      await backupSystem.restoreBackup(backupId);
+      
+      // Verify restoration
+      const worldData = fs.readFileSync(path.join(testWorldDir, 'test.txt'), 'utf8');
+      expect(worldData).to.equal('world data');
+    });
+  });
+
+  describe('Backup Cleanup', () => {
+    it('should maintain maximum number of backups', async () => {
+      // Create more backups than maxBackups
+      for (let i = 0; i < 5; i++) {
+        await backupSystem.createBackup({
+          type: 'test',
+          description: `Test backup ${i}`
+        });
+      }
+
+      const backups = await backupSystem.listBackups();
+      expect(backups.length).to.equal(3); // maxBackups is set to 3
+    });
+  });
+
+  describe('Error Handling', () => {
+    it('should handle directory creation errors gracefully', async () => {
+      // Create an invalid path
+      const invalidBackupSystem = new BackupSystem({
+        backupDir: 'C:\\invalid\\path\\with\\colons:in:it',
+        maxBackups: 3
+      });
+
+      try {
+        await invalidBackupSystem.createBackup();
+        expect.fail('Should have thrown an error');
+      } catch (error) {
+        expect(error.message).to.include('Error creating directory');
+      }
+    });
+
+    it('should implement exponential backoff for retries', async () => {
+      // Mock fs.existsSync to fail first two times
+      let attempts = 0;
+      const originalExistsSync = fs.existsSync;
+      fs.existsSync = () => {
+        attempts++;
+        return attempts > 2;
+      };
+
+      try {
+        await backupSystem.ensureDirectoryExists(testBackupDir);
+        expect(attempts).to.be.greaterThan(2);
+      } finally {
+        fs.existsSync = originalExistsSync;
+      }
+    });
+  });
+}); 

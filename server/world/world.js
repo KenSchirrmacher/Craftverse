@@ -8,6 +8,7 @@ class World {
     this.blocks = new Map();
     this.entities = new Map();
     this.players = new Map();
+    this.blockRegistry = null;
     
     // Security limits
     this.maxEntitiesPerChunk = 100;
@@ -79,7 +80,11 @@ class World {
 
   getBlock(x, y, z) {
     const key = `${x},${y},${z}`;
-    return this.blocks.get(key) || { type: 'air', isSolid: false };
+    const block = this.blocks.get(key);
+    if (!block) {
+      return { type: 'air', isSolid: false };
+    }
+    return block;
   }
 
   getEntitiesInRadius(position, radius) {
@@ -105,6 +110,37 @@ class World {
     return Math.sqrt(dx * dx + dy * dy + dz * dz);
   }
 
+  addEntity(entity) {
+    if (!entity || !entity.id) {
+      throw new Error('Invalid entity');
+    }
+    this.entities.set(entity.id, entity);
+    return entity;
+  }
+
+  removeEntity(entityId) {
+    return this.entities.delete(entityId);
+  }
+
+  setBlock(x, y, z, block) {
+    if (!block || typeof block !== 'object') {
+      throw new Error('Invalid block');
+    }
+    const key = `${x},${y},${z}`;
+    this.blocks.set(key, block);
+    return true;
+  }
+
+  addParticleEffect(effect) {
+    // Implementation for particle effects
+    console.log('Particle effect:', effect);
+  }
+
+  playSound(sound) {
+    // Implementation for sound effects
+    console.log('Sound effect:', sound);
+  }
+
   update() {
     // Reset per-tick counters
     this.blockPlacementsThisTick = 0;
@@ -112,7 +148,7 @@ class World {
 
     // Update all entities
     for (const [id, entity] of this.entities) {
-      entity.update();
+      entity.update(1/20); // Assuming 20 ticks per second
     }
   }
 }

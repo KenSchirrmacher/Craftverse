@@ -28,11 +28,7 @@ class Vector3 {
    * @returns {Vector3} This vector for chaining
    */
   add(v) {
-    return new Vector3(
-      this.x + v.x,
-      this.y + v.y,
-      this.z + v.z
-    );
+    return new Vector3(this.x + v.x, this.y + v.y, this.z + v.z);
   }
 
   /**
@@ -41,11 +37,7 @@ class Vector3 {
    * @returns {Vector3} This vector for chaining
    */
   subtract(v) {
-    return new Vector3(
-      this.x - v.x,
-      this.y - v.y,
-      this.z - v.z
-    );
+    return new Vector3(this.x - v.x, this.y - v.y, this.z - v.z);
   }
 
   /**
@@ -54,11 +46,7 @@ class Vector3 {
    * @returns {Vector3} This vector for chaining
    */
   multiply(scalar) {
-    return new Vector3(
-      this.x * scalar,
-      this.y * scalar,
-      this.z * scalar
-    );
+    return new Vector3(this.x * scalar, this.y * scalar, this.z * scalar);
   }
 
   /**
@@ -67,27 +55,16 @@ class Vector3 {
    * @returns {Vector3} This vector for chaining
    */
   divide(scalar) {
-    return new Vector3(
-      this.x / scalar,
-      this.y / scalar,
-      this.z / scalar
-    );
+    if (scalar === 0) throw new Error('Division by zero');
+    return new Vector3(this.x / scalar, this.y / scalar, this.z / scalar);
   }
 
   /**
    * Calculate the length/magnitude of this vector
    * @returns {number} Vector length
    */
-  length() {
+  magnitude() {
     return Math.sqrt(this.x * this.x + this.y * this.y + this.z * this.z);
-  }
-
-  /**
-   * Calculate the squared length of this vector (faster than length)
-   * @returns {number} Squared length
-   */
-  lengthSquared() {
-    return this.x * this.x + this.y * this.y + this.z * this.z;
   }
 
   /**
@@ -95,9 +72,9 @@ class Vector3 {
    * @returns {Vector3} This vector for chaining
    */
   normalize() {
-    const len = this.length();
-    if (len === 0) return new Vector3();
-    return this.divide(len);
+    const mag = this.magnitude();
+    if (mag === 0) return new Vector3();
+    return this.divide(mag);
   }
 
   /**
@@ -115,10 +92,11 @@ class Vector3 {
    * @returns {Vector3} New vector representing cross product
    */
   cross(v) {
-    const x = this.y * v.z - this.z * v.y;
-    const y = this.z * v.x - this.x * v.z;
-    const z = this.x * v.y - this.y * v.x;
-    return new Vector3(x, y, z);
+    return new Vector3(
+      this.y * v.z - this.z * v.y,
+      this.z * v.x - this.x * v.z,
+      this.x * v.y - this.y * v.x
+    );
   }
 
   /**
@@ -200,6 +178,23 @@ class Vector3 {
   static fromObject(obj) {
     return new Vector3(obj.x || 0, obj.y || 0, obj.z || 0);
   }
+
+  /**
+   * Check if this vector is equal to another vector
+   * @param {Vector3} v - Other vector
+   * @returns {boolean} True if vectors are equal, false otherwise
+   */
+  equals(v) {
+    return this.x === v.x && this.y === v.y && this.z === v.z;
+  }
+
+  /**
+   * Convert this vector to a string representation
+   * @returns {string} String representation of the vector
+   */
+  toString() {
+    return `Vector3(${this.x}, ${this.y}, ${this.z})`;
+  }
 }
 
-module.exports = Vector3; 
+module.exports = { Vector3 }; 

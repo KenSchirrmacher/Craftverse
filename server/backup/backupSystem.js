@@ -6,6 +6,7 @@
 const fs = require('fs');
 const path = require('path');
 const { v4: uuidv4 } = require('uuid');
+const { execSync } = require('child_process');
 
 class BackupSystem {
   constructor(options = {}) {
@@ -18,14 +19,31 @@ class BackupSystem {
     this.errorCount = 0;
     this.maxErrors = options.maxErrors || 3;
     this.recoveryDelay = options.recoveryDelay || 5000; // 5 seconds
+    this.directoryLock = false;
     
     // Ensure backup directory exists
     if (!fs.existsSync(this.backupDir)) {
-      fs.mkdirSync(this.backupDir, { recursive: true });
+      this.createDirectoryWindows(this.backupDir);
     }
 
     // Start automated backup scheduler
     this.startScheduler();
+  }
+
+  /**
+   * Create directory using Windows command
+   * @param {string} dir - Directory path
+   */
+  createDirectoryWindows(dir) {
+    try {
+      // Convert path to Windows format
+      const windowsPath = dir.replace(/\//g, '\\');
+      // Use Windows mkdir command with /p flag for parent directories
+      execSync(`mkdir "${windowsPath}" /p`, { shell: 'cmd.exe' });
+    } catch (error) {
+      console.error('Error creating directory:', error);
+      throw error;
+    }
   }
 
   /**
@@ -65,6 +83,11 @@ class BackupSystem {
     }
 
     this.scheduler = setInterval(async () => {
+      if (this.isBackingUp) {
+        console.log('Skipping scheduled backup - backup already in progress');
+        return;
+      }
+      
       try {
         await this.createBackup({
           type: 'scheduled',
@@ -97,6 +120,88 @@ class BackupSystem {
   }
 
   /**
+   * Wait for directory to be ready
+   * @param {string} dir - Directory path
+   * @param {number} timeout - Maximum time to wait in milliseconds
+   * @returns {Promise<boolean>} Whether directory is ready
+   */
+  async waitForDirectoryReady(dir, timeout = 2000) {
+    const startTime = Date.now();
+    const checkInterval = 100; // Check every 100ms
+    
+    while (Date.now() - startTime < timeout) {
+      try {
+        if (fs.existsSync(dir)) {
+          // Try to create a test file to verify write access
+          const testFile = path.join(dir, '.test_' + Date.now());
+          fs.writeFileSync(testFile, 'test');
+          fs.unlinkSync(testFile);
+          return true;
+        }
+      } catch (error) {
+        // Ignore errors and continue checking
+      }
+      await new Promise(resolve => setTimeout(resolve, checkInterval));
+    }
+    return false;
+  }
+
+  /**
+   * Ensure directory exists with retries
+   * @param {string} dir - Directory path
+   * @param {number} maxRetries - Maximum number of retries
+   * @returns {Promise<void>}
+   */
+  async ensureDirectoryExists(dir, maxRetries = 3) {
+    let retries = maxRetries;
+    while (retries > 0) {
+      try {
+        if (!fs.existsSync(dir)) {
+          console.log('Creating directory:', dir);
+          this.createDirectoryWindows(dir);
+          
+          // Wait for directory to be ready
+          let ready = false;
+          for (let i = 0; i < 20; i++) { // Try for 2 seconds
+            if (fs.existsSync(dir)) {
+              try {
+                // Try to create a test file
+                const testFile = path.join(dir, '.test_' + Date.now());
+                fs.writeFileSync(testFile, 'test');
+                fs.unlinkSync(testFile);
+                ready = true;
+                break;
+              } catch (error) {
+                // Ignore error and continue checking
+              }
+            }
+            await new Promise(resolve => setTimeout(resolve, 100));
+          }
+          
+          if (!ready) {
+            throw new Error(`Directory not ready after creation: ${dir}`);
+          }
+        }
+        return;
+      } catch (error) {
+        retries--;
+        if (retries === 0) throw error;
+        console.log(`Retrying directory creation (${retries} attempts left)...`);
+        await new Promise(resolve => setTimeout(resolve, 500));
+      }
+    }
+  }
+
+  /**
+   * Sanitize timestamp for Windows compatibility
+   * @param {string} timestamp - ISO timestamp
+   * @returns {string} Windows-compatible timestamp
+   */
+  sanitizeTimestamp(timestamp) {
+    return timestamp.replace(/:/g, '-').replace(/\./g, '-');
+  }
+
+  /**
    * Create a new backup
    * @param {Object} options - Backup options
    * @returns {Promise<string>} Backup ID
@@ -108,12 +213,29 @@ class BackupSystem {
 
     this.isBackingUp = true;
     const backupId = uuidv4();
-    const timestamp = new Date().toISOString();
+    const timestamp = this.sanitizeTimestamp(new Date().toISOString());
     const backupPath = path.join(this.backupDir, `${backupId}_${timestamp}`);
 
     try {
+      // Debug logging
+      console.log('Creating backup directory:', backupPath);
+      console.log('Parent directory exists:', fs.existsSync(path.dirname(backupPath)));
+      console.log('Parent directory path:', path.dirname(backupPath));
+      
+      // Ensure all parent directories exist
+      const dirs = [
+        path.join(__dirname, '../../tmp'),
+        this.backupDir,
+        path.dirname(backupPath)
+      ];
+      
+      // Create directories sequentially
+      for (const dir of dirs) {
+        await this.ensureDirectoryExists(dir);
+      }
+      
       // Create backup directory
-      fs.mkdirSync(backupPath, { recursive: true });
+      await this.ensureDirectoryExists(backupPath);
 
       // Backup world data
       await this.backupWorldData(backupPath);
@@ -139,6 +261,14 @@ class BackupSystem {
       this.lastBackup = timestamp;
       return backupId;
     } catch (error) {
+      // Debug logging for error
+      console.error('Backup creation error:', error);
+      console.error('Error details:', {
+        code: error.code,
+        path: error.path,
+        syscall: error.syscall
+      });
+
       // Update manifest with error information
       if (fs.existsSync(backupPath)) {
         await this.createBackupManifest(backupPath, {

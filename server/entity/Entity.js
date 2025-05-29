@@ -2,12 +2,22 @@
  * Entity - Base class for all entities in the world
  */
 
-class Entity {
-  constructor(world, x = 0, y = 0, z = 0) {
-    this.world = world;
-    this.position = { x, y, z };
-    this.velocity = { x: 0, y: 0, z: 0 };
-    this.rotation = { x: 0, y: 0, z: 0 };
+const EventEmitter = require('events');
+
+class Entity extends EventEmitter {
+  constructor(options = {}) {
+    super();
+    
+    this.id = options.id || 'entity';
+    this.type = options.type || 'entity';
+    this.world = options.world || null;
+    this.position = options.position || { x: 0, y: 0, z: 0 };
+    this.rotation = options.rotation || { x: 0, y: 0, z: 0 };
+    this.velocity = options.velocity || { x: 0, y: 0, z: 0 };
+    this.health = options.health || 20;
+    this.maxHealth = options.maxHealth || 20;
+    this.isDead = false;
+    this.isRemoved = false;
     this.scale = { x: 1, y: 1, z: 1 };
     this.hasPhysics = true;
     this.isOnGround = false;
@@ -41,7 +51,74 @@ class Entity {
    * @param {number} deltaTime - Time since last update in seconds
    */
   update(deltaTime) {
-    // Base update logic
+    if (this.isDead || this.isRemoved) return;
+    
+    // Update position based on velocity
+    this.position.x += this.velocity.x * deltaTime;
+    this.position.y += this.velocity.y * deltaTime;
+    this.position.z += this.velocity.z * deltaTime;
+    
+    this.emit('update', { deltaTime });
+  }
+
+  damage(amount, source = null) {
+    if (this.isDead) return false;
+    
+    this.health -= amount;
+    this.emit('damage', { amount, source });
+    
+    if (this.health <= 0) {
+      this.health = 0;
+      this.kill(source);
+      return true;
+    }
+    
+    return false;
+  }
+
+  heal(amount) {
+    if (this.isDead) return false;
+    
+    const oldHealth = this.health;
+    this.health = Math.min(this.health + amount, this.maxHealth);
+    
+    if (this.health !== oldHealth) {
+      this.emit('heal', { amount });
+    }
+    
+    return this.health === this.maxHealth;
+  }
+
+  kill(source = null) {
+    if (this.isDead) return;
+    
+    this.isDead = true;
+    this.health = 0;
+    this.emit('death', { source });
+  }
+
+  remove() {
+    if (this.isRemoved) return;
+    
+    this.isRemoved = true;
+    this.emit('remove');
+    
+    if (this.world) {
+      this.world.removeEntity(this);
+    }
+  }
+
+  getClientData() {
+    return {
+      id: this.id,
+      type: this.type,
+      position: this.position,
+      rotation: this.rotation,
+      velocity: this.velocity,
+      health: this.health,
+      maxHealth: this.maxHealth,
+      isDead: this.isDead
+    };
   }
 
   /**
@@ -73,4 +150,4 @@ class Entity {
   }
 }
 
-module.exports = { Entity }; 
+module.exports = Entity; 

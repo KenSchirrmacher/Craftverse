@@ -133,4 +133,4 @@ class Player extends Entity {
   }
 }
 
-module.exports = { Player }; 
+module.exports = Player; 

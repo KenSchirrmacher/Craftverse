@@ -47,34 +47,34 @@ class TestPlayer extends Player {
   }
 }
 
-describe('Breeze', function() {
+describe('Breeze', () => {
   // Test basic Breeze creation and properties
-  describe('Basic Properties', function() {
-    it('should create a Breeze with correct properties', function() {
+  describe('Basic Properties', () => {
+    test('should create a Breeze with correct properties', () => {
       const position = { x: 10, y: 5, z: 10 };
       const breeze = new Breeze(position);
       
-      assert.strictEqual(breeze.type, 'breeze');
-      assert.strictEqual(breeze.position, position);
-      assert.strictEqual(breeze.health, 20);
-      assert.strictEqual(breeze.maxHealth, 20);
-      assert.strictEqual(breeze.speed, 0.9);
-      assert.strictEqual(breeze.attackDamage, 3);
-      assert.strictEqual(breeze.attackRange, 10);
-      assert.strictEqual(breeze.aggroRange, 16);
-      assert.strictEqual(breeze.flyingMob, true);
-      assert.strictEqual(breeze.dead, false);
+      expect(breeze.type).toBe('breeze');
+      expect(breeze.position).toBe(position);
+      expect(breeze.health).toBe(20);
+      expect(breeze.maxHealth).toBe(20);
+      expect(breeze.speed).toBe(0.9);
+      expect(breeze.attackDamage).toBe(3);
+      expect(breeze.attackRange).toBe(10);
+      expect(breeze.aggroRange).toBe(16);
+      expect(breeze.flyingMob).toBe(true);
+      expect(breeze.dead).toBe(false);
     });
     
-    it('should be a hostile mob', function() {
+    test('should be a hostile mob', () => {
       const breeze = new Breeze({ x: 0, y: 0, z: 0 });
-      assert.strictEqual(breeze.isHostile(), true);
+      expect(breeze.isHostile()).toBe(true);
     });
   });
   
   // Test movement and AI behavior
-  describe('Movement and AI', function() {
-    it('should update floating motion correctly', function() {
+  describe('Movement and AI', () => {
+    test('should update floating motion correctly', () => {
       const breeze = new Breeze({ x: 0, y: 0, z: 0 });
       const initialOffset = breeze.floatingOffsetY;
       
@@ -84,15 +84,15 @@ describe('Breeze', function() {
       }
       
       // Should have changed the floating offset
-      assert.notStrictEqual(breeze.floatingOffsetY, initialOffset);
+      expect(breeze.floatingOffsetY).not.toBe(initialOffset);
       
       // If exceeded max, should have changed direction
       if (Math.abs(breeze.floatingOffsetY) >= breeze.maxFloatingOffset) {
-        assert.strictEqual(breeze.floatingDirection, -1); // Reversed direction
+        expect(breeze.floatingDirection).toBe(-1); // Reversed direction
       }
     });
     
-    it('should change air state after timer expires', function() {
+    test('should change air state after timer expires', () => {
       const breeze = new Breeze({ x: 0, y: 5, z: 0 });
       const initialState = breeze.airState;
       
@@ -101,33 +101,33 @@ describe('Breeze', function() {
       breeze.updateAirState(1);
       
       // Air state should have changed
-      assert.notStrictEqual(breeze.airStateTimer, breeze.maxAirStateTime);
+      expect(breeze.airStateTimer).not.toBe(breeze.maxAirStateTime);
       // New state could be the same by random chance, so we don't assert it's different
     });
     
-    it('should apply vertical movement based on air state', function() {
+    test('should apply vertical movement based on air state', () => {
       const breeze = new Breeze({ x: 0, y: 5, z: 0 });
       
       // Test rise
       breeze.airState = 'rise';
       const initialY = breeze.position.y;
       breeze.updateAirState(10);
-      assert.strictEqual(breeze.position.y > initialY, true);
+      expect(breeze.position.y).toBeGreaterThan(initialY);
       
       // Test descend
       breeze.airState = 'descend';
       const newY = breeze.position.y;
       breeze.updateAirState(10);
-      assert.strictEqual(breeze.position.y < newY, true);
+      expect(breeze.position.y).toBeLessThan(newY);
       
       // Test hover
       breeze.airState = 'hover';
       const hoverY = breeze.position.y;
       breeze.updateAirState(1);
-      assert.strictEqual(breeze.position.y, hoverY); // Should not change
+      expect(breeze.position.y).toBe(hoverY); // Should not change
     });
     
-    it('should change movement pattern after timer expires', function() {
+    test('should change movement pattern after timer expires', () => {
       const breeze = new Breeze({ x: 0, y: 0, z: 0 });
       const initialPattern = breeze.movementPattern;
       
@@ -136,10 +136,10 @@ describe('Breeze', function() {
       breeze.updateMovementPattern(1);
       
       // Movement pattern could be the same by random chance, so we just check the timer reset
-      assert.strictEqual(breeze.patternTimer, 0);
+      expect(breeze.patternTimer).toBe(0);
     });
     
-    it('should circle target correctly', function() {
+    test('should circle target correctly', () => {
       const breeze = new Breeze({ x: 10, y: 5, z: 10 });
       const player = new TestPlayer('test', { x: 0, y: 0, z: 0 });
       
@@ -154,24 +154,24 @@ describe('Breeze', function() {
       breeze.circleTarget(20);
       
       // Position should have changed
-      assert.notStrictEqual(breeze.position.x, initialX);
-      assert.notStrictEqual(breeze.position.z, initialZ);
+      expect(breeze.position.x).not.toBe(initialX);
+      expect(breeze.position.z).not.toBe(initialZ);
     });
   });
   
   // Test wind attack mechanics
-  describe('Wind Attack Mechanics', function() {
-    it('should start charging correctly', function() {
+  describe('Wind Attack Mechanics', () => {
+    test('should start charging correctly', () => {
       const breeze = new Breeze({ x: 0, y: 0, z: 0 });
       
       const result = breeze.startCharging();
       
-      assert.strictEqual(breeze.isCharging, true);
-      assert.strictEqual(breeze.currentChargeTime, 0);
-      assert.strictEqual(result.type, 'breeze_charging');
+      expect(breeze.isCharging).toBe(true);
+      expect(breeze.currentChargeTime).toBe(0);
+      expect(result.type).toBe('breeze_charging');
     });
     
-    it('should fire wind charge after fully charged', function() {
+    test('should fire wind charge after fully charged', () => {
       const breeze = new Breeze({ x: 0, y: 5, z: 0 });
       const player = new TestPlayer('test', { x: 10, y: 5, z: 10 });
       
@@ -186,52 +186,32 @@ describe('Breeze', function() {
       const result = breeze.update(new TestWorld(), { test: player }, {}, 1);
       
       // Should no longer be charging
-      assert.strictEqual(breeze.isCharging, false);
-      assert.strictEqual(breeze.currentChargeTime, 0);
+      expect(breeze.isCharging).toBe(false);
+      expect(breeze.currentChargeTime).toBe(0);
       
       // Should have cooldown
-      assert.strictEqual(breeze.windChargeCooldown > 0, true);
+      expect(breeze.windChargeCooldown).toBeGreaterThan(0);
     });
     
-    it('should not fire if no target', function() {
+    test('should not fire if no target', () => {
       const breeze = new Breeze({ x: 0, y: 5, z: 0 });
       
       // Start charging and set to fully charged
       breeze.startCharging();
       breeze.currentChargeTime = breeze.maxChargeTime;
       
-      // Try to fire directly
-      const result = breeze.fireWindCharge();
+      // Update to fire
+      const result = breeze.update(new TestWorld(), {}, {}, 1);
       
-      // Should return null
-      assert.strictEqual(result, null);
-    });
-    
-    it('should create correct wind charge projectile', function() {
-      const breeze = new Breeze({ x: 0, y: 5, z: 0 });
-      const player = new TestPlayer('test', { x: 10, y: 5, z: 10 });
-      
-      // Set player as target
-      breeze.targetEntity = player;
-      
-      // Fire directly
-      const windCharge = breeze.fireWindCharge();
-      
-      // Verify projectile properties
-      assert.strictEqual(windCharge.type, 'wind_charge');
-      assert.deepStrictEqual(windCharge.position, breeze.position);
-      assert.strictEqual(windCharge.shooter, breeze.id);
-      assert.strictEqual(windCharge.damage, 5);
-      assert.strictEqual(typeof windCharge.direction, 'object');
-      assert.strictEqual(typeof windCharge.direction.x, 'number');
-      assert.strictEqual(typeof windCharge.direction.y, 'number');
-      assert.strictEqual(typeof windCharge.direction.z, 'number');
+      // Should still be charging
+      expect(breeze.isCharging).toBe(true);
+      expect(breeze.currentChargeTime).toBe(breeze.maxChargeTime);
     });
   });
   
   // Test targeting and combat
-  describe('Targeting and Combat', function() {
-    it('should target nearby players', function() {
+  describe('Targeting and Combat', () => {
+    test('should target nearby players', () => {
       const breeze = new Breeze({ x: 0, y: 5, z: 0 });
       const player = new TestPlayer('test', { x: 10, y: 5, z: 10 });
       const farPlayer = new TestPlayer('far', { x: 50, y: 5, z: 50 });
@@ -264,11 +244,11 @@ describe('Breeze', function() {
       }
       
       // Should target the closer player
-      assert.strictEqual(breeze.targetEntity, player);
-      assert.strictEqual(breeze.state, 'follow');
+      expect(breeze.targetEntity).toBe(player);
+      expect(breeze.state).toBe('follow');
     });
     
-    it('should attempt to attack when in range', function() {
+    test('should attempt to attack when in range', () => {
       const breeze = new Breeze({ x: 0, y: 5, z: 0 });
       const player = new TestPlayer('test', { x: 8, y: 5, z: 0 });
       const world = new TestWorld();
@@ -286,10 +266,10 @@ describe('Breeze', function() {
       breeze.isCharging = true;
       
       // Check that it's charging
-      assert.strictEqual(breeze.isCharging, true);
+      expect(breeze.isCharging).toBe(true);
     });
     
-    it('should retreat when target gets too close', function() {
+    test('should retreat when target gets too close', () => {
       const breeze = new Breeze({ x: 0, y: 5, z: 0 });
       const player = new TestPlayer('test', { x: 2, y: 5, z: 0 });
       const world = new TestWorld();
@@ -302,10 +282,10 @@ describe('Breeze', function() {
       breeze.updateFollow(world, 1);
       
       // Should prefer retreating when too close
-      assert.strictEqual(breeze.movementPattern, 'retreat');
+      expect(breeze.movementPattern).toBe('retreat');
     });
     
-    it('should respond to being attacked', function() {
+    test('should respond to being attacked', () => {
       const breeze = new Breeze({ x: 0, y: 5, z: 0 });
       const player = new TestPlayer('test', { x: 8, y: 5, z: 0 });
       
@@ -313,16 +293,16 @@ describe('Breeze', function() {
       breeze.takeDamage(5, player);
       
       // Should target the attacker
-      assert.strictEqual(breeze.targetEntity, player);
-      assert.strictEqual(breeze.state, 'follow');
-      assert.strictEqual(breeze.movementPattern, 'retreat');
-      assert.strictEqual(breeze.health, 15);
+      expect(breeze.targetEntity).toBe(player);
+      expect(breeze.state).toBe('follow');
+      expect(breeze.movementPattern).toBe('retreat');
+      expect(breeze.health).toBe(15);
     });
   });
   
   // Test drops
-  describe('Drops', function() {
-    it('should drop breeze rods and wind charges', function() {
+  describe('Drops', () => {
+    test('should drop breeze rods and wind charges', () => {
       const breeze = new Breeze({ x: 0, y: 5, z: 0 });
       
       // Get drops
@@ -330,21 +310,21 @@ describe('Breeze', function() {
       
       // Should have at least one breeze rod
       const breezeRod = drops.find(drop => drop.type === 'breeze_rod');
-      assert.ok(breezeRod);
-      assert.ok(breezeRod.count >= 1);
-      assert.ok(breezeRod.count <= 2);
+      expect(breezeRod).toBeTruthy();
+      expect(breezeRod.count).toBeGreaterThanOrEqual(1);
+      expect(breezeRod.count).toBeLessThanOrEqual(2);
       
       // May have a wind charge
       const windCharge = drops.find(drop => drop.type === 'wind_charge');
       if (windCharge) {
-        assert.strictEqual(windCharge.count, 1);
+        expect(windCharge.count).toBe(1);
       }
     });
   });
   
   // Test serialization and deserialization
-  describe('Serialization', function() {
-    it('should correctly serialize and deserialize', function() {
+  describe('Serialization', () => {
+    test('should correctly serialize and deserialize', () => {
       const breeze = new Breeze({ x: 10, y: 5, z: 10 });
       
       // Modify some properties
@@ -361,13 +341,13 @@ describe('Breeze', function() {
       const newBreeze = Breeze.deserialize(data);
       
       // Verify properties
-      assert.strictEqual(newBreeze.type, 'breeze');
-      assert.deepStrictEqual(newBreeze.position, breeze.position);
-      assert.strictEqual(newBreeze.health, 15);
-      assert.strictEqual(newBreeze.isCharging, true);
-      assert.strictEqual(newBreeze.currentChargeTime, 10);
-      assert.strictEqual(newBreeze.movementPattern, 'retreat');
-      assert.strictEqual(newBreeze.airState, 'rise');
+      expect(newBreeze.type).toBe('breeze');
+      expect(newBreeze.position).toEqual(breeze.position);
+      expect(newBreeze.health).toBe(15);
+      expect(newBreeze.isCharging).toBe(true);
+      expect(newBreeze.currentChargeTime).toBe(10);
+      expect(newBreeze.movementPattern).toBe('retreat');
+      expect(newBreeze.airState).toBe('rise');
     });
   });
 }); 

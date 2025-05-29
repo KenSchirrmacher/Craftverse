@@ -4,6 +4,7 @@
  */
 const assert = require('assert');
 const { v4: uuidv4 } = require('uuid');
+const fs = require('fs');
 
 class TestBase {
   /**
@@ -17,6 +18,7 @@ class TestBase {
     this.afterEachHooks = [];
     this.beforeAllHooks = [];
     this.afterAllHooks = [];
+    this.testDir = null;
   }
   
   /**
@@ -141,6 +143,15 @@ class TestBase {
     }
     
     return results;
+  }
+
+  /**
+   * Clean up test resources
+   */
+  async cleanup() {
+    if (this.testDir && fs.existsSync(this.testDir)) {
+      fs.rmSync(this.testDir, { recursive: true, force: true });
+    }
   }
   
   /**

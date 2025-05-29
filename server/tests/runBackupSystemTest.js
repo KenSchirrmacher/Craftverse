@@ -3,16 +3,13 @@
  * Runs the backup system test suite
  */
 
-const { runTests } = require('./backupSystemTest');
+const mocha = require('mocha');
+const chai = require('chai');
+const path = require('path');
 
-console.log('Starting Backup System Tests...');
+// Set up test environment
+process.env.NODE_ENV = 'test';
+process.env.TEST_DIR = path.join(__dirname, '../../tmp/backup-test');
 
-runTests()
-  .then(() => {
-    console.log('Backup System Tests completed successfully');
-    process.exit(0);
-  })
-  .catch(error => {
-    console.error('Backup System Tests failed:', error);
-    process.exit(1);
-  }); 
+// Run tests
+require('./backupSystemTest'); 

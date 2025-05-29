@@ -32,6 +32,9 @@ class Entity extends EventEmitter {
     this.maxLifetime = options.maxLifetime || -1; // -1 means no lifetime limit
     this.dimension = options.dimension || 'overworld';
     this.data = options.data || {};
+    this.acceleration = options.acceleration || { x: 0, y: 0, z: 0 };
+    this.scale = options.scale || { x: 1, y: 1, z: 1 };
+    this.isActive = options.isActive !== undefined ? options.isActive : true;
   }
   
   /**
@@ -86,6 +89,11 @@ class Entity extends EventEmitter {
     this.position.x += this.velocity.x * delta;
     this.position.y += this.velocity.y * delta;
     this.position.z += this.velocity.z * delta;
+    
+    // Update velocity based on acceleration
+    this.velocity.x += this.acceleration.x * delta;
+    this.velocity.y += this.acceleration.y * delta;
+    this.velocity.z += this.acceleration.z * delta;
     
     // Update bounding box
     this.boundingBox = this.calculateBoundingBox();
@@ -315,7 +323,10 @@ class Entity extends EventEmitter {
       age: this.age,
       maxLifetime: this.maxLifetime,
       dimension: this.dimension,
-      data: { ...this.data }
+      data: { ...this.data },
+      acceleration: { ...this.acceleration },
+      scale: { ...this.scale },
+      isActive: this.isActive
     };
   }
   
@@ -338,6 +349,9 @@ class Entity extends EventEmitter {
     if (data.maxLifetime !== undefined) this.maxLifetime = data.maxLifetime;
     if (data.dimension) this.dimension = data.dimension;
     if (data.data) this.data = { ...data.data };
+    if (data.acceleration) this.acceleration = { ...data.acceleration };
+    if (data.scale) this.scale = { ...data.scale };
+    if (data.isActive !== undefined) this.isActive = data.isActive;
     
     // Update bounding box after deserializing
     this.boundingBox = this.calculateBoundingBox();
@@ -363,8 +377,8 @@ class Entity extends EventEmitter {
     return { ...this.rotation };
   }
 
-  setRotation(yaw, pitch) {
-    this.rotation = { yaw, pitch };
+  setRotation(x, y, z) {
+    this.rotation = { x, y, z };
   }
 
   isOnGround() {
@@ -427,6 +441,22 @@ class Entity extends EventEmitter {
     const dy = thisPos.y - otherPos.y;
     const dz = thisPos.z - otherPos.z;
     return Math.sqrt(dx * dx + dy * dy + dz * dz) <= distance;
+  }
+
+  setAcceleration(x, y, z) {
+    this.acceleration = { x, y, z };
+  }
+
+  setScale(x, y, z) {
+    this.scale = { x, y, z };
+  }
+
+  deactivate() {
+    this.isActive = false;
+  }
+
+  activate() {
+    this.isActive = true;
   }
 }
 
