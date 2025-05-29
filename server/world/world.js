@@ -12,6 +12,7 @@ class World extends EventEmitter {
     this.entities = new Map();
     this.players = new Map();
     this.blockRegistry = null;
+    this.seed = Math.floor(Math.random() * 1000000);
     
     // Security limits
     this.maxEntitiesPerChunk = 100;
@@ -28,6 +29,58 @@ class World extends EventEmitter {
 
     // Biome registry
     this.biomeRegistry = null;
+  }
+
+  initialize() {
+    // Generate a simple flat world for testing
+    const worldSize = 16; // 16x16 blocks
+    const groundLevel = 64;
+    
+    // Generate ground blocks
+    for (let x = -worldSize/2; x < worldSize/2; x++) {
+      for (let z = -worldSize/2; z < worldSize/2; z++) {
+        // Add grass block at ground level
+        this.setBlock(x, groundLevel, z, { type: 'grass', isSolid: true });
+        
+        // Add dirt blocks below
+        for (let y = groundLevel - 1; y > groundLevel - 4; y--) {
+          this.setBlock(x, y, z, { type: 'dirt', isSolid: true });
+        }
+        
+        // Add stone blocks below dirt
+        for (let y = groundLevel - 4; y > groundLevel - 8; y--) {
+          this.setBlock(x, y, z, { type: 'stone', isSolid: true });
+        }
+      }
+    }
+    
+    // Add some trees
+    this.addTree(2, groundLevel + 1, 2);
+    this.addTree(-3, groundLevel + 1, -4);
+    this.addTree(5, groundLevel + 1, -2);
+    
+    console.log('World initialized with', this.blocks.size, 'blocks');
+  }
+
+  addTree(x, y, z) {
+    // Add log blocks
+    for (let i = 0; i < 4; i++) {
+      this.setBlock(x, y + i, z, { type: 'wood', isSolid: true });
+    }
+    
+    // Add leaves
+    for (let dx = -2; dx <= 2; dx++) {
+      for (let dy = 0; dy <= 3; dy++) {
+        for (let dz = -2; dz <= 2; dz++) {
+          // Skip corners for a more natural look
+          if (Math.abs(dx) === 2 && Math.abs(dz) === 2) continue;
+          // Skip the center where the log is
+          if (dx === 0 && dz === 0) continue;
+          
+          this.setBlock(x + dx, y + dy + 2, z + dz, { type: 'leaves', isSolid: true });
+        }
+      }
+    }
   }
 
   setRecipeManager(manager) {

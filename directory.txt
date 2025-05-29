@@ -11,4 +11,18 @@
 - server/tests/coreComponentsTest.js - Comprehensive tests for core block and smithing components
 - server/tests/runCoreComponentsTest.js - Test runner for core components tests
 - server/tests/windChargeTest.js - Implementation of wind charge test
-- server/tests/runWindChargeTest.js - Test runner for wind charge test 
+- server/tests/runWindChargeTest.js - Test runner for wind charge test
+- server/tests/mobEventTest.js - Purpose: Tests mob event emission functionality
+- Function: Verifies that all mobs correctly emit events for their actions
+- Called by: Test runner
+- Dependencies: 
+  - World class
+  - All mob classes (Allay, Camel, Frog, Sniffer, HostileMobs)
+  - TestBase class
+
+- server/tests/worldInitializationTest.js - Purpose: Tests world initialization functionality
+- Function: Verifies correct block placement and world generation
+- Called by: Test runner
+- Dependencies:
+  - World class
+  - TestBase class 

@@ -411,4 +411,4 @@ class BiomeRegistry {
 
 // Create and export a singleton instance
 const registry = new BiomeRegistry();
-module.exports = registry; 
+module.exports = BiomeRegistry; 

@@ -3,15 +3,20 @@ const app = express();
 const http = require('http').createServer(app);
 const io = require('socket.io')(http);
 const path = require('path');
+const World = require('./server/world/world');
 
 // Serve static files
 app.use(express.static(path.join(__dirname, 'public')));
 
+// Initialize world
+const world = new World();
+world.initialize();
+
 // Game state
 const gameState = {
     players: new Map(),
-    blocks: new Map(),
-    worldSeed: Math.random() * 10000
+    blocks: world.blocks,
+    worldSeed: world.seed
 };
 
 // Socket.io connection handling
@@ -22,11 +27,18 @@ io.on('connection', (socket) => {
     socket.on('playerJoin', (playerData) => {
         gameState.players.set(socket.id, {
             id: socket.id,
-            position: playerData.position,
-            rotation: playerData.rotation,
-            inventory: playerData.inventory,
-            health: playerData.health,
-            gameMode: playerData.gameMode
+            position: playerData.position || { x: 0, y: 64, z: 0 },
+            rotation: playerData.rotation || { y: 0 },
+            inventory: playerData.inventory || {
+                grass: 64,
+                dirt: 64,
+                stone: 64,
+                wood: 64,
+                leaves: 64,
+                sand: 64
+            },
+            health: playerData.health || 100,
+            gameMode: playerData.gameMode || 'survival'
         });
 
         // Send current world state to new player

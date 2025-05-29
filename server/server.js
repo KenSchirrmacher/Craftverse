@@ -236,7 +236,7 @@ global.dimensionManager.registerDimension('overworld', {
 global.dimensionManager.registerDimension('nether', netherDimension);
 
 // Initialize game systems
-const saveSystem = new SaveSystem('saves');
+saveSystem.init('saves');
 const potionRegistry = new PotionRegistry();
 global.villageReputationManager = new VillageReputationManager();
 
