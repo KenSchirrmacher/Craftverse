@@ -178,7 +178,7 @@ class BrewingSystem {
    */
   onServerTick() {
     // Process brewing stands
-    this.brewingManager.processBrewing();
+    this.brewingManager.update();
     
     // Update clients about brewing progress every 10 ticks (500ms)
     if (this.server.ticks % 10 === 0) {

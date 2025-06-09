@@ -36,3 +36,13 @@
 - Function: Executes gameplay tests and reports results
 - Called by: Test runner or manual execution
 - Dependencies: gameplayTest.js 
+
+- server/tests/brewingSystemTest.js - Purpose: Tests BrewingSystem and BrewingManager functionality
+- Function: Verifies brewing stand management, progress calculation, save/load, and integration
+- Called by: runBrewingSystemTest.js test runner
+- Dependencies: TestBase class, BrewingManager, BrewingSystem
+
+- server/tests/runBrewingSystemTest.js - Purpose: Test runner for BrewingSystem functionality tests
+- Function: Executes brewing system tests and reports results
+- Called by: Test runner or manual execution
+- Dependencies: brewingSystemTest.js 

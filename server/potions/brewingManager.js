@@ -392,6 +392,58 @@ class BrewingManager {
     
     return updates;
   }
+
+  /**
+   * Get all active brewing stands
+   * @returns {Map} - Map of active brewing stands
+   */
+  get activeBrewingStands() {
+    const activeStands = new Map();
+    
+    for (const standId in this.brewingStands) {
+      const stand = this.brewingStands[standId];
+      if (stand.brewing) {
+        activeStands.set(standId, stand);
+      }
+    }
+    
+    return activeStands;
+  }
+
+  /**
+   * Get brewing progress for a specific stand
+   * @param {string} standId - Brewing stand ID
+   * @returns {number} - Progress percentage (0-100)
+   */
+  getBrewingProgress(standId) {
+    const stand = this.brewingStands[standId];
+    if (!stand || !stand.brewing) {
+      return 0;
+    }
+    
+    return Math.floor((stand.progress / stand.totalTime) * 100);
+  }
+
+  /**
+   * Save brewing stand data
+   * @returns {Object} - Save data object
+   */
+  saveData() {
+    return {
+      brewingStands: this.brewingStands,
+      timestamp: Date.now()
+    };
+  }
+
+  /**
+   * Load brewing stand data
+   * @param {Object} saveData - Save data object
+   */
+  loadData(saveData) {
+    if (saveData && saveData.brewingStands) {
+      this.brewingStands = saveData.brewingStands;
+    }
+  }
 }
 
 module.exports = BrewingManager; 
