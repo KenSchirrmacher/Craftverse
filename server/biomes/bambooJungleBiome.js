@@ -15,9 +15,9 @@ class BambooJungleBiome extends JungleBiome {
       id: 'bamboo_jungle',
       name: 'Bamboo Jungle',
       
-      // Similar climate to jungle but slightly modified
-      temperatureRange: { min: 0.75, max: 1.0 },
-      precipitationRange: { min: 0.85, max: 1.0 },
+      // Similar climate to jungle but slightly modified (using midpoint of ranges)
+      temperature: 0.875, // Mid-point of 0.75 to 1.0
+      precipitation: 0.925, // Mid-point of 0.85 to 1.0
       
       // Different feature weights for bamboo-heavy generation
       features: [

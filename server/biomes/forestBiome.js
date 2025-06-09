@@ -1,10 +1,10 @@
-const Biome = require('./baseBiome');
+const BiomeBase = require('./biomeBase');
 
 /**
  * Forest biome - dense woodland with many trees and undergrowth
  * Represents temperate forests with moderate rainfall and abundant vegetation
  */
-class ForestBiome extends Biome {
+class ForestBiome extends BiomeBase {
   /**
    * Create a new Forest biome
    * @param {Object} options - Optional properties to override defaults
@@ -16,12 +16,12 @@ class ForestBiome extends Biome {
       name: options.name || 'Forest',
       color: options.color || '#4F7F18',
       
-      // Climate ranges - forests are temperate biomes with higher rainfall
-      temperatureRange: { min: 0.4, max: 0.7 },
-      precipitationRange: { min: 0.5, max: 1.0 },
-      continentalnessRange: { min: 0.3, max: 0.6 },
-      erosionRange: { min: 0.2, max: 0.8 },
-      weirdnessRange: { min: -0.8, max: 0.8 },
+      // Climate values - forests are temperate biomes with higher rainfall (using midpoint of ranges)
+      temperature: 0.55, // Mid-point of 0.4 to 0.7
+      precipitation: 0.75, // Mid-point of 0.5 to 1.0
+      continentalness: 0.45, // Mid-point of 0.3 to 0.6
+      erosion: 0.5, // Mid-point of 0.2 to 0.8
+      weirdness: 0.0, // Mid-point of -0.8 to 0.8
       
       // Terrain properties
       baseHeight: 70,

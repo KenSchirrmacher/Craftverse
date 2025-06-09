@@ -1,10 +1,10 @@
-const Biome = require('./baseBiome');
+const BiomeBase = require('./biomeBase');
 
 /**
  * Mountains biome - high elevation terrain with dramatic peaks and valleys
  * Represents mountainous regions with stone peaks, steep cliffs, and snow-capped summits
  */
-class MountainsBiome extends Biome {
+class MountainsBiome extends BiomeBase {
   /**
    * Create a new Mountains biome
    * @param {Object} props - Optional properties to override defaults
@@ -16,12 +16,12 @@ class MountainsBiome extends Biome {
       name: 'Mountains',
       color: '#A0A0A0',
       
-      // Climate ranges - mountains span various temps but need specific erosion
-      temperatureRange: { min: -1.0, max: 0.4 },
-      precipitationRange: { min: 0.1, max: 1.0 },
-      continentalnessRange: { min: 0.5, max: 1.0 },
-      erosionRange: { min: 0.0, max: 0.4 },   // Low erosion for mountains
-      weirdnessRange: { min: -0.3, max: 1.0 },
+      // Climate values - mountains span various temps but need specific erosion (using midpoint of ranges)
+      temperature: -0.3, // Mid-point of -1.0 to 0.4
+      precipitation: 0.55, // Mid-point of 0.1 to 1.0
+      continentalness: 0.75, // Mid-point of 0.5 to 1.0
+      erosion: 0.2, // Mid-point of 0.0 to 0.4
+      weirdness: 0.35, // Mid-point of -0.3 to 1.0
       
       // Terrain properties
       baseHeight: 90,          // Much higher base height

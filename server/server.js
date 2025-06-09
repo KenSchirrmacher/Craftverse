@@ -4,7 +4,7 @@ const { Server } = require('socket.io');
 const { v4: uuidv4 } = require('uuid');
 const path = require('path');
 const saveSystem = require('./saveSystem');
-const MobManager = require('./entities/mobManager');
+const MobManager = require('./mobs/mobManager');
 const WorldGenerator = require('./utils/worldGenerator');
 const EnchantmentTable = require('./enchantments/enchantmentTable');
 const EnchantmentManager = require('./enchantments/enchantmentManager');
@@ -43,7 +43,7 @@ app.get('/', (req, res) => {
 
 // Game state
 const players = {};
-const blocks = {};
+let blocks = {};
 const mobs = {};
 const mobTypes = {};
 const projectiles = {};
@@ -168,9 +168,6 @@ const world = {
   generator: worldGenerator
 };
 
-// Initialize weather system with world reference
-weatherSystem.world = world;
-
 // Weather state
 let isRaining = false;
 let moonPhase = 0;
@@ -213,6 +210,9 @@ const netherDimension = new NetherDimension({
 // Initialize weather system
 const weatherSystem = new WeatherSystem();
 
+// Initialize weather system with world reference
+weatherSystem.world = world;
+
 // Listen for weather change events
 weatherSystem.on('weatherChange', (data) => {
   console.log(`Weather changed to: ${data.weather}, duration: ${data.duration} ticks`);
@@ -224,8 +224,7 @@ weatherSystem.on('lightningStrike', (strike) => {
 });
 
 // Initialize dimension manager and register dimensions
-global.dimensionManager.init();
-global.dimensionManager.registerDimension('overworld', { 
+global.dimensionManager.addDimension('overworld', { 
   id: 'overworld',
   getBlockType: (posKey) => blocks[posKey] ? blocks[posKey].type : null,
   setBlock: (posKey, blockData) => {
@@ -233,10 +232,9 @@ global.dimensionManager.registerDimension('overworld', {
     io.emit('blockUpdate', { position: posKey, type: blockData.type });
   }
 });
-global.dimensionManager.registerDimension('nether', netherDimension);
+global.dimensionManager.addDimension('nether', netherDimension);
 
 // Initialize game systems
-saveSystem.init('saves');
 const potionRegistry = new PotionRegistry();
 global.villageReputationManager = new VillageReputationManager();
 
@@ -343,7 +341,7 @@ function gameLoop() {
   
   // Process pending portal teleports
   if (global.dimensionManager) {
-    global.dimensionManager.processPendingTeleports();
+    // global.dimensionManager.processPendingTeleports(); // Method doesn't exist yet
   }
   
   // Update status effects

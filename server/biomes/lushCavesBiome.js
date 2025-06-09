@@ -3,9 +3,9 @@
  * Part of the Caves & Cliffs update
  */
 
-const Biome = require('./baseBiome');
+const BiomeBase = require('./biomeBase');
 
-class LushCavesBiome extends Biome {
+class LushCavesBiome extends BiomeBase {
   /**
    * Create a new Lush Caves biome
    * @param {Object} props - Optional properties to override defaults

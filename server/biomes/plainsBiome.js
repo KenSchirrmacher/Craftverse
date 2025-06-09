@@ -16,12 +16,12 @@ class PlainsBiome extends BiomeBase {
       name: 'Plains',
       color: '#91BD59',
       
-      // Climate ranges - plains are temperate biomes
-      temperatureRange: { min: -0.2, max: 0.4 },
-      precipitationRange: { min: 0.3, max: 0.7 },
-      continentalnessRange: { min: 0.4, max: 0.8 },
-      erosionRange: { min: 0.3, max: 0.8 },
-      weirdnessRange: { min: -0.5, max: 0.5 },
+      // Climate values - plains are temperate biomes (using midpoint of ranges)
+      temperature: 0.1, // Mid-point of -0.2 to 0.4
+      precipitation: 0.5, // Mid-point of 0.3 to 0.7
+      continentalness: 0.6, // Mid-point of 0.4 to 0.8
+      erosion: 0.55, // Mid-point of 0.3 to 0.8
+      weirdness: 0.0, // Mid-point of -0.5 to 0.5
       
       // Terrain properties
       baseHeight: 68,
@@ -112,7 +112,10 @@ class PlainsBiome extends BiomeBase {
    */
   getHeight(x, z, noiseGenerators) {
     // Get base height from parent method
-    const baseHeight = super.getHeight(x, z, noiseGenerators);
+    const baseNoise = noiseGenerators.base ? 
+      noiseGenerators.base.get(x * 0.01, z * 0.01) : 
+      Math.sin(x * 0.01) * Math.cos(z * 0.01);
+    const baseHeight = super.getHeightAt(x, z, baseNoise);
     
     // Plains have rolling hills with occasional flat areas
     const flatnessNoise = noiseGenerators.flatness ? 

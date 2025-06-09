@@ -70,7 +70,8 @@ class WorldGenerator {
    */
   createBiomeManager() {
     // Get all biomes from the registry
-    const biomes = BiomeRegistry.getAllBiomes();
+    const biomeRegistry = new BiomeRegistry();
+    const biomes = biomeRegistry.getAllBiomes();
     
     // Create a biome manager with noise generators and all registered biomes
     return new BiomeManager({

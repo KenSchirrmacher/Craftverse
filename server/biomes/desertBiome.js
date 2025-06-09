@@ -16,12 +16,12 @@ class DesertBiome extends BiomeBase {
       name: 'Desert',
       color: '#FFDB81',
       
-      // Climate ranges - desert is hot and dry
-      temperatureRange: { min: 0.6, max: 1.0 },
-      precipitationRange: { min: 0.0, max: 0.2 },
-      continentalnessRange: { min: 0.6, max: 1.0 },
-      erosionRange: { min: 0.5, max: 1.0 },
-      weirdnessRange: { min: -1.0, max: 1.0 },
+      // Climate values - desert is hot and dry (using midpoint of ranges)
+      temperature: 0.8, // Mid-point of 0.6 to 1.0
+      precipitation: 0.1, // Mid-point of 0.0 to 0.2
+      continentalness: 0.8, // Mid-point of 0.6 to 1.0
+      erosion: 0.75, // Mid-point of 0.5 to 1.0
+      weirdness: 0.0, // Mid-point of -1.0 to 1.0
       
       // Terrain properties
       baseHeight: 65,

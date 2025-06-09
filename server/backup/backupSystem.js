@@ -36,10 +36,8 @@ class BackupSystem {
    */
   createDirectoryWindows(dir) {
     try {
-      // Convert path to Windows format
-      const windowsPath = dir.replace(/\//g, '\\');
-      // Use Windows mkdir command with /p flag for parent directories
-      execSync(`mkdir "${windowsPath}" /p`, { shell: 'cmd.exe' });
+      // Use Node.js built-in method which is more reliable
+      fs.mkdirSync(dir, { recursive: true });
     } catch (error) {
       console.error('Error creating directory:', error);
       throw error;

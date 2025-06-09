@@ -1,10 +1,10 @@
-const Biome = require('./baseBiome');
+const BiomeBase = require('./biomeBase');
 
 /**
  * Jungle biome - dense tropical forest with unique structures
  * Represents hot, wet regions with lush vegetation
  */
-class JungleBiome extends Biome {
+class JungleBiome extends BiomeBase {
   /**
    * Create a new Jungle biome
    * @param {Object} props - Optional properties to override defaults
@@ -16,12 +16,12 @@ class JungleBiome extends Biome {
       name: 'Jungle',
       color: '#58B31F',
       
-      // Climate ranges - jungle is hot and wet
-      temperatureRange: { min: 0.7, max: 1.0 },
-      precipitationRange: { min: 0.8, max: 1.0 },
-      continentalnessRange: { min: 0.3, max: 0.7 },
-      erosionRange: { min: 0.2, max: 0.8 },
-      weirdnessRange: { min: -0.5, max: 0.5 },
+      // Climate values - jungle is hot and wet (using midpoint of ranges)
+      temperature: 0.85, // Mid-point of 0.7 to 1.0
+      precipitation: 0.9, // Mid-point of 0.8 to 1.0
+      continentalness: 0.5, // Mid-point of 0.3 to 0.7
+      erosion: 0.5, // Mid-point of 0.2 to 0.8
+      weirdness: 0.0, // Mid-point of -0.5 to 0.5
       
       // Terrain properties
       baseHeight: 70,

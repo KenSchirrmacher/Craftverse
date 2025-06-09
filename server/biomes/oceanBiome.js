@@ -1,10 +1,10 @@
-const Biome = require('./baseBiome');
+const BiomeBase = require('./biomeBase');
 
 /**
  * Ocean biome - deep water bodies with underwater terrain and marine features
  * Represents seas and oceans with varying depths, underwater ecosystems, and marine structures
  */
-class OceanBiome extends Biome {
+class OceanBiome extends BiomeBase {
   /**
    * Create a new Ocean biome
    * @param {Object} props - Optional properties to override defaults
@@ -20,15 +20,12 @@ class OceanBiome extends Biome {
       name: `${isFrozen ? 'Frozen ' : ''}${isDeep ? 'Deep ' : ''}Ocean`,
       color: isDeep ? '#000033' : '#000099',
       
-      // Climate ranges - oceans have low continentalness by definition
-      temperatureRange: { 
-        min: isFrozen ? -1.0 : -0.5, 
-        max: isFrozen ? 0.0 : 1.0 
-      },
-      precipitationRange: { min: 0.3, max: 1.0 },
-      continentalnessRange: { min: 0.0, max: 0.3 },  // Low continentalness for oceans
-      erosionRange: { min: 0.0, max: 1.0 },
-      weirdnessRange: { min: -1.0, max: 1.0 },
+      // Climate values - oceans have low continentalness by definition (using midpoint of ranges)
+      temperature: isFrozen ? -0.5 : 0.25, // Mid-point of ranges
+      precipitation: 0.65, // Mid-point of 0.3 to 1.0
+      continentalness: 0.15, // Mid-point of 0.0 to 0.3
+      erosion: 0.5, // Mid-point of 0.0 to 1.0
+      weirdness: 0.0, // Mid-point of -1.0 to 1.0
       
       // Terrain properties
       baseHeight: isDeep ? 30 : 45,     // Deep oceans are deeper
@@ -85,7 +82,6 @@ class OceanBiome extends Biome {
         rainChance: isFrozen ? 0.1 : 0.4,
         thunderChance: 0.1,
         fogDensity: 0.2,
-        temperature: isFrozen ? -0.5 : 0.5,
         rainfall: 1.0        // Maximum rainfall
       },
       
