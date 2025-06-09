@@ -13,6 +13,7 @@ class World extends EventEmitter {
     this.players = new Map();
     this.blockRegistry = null;
     this.seed = Math.floor(Math.random() * 1000000);
+    this.events = [];
     
     // Security limits
     this.maxEntitiesPerChunk = 100;
@@ -249,7 +250,16 @@ class World extends EventEmitter {
   }
 
   emitEvent(eventName, data) {
+    this.events.push({ event: eventName, data });
     this.emit(eventName, data);
+  }
+
+  getEvents() {
+    return this.events;
+  }
+
+  clearEvents() {
+    this.events = [];
   }
 }
 
