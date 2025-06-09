@@ -26,3 +26,13 @@
 - Dependencies:
   - World class
   - TestBase class 
+
+- server/tests/gameplayTest.js - Purpose: Tests gameplay functionality including player movement and clicking
+- Function: Verifies that player coordinates update correctly with movement and clicking interactions work properly
+- Called by: runGameplayTest.js test runner
+- Dependencies: TestBase class
+
+- server/tests/runGameplayTest.js - Purpose: Test runner for gameplay functionality tests
+- Function: Executes gameplay tests and reports results
+- Called by: Test runner or manual execution
+- Dependencies: gameplayTest.js 
