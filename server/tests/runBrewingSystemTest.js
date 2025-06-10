@@ -20,14 +20,14 @@ async function runBrewingSystemTest() {
   }
 }
 
-// Run the test if this file is executed directly
+// Run if called directly
 if (require.main === module) {
   runBrewingSystemTest()
     .then(success => {
       process.exit(success ? 0 : 1);
     })
     .catch(error => {
-      console.error('Error running BrewingSystem tests:', error);
+      console.error('Unhandled error:', error);
       process.exit(1);
     });
 }
